@@ -43,7 +43,7 @@ export default function RegisterPage() {
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold">Crear una cuenta</CardTitle>
               <CardDescription>
-                Ingresa tus datos para registrarte en IAnaliticBlood
+                Ingresa tus datos para registrarte en IAnalyticBlood
               </CardDescription>
             </CardHeader>
             <CardContent>

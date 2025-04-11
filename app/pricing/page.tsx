@@ -92,7 +92,7 @@ export default function PricingPage() {
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
             Elige el plan que mejor se adapte a tus necesidades y comienza a entender tus análisis
-            de sangre hoy mismo.
+            de sangre (en PDF o foto) hoy mismo.
           </p>
 
           <div className="inline-flex items-center p-1 bg-muted rounded-lg">
@@ -126,7 +126,7 @@ export default function PricingPage() {
             period={billingPeriod === "monthly" ? "/mes" : "/año"}
             description="Perfecto para comenzar a entender tus análisis de sangre."
             features={[
-              "5 análisis de PDF al mes",
+              "5 análisis de (PDF o imagen) al mes",
               "Interpretación básica de resultados",
               "Visualización de datos estándar",
               "Acceso a la aplicación web",
@@ -143,7 +143,7 @@ export default function PricingPage() {
             period={billingPeriod === "monthly" ? "/mes" : "/año"}
             description="Para un seguimiento regular de tu salud con análisis detallados."
             features={[
-              "Análisis ilimitados de PDF",
+              "Análisis ilimitados de PDF o imágenes",
               "Interpretación avanzada de resultados",
               "Visualización de datos interactiva",
               "Seguimiento histórico de resultados",
@@ -161,7 +161,7 @@ export default function PricingPage() {
             price="Personalizado"
             description="Solución a medida para clínicas, laboratorios y profesionales de la salud."
             features={[
-              "Análisis ilimitados de PDF",
+              "Análisis ilimitados de PDF o imágenes",
               "API para integración con sistemas existentes",
               "Panel de administración para múltiples usuarios",
               "Personalización de informes",
@@ -188,8 +188,9 @@ export default function PricingPage() {
               <div>
                 <h3 className="font-bold mb-2">¿Cómo funciona el análisis de PDF?</h3>
                 <p className="text-muted-foreground">
-                  Nuestra tecnología de IA extrae automáticamente los datos de tu PDF de análisis de
-                  sangre, los interpreta y te proporciona un informe detallado y fácil de entender.
+                  Nuestra tecnología de IA extrae automáticamente los datos de tu PDF o fotografía
+                  de análisis de sangre, los interpreta y te proporciona un informe detallado y
+                  fácil de entender.
                 </p>
               </div>
 
@@ -214,9 +215,9 @@ export default function PricingPage() {
               <div>
                 <h3 className="font-bold mb-2">¿Qué tipos de análisis de sangre puedo subir?</h3>
                 <p className="text-muted-foreground">
-                  Nuestro sistema es compatible con la mayoría de los formatos de análisis de sangre
-                  estándar. Si tienes algún problema con un formato específico, nuestro equipo de
-                  soporte estará encantado de ayudarte.
+                  Nuestro sistema es compatible con la mayoría de formatos de imagen (png, jpg,
+                  etc.) y archivos PDF. Si tienes algún problema con un formato específico, nuestro
+                  equipo de soporte estará encantado de ayudarte.
                 </p>
               </div>
 
@@ -224,7 +225,7 @@ export default function PricingPage() {
                 <h3 className="font-bold mb-2">¿Cómo puedo contactar con el soporte?</h3>
                 <p className="text-muted-foreground">
                   Puedes contactar con nuestro equipo de soporte a través del chat en la aplicación
-                  o enviando un email a soporte@ianaliticblood.com.
+                  o enviando un email a soporte@ianalyticblood.com.
                 </p>
               </div>
 

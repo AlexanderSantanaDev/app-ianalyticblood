@@ -134,8 +134,8 @@ export default function Home() {
                 inteligencia artificial
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Sube tu PDF de análisis de sangre y obtén un estudio detallado, personalizado y
-                fácil de entender en segundos.
+                Sube tu PDF o imagen de análisis de sangre y obtén un estudio detallado,
+                personalizado y fácil de entender en segundos.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/auth/register">
@@ -223,7 +223,7 @@ export default function Home() {
                 Características <span className="gradient-text">principales</span>
               </h2>
               <p className="text-xl text-muted-foreground">
-                Descubre cómo IAnaliticBlood transforma la manera en que entiendes tus análisis de
+                Descubre cómo IAnalyticBlood transforma la manera en que entiendes tus análisis de
                 sangre.
               </p>
             </div>
@@ -232,8 +232,8 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard
               icon={<FileText className="h-6 w-6 text-white" />}
-              title="Análisis de PDF"
-              description="Sube tu PDF de análisis de sangre y nuestra IA extraerá automáticamente todos los datos relevantes."
+              title="Análisis de PDF o imágen"
+              description="Sube tu PDF (o imagen) de análisis de sangre y nuestra IA extraerá automáticamente todos los datos relevantes."
               delay={0.1}
             />
             <FeatureCard
@@ -288,7 +288,7 @@ export default function Home() {
             <div className="space-y-12">
               <ProcessStep
                 number="1"
-                title="Sube tu PDF"
+                title="Sube tu PDF o imagen"
                 description="Simplemente arrastra y suelta tu archivo PDF de análisis de sangre en nuestra plataforma."
                 delay={0.1}
               />
@@ -320,7 +320,7 @@ export default function Home() {
                   <div className="flex items-center justify-center h-64 border-2 border-dashed border-muted rounded-xl">
                     <div className="text-center">
                       <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <p className="font-medium">Arrastra tu PDF aquí</p>
+                      <p className="font-medium">Arrastra tu PDF o imagen aquí</p>
                       <p className="text-sm text-muted-foreground mt-1">
                         o haz clic para seleccionar
                       </p>
@@ -350,26 +350,26 @@ export default function Home() {
                 Lo que dicen nuestros <span className="gradient-text">usuarios</span>
               </h2>
               <p className="text-xl text-muted-foreground">
-                Miles de personas ya confían en IAnaliticBlood para entender sus análisis de sangre.
+                Miles de personas ya confían en IAnalyticBlood para entender sus análisis de sangre.
               </p>
             </div>
           </AnimateOnScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Testimonial
-              quote="IAnaliticBlood me ha ayudado a entender mis análisis de sangre de una manera que nunca antes había experimentado. Las explicaciones son claras y las recomendaciones muy útiles."
+              quote="IAnalyticBlood me ha ayudado a entender mis análisis de sangre de una manera que nunca antes había experimentado. Las explicaciones son claras y las recomendaciones muy útiles."
               author="María González"
               role="Usuaria desde 2023"
               delay={0.1}
             />
             <Testimonial
-              quote="Como médico, recomiendo IAnaliticBlood a mis pacientes. Les ayuda a comprender mejor sus resultados y a tomar un papel más activo en su salud."
+              quote="Como médico, recomiendo IAnalyticBlood a mis pacientes. Les ayuda a comprender mejor sus resultados y a tomar un papel más activo en su salud."
               author="Dr. Javier Martínez"
               role="Médico de Familia"
               delay={0.2}
             />
             <Testimonial
-              quote="La precisión y rapidez con la que IAnaliticBlood analiza mis resultados es impresionante. Ya no tengo que esperar días para entender qué significan mis análisis."
+              quote="La precisión y rapidez con la que IAnalyticBlood analiza mis resultados es impresionante. Ya no tengo que esperar días para entender qué significan mis análisis."
               author="Carlos Rodríguez"
               role="Usuario Premium"
               delay={0.3}

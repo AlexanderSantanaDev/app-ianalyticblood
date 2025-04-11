@@ -8,7 +8,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "IAnaliticBlood - Análisis de Sangre con IA",
+  title: "IAnalyticBlood - Análisis de Sangre con IA",
   description:
     "Obtén un estudio automatizado de tus análisis de sangre mediante inteligencia artificial",
   icons: {

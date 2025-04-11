@@ -81,3 +81,12 @@
 .gradient-bg {
   @apply bg-gradient-to-r from-primary to-secondary;
 }
+
+
+::selection {
+  @apply bg-purple-400 text-white; 
+}
+
+::-moz-selection {
+  @apply bg-purple-400 text-white;
+}

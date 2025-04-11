@@ -45,7 +45,7 @@ interface RecentAnalysisProps {
 }
 
 // Componente para subir archivos
-const FileUpload = ({ onUpload }: FileUploadProps) => {
+/* const FileUpload = ({ onUpload }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
@@ -109,6 +109,105 @@ const FileUpload = ({ onUpload }: FileUploadProps) => {
           {file ? "Cambiar archivo" : "Seleccionar archivo"}
         </Button>
       </label>
+      {file && (
+        <Button className="ml-2 gradient-bg" onClick={() => console.log("Procesando archivo...")}>
+          Procesar archivo
+        </Button>
+      )}
+    </div>
+  );
+}; */
+
+// Componente para subir archivos
+const FileUpload = ({ onUpload }: FileUploadProps) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const droppedFile = files[0];
+
+      // Permitir PDF o cualquier imagen
+      const isPdf = droppedFile.type === "application/pdf";
+      const isImage = droppedFile.type.startsWith("image/");
+
+      if (isPdf || isImage) {
+        setFile(droppedFile);
+        onUpload(droppedFile);
+      } else {
+        // Aquí podrías mostrar algún mensaje de error
+        // toast.error("Formato de archivo no válido. Sube un PDF o una imagen.");
+        console.warn("Formato de archivo no válido. Sube un PDF o una imagen.");
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = e.target;
+    if (files && files.length > 0) {
+      const selectedFile = files[0];
+
+      const isPdf = selectedFile.type === "application/pdf";
+      const isImage = selectedFile.type.startsWith("image/");
+
+      if (isPdf || isImage) {
+        setFile(selectedFile);
+        onUpload(selectedFile);
+      } else {
+        console.warn("Formato de archivo no válido. Sube un PDF o una imagen.");
+      }
+    }
+  };
+
+  return (
+    <div
+      className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+        isDragging ? "border-primary bg-primary/5" : "border-border"
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <div className="mx-auto w-16 h-16 mb-4 text-muted-foreground">
+        <Upload className="w-full h-full" />
+      </div>
+      <h3 className="text-lg font-medium mb-2">
+        {file ? file.name : "Arrastra y suelta tu PDF o imagen aquí"}
+      </h3>
+      <p className="text-muted-foreground mb-4">
+        {file
+          ? `${(file.size / 1024 / 1024).toFixed(2)} MB`
+          : "o haz clic para seleccionar un archivo"}
+      </p>
+
+      {/* Ahora aceptamos PDF e imágenes */}
+      <input
+        type="file"
+        id="file-upload"
+        className="hidden"
+        accept=".pdf,image/*"
+        onChange={handleFileChange}
+      />
+
+      <label htmlFor="file-upload">
+        <Button variant={file ? "outline" : "default"} className={file ? "" : "gradient-bg"}>
+          {file ? "Cambiar archivo" : "Seleccionar archivo"}
+        </Button>
+      </label>
+
       {file && (
         <Button className="ml-2 gradient-bg" onClick={() => console.log("Procesando archivo...")}>
           Procesar archivo

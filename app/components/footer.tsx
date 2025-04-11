@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4 gradient-text">IAnaliticBlood</h3>
+            <h3 className="text-xl font-bold mb-4 gradient-text">IAnalyticBlood</h3>
             <p className="text-muted-foreground">
               Transformando la manera en que entiendes tus análisis de sangre con la potencia de la
               inteligencia artificial.
@@ -106,7 +106,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} IAnaliticBlood. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} IAnalyticBlood. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

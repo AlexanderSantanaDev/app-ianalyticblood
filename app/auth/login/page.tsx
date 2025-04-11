@@ -23,7 +23,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Aquí iría la lógica de autenticación
     console.log({ email, password, rememberMe });
@@ -91,7 +91,11 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="remember" checked={rememberMe} onCheckedChange={setRememberMe} />
+                  <Checkbox
+                    id="remember"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  />
                   <Label htmlFor="remember" className="text-sm">
                     Recordarme
                   </Label>
