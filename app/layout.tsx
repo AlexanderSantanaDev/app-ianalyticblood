@@ -8,10 +8,12 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "AnaliticBold - Análisis de Sangre con IA",
+  title: "IAnaliticBlood - Análisis de Sangre con IA",
   description:
     "Obtén un estudio automatizado de tus análisis de sangre mediante inteligencia artificial",
-  generator: "v0.dev",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

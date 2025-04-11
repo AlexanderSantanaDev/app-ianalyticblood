@@ -33,7 +33,13 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <Image src="/logo.png" alt="AnalyticBlood Logo" width={40} height={40} />
+          <Image
+            src="/logo-ianalytic-blood.png"
+            alt="AnalyticBlood Logo"
+            width={150}
+            height={40}
+            draggable="false"
+          />
         </Link>
 
         {isMobile ? (

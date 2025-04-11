@@ -24,7 +24,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Aquí iría la lógica de registro
     console.log({ name, email, password, acceptTerms });
@@ -42,7 +42,9 @@ export default function RegisterPage() {
           <Card className="border-border shadow-xl">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold">Crear una cuenta</CardTitle>
-              <CardDescription>Ingresa tus datos para registrarte en AnaliticBold</CardDescription>
+              <CardDescription>
+                Ingresa tus datos para registrarte en IAnaliticBlood
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,7 +108,7 @@ export default function RegisterPage() {
                   <Checkbox
                     id="terms"
                     checked={acceptTerms}
-                    onCheckedChange={setAcceptTerms}
+                    onCheckedChange={(checked) => setAcceptTerms(checked === true)}
                     className="mt-1"
                   />
                   <Label htmlFor="terms" className="text-sm">

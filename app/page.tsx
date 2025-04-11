@@ -223,7 +223,7 @@ export default function Home() {
                 Características <span className="gradient-text">principales</span>
               </h2>
               <p className="text-xl text-muted-foreground">
-                Descubre cómo AnaliticBold transforma la manera en que entiendes tus análisis de
+                Descubre cómo IAnaliticBlood transforma la manera en que entiendes tus análisis de
                 sangre.
               </p>
             </div>
@@ -350,26 +350,26 @@ export default function Home() {
                 Lo que dicen nuestros <span className="gradient-text">usuarios</span>
               </h2>
               <p className="text-xl text-muted-foreground">
-                Miles de personas ya confían en AnaliticBold para entender sus análisis de sangre.
+                Miles de personas ya confían en IAnaliticBlood para entender sus análisis de sangre.
               </p>
             </div>
           </AnimateOnScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Testimonial
-              quote="AnaliticBold me ha ayudado a entender mis análisis de sangre de una manera que nunca antes había experimentado. Las explicaciones son claras y las recomendaciones muy útiles."
+              quote="IAnaliticBlood me ha ayudado a entender mis análisis de sangre de una manera que nunca antes había experimentado. Las explicaciones son claras y las recomendaciones muy útiles."
               author="María González"
               role="Usuaria desde 2023"
               delay={0.1}
             />
             <Testimonial
-              quote="Como médico, recomiendo AnaliticBold a mis pacientes. Les ayuda a comprender mejor sus resultados y a tomar un papel más activo en su salud."
+              quote="Como médico, recomiendo IAnaliticBlood a mis pacientes. Les ayuda a comprender mejor sus resultados y a tomar un papel más activo en su salud."
               author="Dr. Javier Martínez"
               role="Médico de Familia"
               delay={0.2}
             />
             <Testimonial
-              quote="La precisión y rapidez con la que AnaliticBold analiza mis resultados es impresionante. Ya no tengo que esperar días para entender qué significan mis análisis."
+              quote="La precisión y rapidez con la que IAnaliticBlood analiza mis resultados es impresionante. Ya no tengo que esperar días para entender qué significan mis análisis."
               author="Carlos Rodríguez"
               role="Usuario Premium"
               delay={0.3}

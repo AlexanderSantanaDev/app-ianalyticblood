@@ -224,7 +224,7 @@ export default function PricingPage() {
                 <h3 className="font-bold mb-2">¿Cómo puedo contactar con el soporte?</h3>
                 <p className="text-muted-foreground">
                   Puedes contactar con nuestro equipo de soporte a través del chat en la aplicación
-                  o enviando un email a soporte@analiticbold.com.
+                  o enviando un email a soporte@ianaliticblood.com.
                 </p>
               </div>
 
