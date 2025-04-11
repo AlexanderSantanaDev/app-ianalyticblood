@@ -39,6 +39,8 @@ export default function Navbar() {
             width={150}
             height={40}
             draggable="false"
+            className="w-40"
+            priority
           />
         </Link>
 
