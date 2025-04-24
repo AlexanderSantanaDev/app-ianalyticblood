@@ -1,9 +1,8 @@
-// app/api/auth/[...nextauth]/route.ts
 import NextAuth, { type NextAuthOptions, type DefaultSession, type User } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-/* 1️⃣ AuthOptions con tipado */
+/* AuthOptions con tipado */
 export const authOptions: NextAuthOptions = {
   providers: [
     /* Google */
@@ -35,7 +34,7 @@ export const authOptions: NextAuthOptions = {
 
         const data = await res.json();                 // { access_token, ... }
 
-        /* ← objeto que se inyecta en `user` de callbacks */
+        /* Objeto que se inyecta en `user` de callbacks */
         return {
           id: credentials.email,
           email: credentials.email,
@@ -47,7 +46,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
-  /* 2️⃣ Literal cast para que TS no proteste */
+  /*  Literal cast para que TS no proteste */
   session: { strategy: "jwt" as const },
 
   callbacks: {
@@ -74,7 +73,7 @@ export const authOptions: NextAuthOptions = {
       token,
       user,
     }: {
-      token: any;                  // puedes crear tu propio tipo si lo prefieres
+      token: any;                  // JWT que NextAuth crea
       user?: User & { accessToken?: string };
     }) {
       /* desde CredentialsProvider */
@@ -113,10 +112,6 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
 
-    // redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
-    //   /* Siempre a dashboard tras login */
-    //   return url.startsWith(baseUrl) ? url : `${baseUrl}/dashboard`;
-    // },
     redirect({ url, baseUrl }) {
       // 1.  misma origin
       if (url.startsWith(baseUrl)) return url;
@@ -130,6 +125,6 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-/* 3️⃣ Por fin creamos el handler */
+/* Creamos el handler */
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
