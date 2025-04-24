@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
-import { Label } from "@/app/components/ui/label";
-import { Checkbox } from "@/app/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -13,9 +13,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
+} from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { register } from "lib/api/auth";
+import { useToast } from "hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,11 +27,22 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
+  /*********************************************************************************************************************/
+  // Hooks
+  const router = useRouter();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Aquí iría la lógica de registro
     console.log({ name, email, password, acceptTerms });
+    try {
+      await register({ name, email, password });
+      toast({ title: "Cuenta creada. ¡Ya puedes iniciar sesión!" });
+      // Redirigir a la página de inicio de sesión
+      router.push("/auth/login");
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   return (
@@ -141,7 +156,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
