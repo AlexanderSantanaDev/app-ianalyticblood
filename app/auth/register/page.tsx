@@ -34,15 +34,19 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({ name, email, password, acceptTerms });
     try {
-      await register({ name, email, password });
-      toast({ title: "Cuenta creada. ¡Ya puedes iniciar sesión!" });
-      // Redirigir a la página de inicio de sesión
+      await register({ name, email, password }); // ✅ Crea la cuenta
+      toast({ title: "Cuenta creada ✔️", description: "Inicia sesión para continuar" });
+
+      /** 👉  manda al formulario de login **/
       router.push("/auth/login");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
+  };
+
+  const handleGoogleSignup = async () => {
+    await signIn("google", { callbackUrl: "/dashboard" });
   };
 
   return (
@@ -156,7 +160,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
+                <Button variant="outline" className="w-full" onClick={handleGoogleSignup}>
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

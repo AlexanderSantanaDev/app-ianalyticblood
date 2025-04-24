@@ -1,14 +1,7 @@
 import { getSession } from "next-auth/react";
-import { z } from "zod";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
 
 /************************************************************************************************************/
-/** Recupera el JWT guardado en localStorage */
-function getToken() {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("access_token");
-}
-
 /** Pequeño wrapper de fetch con JSON por defecto y token Bearer */
 export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   const session = await getSession();

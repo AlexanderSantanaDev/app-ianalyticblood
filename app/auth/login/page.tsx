@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { login } from "lib/api/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "hooks/use-toast";
 import { signIn } from "next-auth/react";
@@ -32,18 +31,26 @@ export default function LoginPage() {
   const { toast } = useToast();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({ email, password, rememberMe });
     try {
-      await login(email, password);
-      router.push("/dashboard");
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      } else {
+        router.push("/dashboard");
+        toast({ title: "¡Bienvenido!" });
+      }
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Implementar la lógica de inicio de sesión con Google aquí
-    console.log("Iniciar sesión con Google");
+  const handleGoogleLogin = async () => {
+    await signIn("google", { callbackUrl: "/dashboard" });
   };
 
   return (
@@ -135,7 +142,7 @@ export default function LoginPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
+                <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
