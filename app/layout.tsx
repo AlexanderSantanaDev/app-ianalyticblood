@@ -1,10 +1,10 @@
 import type React from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/app/components/theme-provider";
-import Navbar from "@/app/components/navbar";
-import Footer from "@/app/components/footer";
-import "./globals.css";
+import { ThemeProvider } from "./components/theme-provider";
+import Navbar from "./components/navbar";
+import Footer from "./components/footer";
+import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -29,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <Footer />
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
