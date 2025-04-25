@@ -408,196 +408,199 @@ export default function DashboardPage() {
     //     </motion.div>
     //   </div>
     // </div>
+    <div className="pt-12 pb-2">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 className="text-3xl font-bold mb-2">Bienvenido, Usuario</h1>
+          <p className="text-muted-foreground mb-8">
+            Gestiona tus análisis de sangre y obtén información valiosa sobre tu salud.
+          </p>
 
-    <div>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h1 className="text-3xl font-bold mb-2">Bienvenido, Usuario</h1>
-        <p className="text-muted-foreground mb-8">
-          Gestiona tus análisis de sangre y obtén información valiosa sobre tu salud.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Análisis realizados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <div className="text-4xl font-bold mr-4">12</div>
-                <div className="text-sm text-muted-foreground">
-                  <div className="flex items-center text-green-600">
-                    <span className="mr-1">+2</span>
-                    <span>este mes</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Estado general</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <div className="rounded-full w-10 h-10 flex items-center justify-center bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 mr-4">
-                  <CheckCircle className="h-6 w-6" />
-                </div>
-                <div>
-                  <div className="font-medium">Saludable</div>
-                  <div className="text-sm text-muted-foreground">
-                    Basado en tus últimos análisis
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Próximo recordatorio</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <div className="rounded-full w-10 h-10 flex items-center justify-center bg-primary/20 text-primary mr-4">
-                  <Calendar className="h-6 w-6" />
-                </div>
-                <div>
-                  <div className="font-medium">15 de mayo, 2025</div>
-                  <div className="text-sm text-muted-foreground">Análisis de sangre trimestral</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="grid grid-cols-3 mb-8">
-            <TabsTrigger value="upload">Subir análisis</TabsTrigger>
-            <TabsTrigger value="history">Historial</TabsTrigger>
-            <TabsTrigger value="insights">Estadísticas</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="upload" className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card>
-              <CardHeader>
-                <CardTitle>Subir nuevo análisis</CardTitle>
-                <CardDescription>
-                  Sube tu PDF de análisis de sangre para obtener un estudio detallado.
-                </CardDescription>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Análisis realizados</CardTitle>
               </CardHeader>
               <CardContent>
-                <FileUpload onUpload={handleFileUpload} />
+                <div className="flex items-center">
+                  <div className="text-4xl font-bold mr-4">12</div>
+                  <div className="text-sm text-muted-foreground">
+                    <div className="flex items-center text-green-600">
+                      <span className="mr-1">+2</span>
+                      <span>este mes</span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <div>
-              <h3 className="text-xl font-bold mb-4">Análisis recientes</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recentAnalyses.map((analysis) => (
-                  <RecentAnalysis key={analysis.id} analysis={analysis} />
-                ))}
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="history">
             <Card>
-              <CardHeader>
-                <CardTitle>Historial de análisis</CardTitle>
-                <CardDescription>
-                  Visualiza todos tus análisis anteriores y su evolución.
-                </CardDescription>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Estado general</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {[...recentAnalyses, ...recentAnalyses].map((analysis, index) => (
-                    <div
-                      key={`${analysis.id}-${index}`}
-                      className="flex items-start border-b border-border pb-4 last:border-0 last:pb-0"
-                    >
-                      <div
-                        className={`rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center mr-4 ${
-                          analysis.status === "normal"
-                            ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100"
-                            : analysis.status === "warning"
-                            ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100"
-                            : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100"
-                        }`}
-                      >
-                        {analysis.status === "normal" ? (
-                          <CheckCircle className="h-5 w-5" />
-                        ) : analysis.status === "warning" ? (
-                          <Clock className="h-5 w-5" />
-                        ) : (
-                          <AlertCircle className="h-5 w-5" />
-                        )}
-                      </div>
-                      <div className="flex-grow">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium">{analysis.title}</h4>
-                            <p className="text-sm text-muted-foreground">{analysis.date}</p>
-                          </div>
-                          <div className="flex space-x-2">
-                            <Button variant="outline" size="sm">
-                              <FileText className="h-4 w-4 mr-2" />
-                              Ver
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <Download className="h-4 w-4 mr-2" />
-                              PDF
-                            </Button>
-                          </div>
-                        </div>
-                        <p className="text-sm mt-2">{analysis.description}</p>
-                      </div>
+                <div className="flex items-center">
+                  <div className="rounded-full w-10 h-10 flex items-center justify-center bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 mr-4">
+                    <CheckCircle className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="font-medium">Saludable</div>
+                    <div className="text-sm text-muted-foreground">
+                      Basado en tus últimos análisis
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Próximo recordatorio</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center">
+                  <div className="rounded-full w-10 h-10 flex items-center justify-center bg-primary/20 text-primary mr-4">
+                    <Calendar className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="font-medium">15 de mayo, 2025</div>
+                    <div className="text-sm text-muted-foreground">
+                      Análisis de sangre trimestral
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+            <TabsList className="grid grid-cols-3 mb-8">
+              <TabsTrigger value="upload">Subir análisis</TabsTrigger>
+              <TabsTrigger value="history">Historial</TabsTrigger>
+              <TabsTrigger value="insights">Estadísticas</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="upload" className="space-y-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Subir nuevo análisis</CardTitle>
+                  <CardDescription>
+                    Sube tu PDF de análisis de sangre para obtener un estudio detallado.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FileUpload onUpload={handleFileUpload} />
+                </CardContent>
+              </Card>
+
+              <div>
+                <h3 className="text-xl font-bold mb-4">Análisis recientes</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {recentAnalyses.map((analysis) => (
+                    <RecentAnalysis key={analysis.id} analysis={analysis} />
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </TabsContent>
 
-          <TabsContent value="insights">
-            <Card>
-              <CardHeader>
-                <CardTitle>Estadísticas y tendencias</CardTitle>
-                <CardDescription>
-                  Visualiza la evolución de tus valores a lo largo del tiempo.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-8">
-                  <div>
-                    <h4 className="font-medium mb-4">Niveles de colesterol</h4>
-                    <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                      <div className="text-center">
-                        <BarChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">Gráfico de tendencias</p>
+            <TabsContent value="history">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Historial de análisis</CardTitle>
+                  <CardDescription>
+                    Visualiza todos tus análisis anteriores y su evolución.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {[...recentAnalyses, ...recentAnalyses].map((analysis, index) => (
+                      <div
+                        key={`${analysis.id}-${index}`}
+                        className="flex items-start border-b border-border pb-4 last:border-0 last:pb-0"
+                      >
+                        <div
+                          className={`rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center mr-4 ${
+                            analysis.status === "normal"
+                              ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100"
+                              : analysis.status === "warning"
+                              ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100"
+                              : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100"
+                          }`}
+                        >
+                          {analysis.status === "normal" ? (
+                            <CheckCircle className="h-5 w-5" />
+                          ) : analysis.status === "warning" ? (
+                            <Clock className="h-5 w-5" />
+                          ) : (
+                            <AlertCircle className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div className="flex-grow">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium">{analysis.title}</h4>
+                              <p className="text-sm text-muted-foreground">{analysis.date}</p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button variant="outline" size="sm">
+                                <FileText className="h-4 w-4 mr-2" />
+                                Ver
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Download className="h-4 w-4 mr-2" />
+                                PDF
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-sm mt-2">{analysis.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="insights">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Estadísticas y tendencias</CardTitle>
+                  <CardDescription>
+                    Visualiza la evolución de tus valores a lo largo del tiempo.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-8">
+                    <div>
+                      <h4 className="font-medium mb-4">Niveles de colesterol</h4>
+                      <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <BarChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">Gráfico de tendencias</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium mb-4">Niveles de glucosa</h4>
+                      <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <BarChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">Gráfico de tendencias</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-
-                  <div>
-                    <h4 className="font-medium mb-4">Niveles de glucosa</h4>
-                    <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                      <div className="text-center">
-                        <BarChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">Gráfico de tendencias</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </motion.div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </div>
     </div>
   );
 }

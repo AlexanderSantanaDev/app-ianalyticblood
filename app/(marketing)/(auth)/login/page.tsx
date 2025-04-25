@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,13 @@ export default function LoginPage() {
   // Hooks
   const router = useRouter();
   const { toast } = useToast();
+  useEffect(() => {
+    const saved = localStorage.getItem("iab_email");
+    if (saved) setEmail(saved);
+  }, []);
+
+  /*********************************************************************************************************************/
+  // Métodos
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -37,6 +44,12 @@ export default function LoginPage() {
         password,
         redirect: false,
       });
+
+      if (rememberMe) {
+        localStorage.setItem("iab_email", email);
+      } else {
+        localStorage.removeItem("iab_email");
+      }
 
       if (result?.error) {
         toast({ title: "Error", description: result.error, variant: "destructive" });

@@ -91,7 +91,7 @@ export default function DashboardSidebar({
       <Sidebar>
         <SidebarHeader className="flex items-center justify-center py-4">
           <Link href="/dashboard" className="flex items-center space-x-2">
-            <span className="text-xl font-bold gradient-text">AnaliticBold</span>
+            <span className="text-xl font-bold gradient-text">IAnalyticBlood</span>
           </Link>
         </SidebarHeader>
         <SidebarContent>

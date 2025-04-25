@@ -68,7 +68,7 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
           )}
           <Link href="/dashboard" className="flex items-center space-x-2">
             <span className="text-xl font-bold gradient-text hidden md:inline-block">
-              AnaliticBold
+              IAnalyticBlood
             </span>
             <span className="text-xl font-bold gradient-text md:hidden">AB</span>
           </Link>

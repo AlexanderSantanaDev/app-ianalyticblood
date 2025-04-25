@@ -8,8 +8,8 @@ import { TechnologyCard } from "@/components/marketing/technology-card";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = {
-  title: "Sobre nosotros | AnaliticBold",
-  description: "Conoce nuestra misión, el equipo y la tecnología que impulsa AnaliticBold.",
+  title: "Sobre nosotros | IAnalyticBlood",
+  description: "Conoce nuestra misión, el equipo y la tecnología que impulsa IAnalyticBlood.",
 };
 
 export default function AboutPage() {
@@ -71,7 +71,7 @@ export default function AboutPage() {
             Sobre <span className="gradient-text">Nosotros</span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Conoce más sobre AnaliticBold, nuestra misión y el equipo detrás de esta innovadora
+            Conoce más sobre IAnalyticBlood, nuestra misión y el equipo detrás de esta innovadora
             plataforma.
           </p>
         </AnimateOnScroll>
@@ -83,9 +83,9 @@ export default function AboutPage() {
               <div>
                 <h2 className="text-3xl font-bold mb-6">Nuestra Misión</h2>
                 <p className="text-lg text-muted-foreground mb-4">
-                  En AnaliticBold, nuestra misión es democratizar el acceso a la información médica,
-                  permitiendo a las personas entender sus análisis de sangre de manera sencilla y
-                  accesible.
+                  En IAnalyticBlood, nuestra misión es democratizar el acceso a la información
+                  médica, permitiendo a las personas entender sus análisis de sangre de manera
+                  sencilla y accesible.
                 </p>
                 <p className="text-lg text-muted-foreground mb-4">
                   Creemos que cada persona tiene derecho a comprender su salud sin necesidad de ser
@@ -163,7 +163,7 @@ export default function AboutPage() {
               <div>
                 <h2 className="text-3xl font-bold mb-6">Nuestra Historia</h2>
                 <p className="text-lg text-muted-foreground mb-4">
-                  AnaliticBold nació en 2023 como respuesta a una necesidad personal de nuestra
+                  IAnalyticBlood nació en 2023 como respuesta a una necesidad personal de nuestra
                   fundadora, Ana Martínez, quien tras recibir unos análisis de sangre complejos, se
                   dio cuenta de lo difícil que era para una persona sin formación médica entender
                   los resultados.
@@ -175,8 +175,8 @@ export default function AboutPage() {
                 </p>
                 <p className="text-lg text-muted-foreground">
                   Tras meses de desarrollo y pruebas, y con la incorporación de Elena Gómez y el Dr.
-                  Javier López al equipo, AnaliticBold se lanzó oficialmente, con la misión de hacer
-                  la información médica accesible para todos.
+                  Javier López al equipo, IAnalyticBlood se lanzó oficialmente, con la misión de
+                  hacer la información médica accesible para todos.
                 </p>
               </div>
             </AnimateOnScroll>
@@ -289,7 +289,7 @@ export default function AboutPage() {
                   ?
                 </h2>
                 <p className="text-xl text-muted-foreground mb-8">
-                  Únete a AnaliticBold hoy y comienza a tomar el control de tu salud.
+                  Únete a IAnalyticBlood hoy y comienza a tomar el control de tu salud.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/auth/register">

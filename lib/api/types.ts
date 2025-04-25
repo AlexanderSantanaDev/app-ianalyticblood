@@ -7,6 +7,8 @@ export interface RegisterBody {
     email: string;
     name: string;
     password: string;
+    terms_accepted: boolean;
+    terms_version?: string;   // opcional (por defecto "1.0")
 }
 
 export interface LoginResponse {

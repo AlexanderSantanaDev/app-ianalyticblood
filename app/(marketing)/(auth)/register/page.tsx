@@ -35,7 +35,8 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await register({ name, email, password }); // ✅ Crea la cuenta
+      // Crea la cuenta
+      await register({ name, email, password, terms_accepted: acceptTerms, terms_version: "1.0" });
       toast({ title: "Cuenta creada ✔️", description: "Inicia sesión para continuar" });
 
       /** 👉  manda al formulario de login **/
