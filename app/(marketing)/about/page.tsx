@@ -1,117 +1,67 @@
-"use client";
-
-import { ReactNode, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "../../components/ui/button";
-import { Card, CardContent } from "../../components/ui/card";
-import { motion, useInView, useAnimation } from "framer-motion";
-import {
-  ArrowRight,
-  Brain,
-  Code,
-  Database,
-  FileText,
-  FlaskRoundIcon as Flask,
-  LineChart,
-  Shield,
-  Users,
-} from "lucide-react";
+import { ArrowRight, Brain, Shield, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AnimateOnScroll } from "@/components/marketing/animated-sections";
+import { TeamMemberCard } from "@/components/marketing/team-member-card";
+import { TechnologyCard } from "@/components/marketing/technology-card";
+import { Card, CardContent } from "@/components/ui/card";
 
-interface AnimateOnScrollProps {
-  children: ReactNode;
-  delay?: number;
-  className?: string;
-}
-
-interface TeamMemberProps {
-  name: string;
-  role: string;
-  image: string;
-  delay?: number;
-}
-
-interface TechnologyCardProps {
-  icon: ReactNode;
-  title: string;
-  description: string;
-  delay?: number;
-}
-
-// Componente de animación para elementos que aparecen al hacer scroll
-const AnimateOnScroll = ({ children, delay = 0, className }: AnimateOnScrollProps) => {
-  const controls = useAnimation();
-  const ref = useRef<HTMLDivElement | null>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.3 });
-
-  useEffect(() => {
-    if (isInView) {
-      controls.start("visible");
-    }
-  }, [controls, isInView]);
-
-  return (
-    <motion.div
-      ref={ref}
-      className={className}
-      initial="hidden"
-      animate={controls}
-      variants={{
-        hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.6, delay } },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-// Componente para miembro del equipo
-const TeamMember = ({ name, role, image, delay }: TeamMemberProps) => {
-  return (
-    <AnimateOnScroll delay={delay}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-        <div className="aspect-square relative">
-          <Image
-            src={image || "/placeholder.svg"}
-            alt={name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        </div>
-        <CardContent className="p-4">
-          <h3 className="font-bold text-lg">{name}</h3>
-          <p className="text-muted-foreground">{role}</p>
-        </CardContent>
-      </Card>
-    </AnimateOnScroll>
-  );
-};
-
-// Componente para tecnología
-const TechnologyCard = ({ icon, title, description, delay }: TechnologyCardProps) => {
-  return (
-    <AnimateOnScroll delay={delay}>
-      <Card className="h-full hover:shadow-lg transition-shadow">
-        <CardContent className="p-6">
-          <div className="rounded-full w-12 h-12 flex items-center justify-center gradient-bg mb-4">
-            {icon}
-          </div>
-          <h3 className="font-bold text-lg mb-2">{title}</h3>
-          <p className="text-muted-foreground">{description}</p>
-        </CardContent>
-      </Card>
-    </AnimateOnScroll>
-  );
+export const metadata = {
+  title: "Sobre nosotros | AnaliticBold",
+  description: "Conoce nuestra misión, el equipo y la tecnología que impulsa AnaliticBold.",
 };
 
 export default function AboutPage() {
+  const team = [
+    { name: "Ana Martínez", role: "CEO & Fundadora", img: "/placeholder.svg" },
+    { name: "Carlos Rodríguez", role: "CTO & Dev", img: "/placeholder.svg" },
+    { name: "Elena Gómez", role: "Científica de datos", img: "/placeholder.svg" },
+    { name: "Javier López", role: "Asesor médico", img: "/placeholder.svg" },
+  ];
+
+  const tech = [
+    {
+      icon: "brain",
+      title: "Inteligencia Artificial",
+      desc: "Algoritmos avanzados de machine learning y procesamiento de lenguaje natural para interpretar los análisis médicos con precisión.",
+    },
+    {
+      icon: "code",
+      title: "Desarrollo Web Moderno",
+      desc: "Utilizamos React y Next.js para crear una interfaz de usuario rápida, responsiva y accesible desde cualquier dispositivo.",
+    },
+    {
+      icon: "flask",
+      title: "Backend en Python",
+      desc: "Nuestro backend está desarrollado en Python, utilizando frameworks como Django y Flask para garantizar un rendimiento óptimo.",
+    },
+    {
+      icon: "file",
+      title: "Procesado de PDF",
+      desc: "Tecnología especializada para extraer datos de documentos PDF con precisión, independientemente del formato o la estructura.",
+    },
+    {
+      icon: "database",
+      title: "Base de datos segura",
+      desc: "Almacenamiento seguro y encriptado de datos médicos, cumpliendo con los más altos estándares de seguridad y privacidad.",
+    },
+    {
+      icon: "chart",
+      title: "Visualización",
+      desc: "Herramientas avanzadas de visualización para presentar los resultados de forma clara, comprensible y visualmente atractiva.",
+    },
+  ] as const satisfies ReadonlyArray<{
+    icon: keyof typeof import("@/components/marketing/technology-card").iconMap;
+    title: string;
+    desc: string;
+  }>;
+
   return (
     <div className="pt-32 pb-20">
       <div className="container mx-auto px-4">
         {/* Hero Section */}
-        <motion.div
+        <AnimateOnScroll
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -124,7 +74,7 @@ export default function AboutPage() {
             Conoce más sobre AnaliticBold, nuestra misión y el equipo detrás de esta innovadora
             plataforma.
           </p>
-        </motion.div>
+        </AnimateOnScroll>
 
         {/* Nuestra Misión */}
         <section className="mb-20">
@@ -183,30 +133,9 @@ export default function AboutPage() {
           </AnimateOnScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <TeamMember
-              name="Ana Martínez"
-              role="CEO & Fundadora"
-              image="/placeholder.svg?height=300&width=300"
-              delay={0.1}
-            />
-            <TeamMember
-              name="Carlos Rodríguez"
-              role="CTO & Desarrollador"
-              image="/placeholder.svg?height=300&width=300"
-              delay={0.2}
-            />
-            <TeamMember
-              name="Elena Gómez"
-              role="Científica de Datos"
-              image="/placeholder.svg?height=300&width=300"
-              delay={0.3}
-            />
-            <TeamMember
-              name="Javier López"
-              role="Asesor Médico"
-              image="/placeholder.svg?height=300&width=300"
-              delay={0.4}
-            />
+            {team.map((m, i) => (
+              <TeamMemberCard key={m.name} {...m} delay={0.1 * (i + 1)} />
+            ))}
           </div>
         </section>
 
@@ -266,42 +195,9 @@ export default function AboutPage() {
           </AnimateOnScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <TechnologyCard
-              icon={<Brain className="h-6 w-6 text-white" />}
-              title="Inteligencia Artificial"
-              description="Algoritmos avanzados de machine learning y procesamiento de lenguaje natural para interpretar los análisis médicos con precisión."
-              delay={0.1}
-            />
-            <TechnologyCard
-              icon={<Code className="h-6 w-6 text-white" />}
-              title="Desarrollo Web Moderno"
-              description="Utilizamos React y Next.js para crear una interfaz de usuario rápida, responsiva y accesible desde cualquier dispositivo."
-              delay={0.2}
-            />
-            <TechnologyCard
-              icon={<Flask className="h-6 w-6 text-white" />}
-              title="Backend en Python"
-              description="Nuestro backend está desarrollado en Python, utilizando frameworks como Django y Flask para garantizar un rendimiento óptimo."
-              delay={0.3}
-            />
-            <TechnologyCard
-              icon={<FileText className="h-6 w-6 text-white" />}
-              title="Procesamiento de PDF"
-              description="Tecnología especializada para extraer datos de documentos PDF con precisión, independientemente del formato o la estructura."
-              delay={0.4}
-            />
-            <TechnologyCard
-              icon={<Database className="h-6 w-6 text-white" />}
-              title="Base de Datos Segura"
-              description="Almacenamiento seguro y encriptado de datos médicos, cumpliendo con los más altos estándares de seguridad y privacidad."
-              delay={0.5}
-            />
-            <TechnologyCard
-              icon={<LineChart className="h-6 w-6 text-white" />}
-              title="Visualización de Datos"
-              description="Herramientas avanzadas de visualización para presentar los resultados de forma clara, comprensible y visualmente atractiva."
-              delay={0.6}
-            />
+            {tech.map((t, i) => (
+              <TechnologyCard key={t.title} {...t} delay={0.1 * (i + 1)} />
+            ))}
           </div>
         </section>
 
