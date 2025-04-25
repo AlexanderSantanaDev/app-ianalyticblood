@@ -60,7 +60,7 @@ const PricingCard = ({
         </ul>
       </div>
       <div className="p-6 pt-0">
-        <Link href="/auth/register">
+        <Link href="/register">
           <Button
             variant={buttonVariant}
             className={`w-full ${

@@ -292,7 +292,7 @@ export default function AboutPage() {
                   Únete a IAnalyticBlood hoy y comienza a tomar el control de tu salud.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/auth/register">
+                  <Link href="/register">
                     <Button size="lg" className="gradient-bg hover:opacity-90 transition-opacity">
                       Comenzar ahora
                       <ArrowRight className="ml-2 h-5 w-5" />

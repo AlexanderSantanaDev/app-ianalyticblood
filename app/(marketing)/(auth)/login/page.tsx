@@ -100,10 +100,7 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Contraseña</Label>
-                    <Link
-                      href="/auth/forgot-password"
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                       ¿Olvidaste tu contraseña?
                     </Link>
                   </div>
@@ -187,7 +184,7 @@ export default function LoginPage() {
             <CardFooter className="flex justify-center">
               <p className="text-sm text-muted-foreground">
                 ¿No tienes una cuenta?{" "}
-                <Link href="/auth/register" className="text-primary hover:underline">
+                <Link href="/register" className="text-primary hover:underline">
                   Regístrate
                 </Link>
               </p>

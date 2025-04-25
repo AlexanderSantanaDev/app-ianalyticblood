@@ -193,7 +193,7 @@ export default function RegisterPage() {
             <CardFooter className="flex justify-center">
               <p className="text-sm text-muted-foreground">
                 ¿Ya tienes una cuenta?{" "}
-                <Link href="/auth/login" className="text-primary hover:underline">
+                <Link href="/login" className="text-primary hover:underline">
                   Inicia sesión
                 </Link>
               </p>

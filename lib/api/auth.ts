@@ -1,3 +1,4 @@
+import { signOut } from "next-auth/react";
 import { post } from "./client";
 import type { RegisterBody, LoginResponse } from "./types";
 
@@ -9,5 +10,5 @@ export async function register(body: RegisterBody) {
 
 /** Logout */
 export function logout() {
-  if (typeof window !== "undefined") localStorage.removeItem("access_token");
+  signOut({ callbackUrl: "/login" });
 }

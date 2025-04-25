@@ -42,7 +42,7 @@ export default function MarketingHome() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/auth/register">
+              <Link href="/register">
                 <Button size="lg" className="gradient-bg hover:opacity-90 transition-opacity">
                   Comenzar ahora <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -296,7 +296,7 @@ export default function MarketingHome() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/auth/register">
+                  <Link href="/register">
                     <Button size="lg" className="gradient-bg hover:opacity-90 transition-opacity">
                       Registrarse gratis <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
