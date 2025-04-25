@@ -1,28 +1,50 @@
 {
   "compilerOptions": {
+    /* ----------------------------------------------------
+     * Basics
+     * -------------------------------------------------- */
+    "target": "ESNext",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "target": "ES6",
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+    "allowJs": true,
     "jsx": "preserve",
+    "resolveJsonModule": true,
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "noEmit": true,
+
+    /* ----------------------------------------------------
+     * Strictness 
+     * -------------------------------------------------- */
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+
+    /* ----------------------------------------------------
+     * Plugins
+     * -------------------------------------------------- */
+    "plugins": [{ "name": "next" }],
+
+    /* ----------------------------------------------------
+     * Paths / aliases
+     * -------------------------------------------------- */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./app/*"]
+      "@/components/*": ["app/components/*"],
+      "@/ui/*":        ["app/components/ui/*"],       // opcional, por legibilidad
+      "@/hooks/*":     ["app/hooks/*"],
+      "@/lib/*":       ["lib/*"],
+      "@/types/*":     ["app/types/*"],               // si usas tipos propios
+      "@/*":           ["app/*"]                      // alias genérico (ya lo tenías)
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

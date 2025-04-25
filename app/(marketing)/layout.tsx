@@ -1,7 +1,8 @@
 import type React from "react";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./components/providers";
+import "../globals.css";
+import Navbar from "../components/navbar";
+import Footer from "../components/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,14 +15,12 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body className={inter.className}>
-        <Providers>
-          <main className="min-h-screen">{children}</main>
-        </Providers>
-      </body>
-    </html>
+    <>
+      <Navbar />
+      <main>{children}</main>
+      <Footer />
+    </>
   );
 }

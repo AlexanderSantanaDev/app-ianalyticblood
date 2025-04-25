@@ -86,12 +86,12 @@ export default function Navbar() {
                     Contacto
                   </Link>
                   <div className="pt-4 flex flex-col space-y-2">
-                    <Link href="/auth/login" onClick={toggleMenu}>
+                    <Link href="/login" onClick={toggleMenu}>
                       <Button variant="outline" className="w-full">
                         Iniciar Sesión
                       </Button>
                     </Link>
-                    <Link href="/auth/register" onClick={toggleMenu}>
+                    <Link href="/register" onClick={toggleMenu}>
                       <Button className="w-full">Registrarse</Button>
                     </Link>
                   </div>
@@ -123,10 +123,10 @@ export default function Navbar() {
             </nav>
 
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="/auth/login">
+              <Link href="/login">
                 <Button variant="outline">Iniciar Sesión</Button>
               </Link>
-              <Link href="/auth/register">
+              <Link href="/register">
                 <Button>Registrarse</Button>
               </Link>
               <ModeToggle />

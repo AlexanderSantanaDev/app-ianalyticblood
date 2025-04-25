@@ -39,7 +39,7 @@ export default function RegisterPage() {
       toast({ title: "Cuenta creada ✔️", description: "Inicia sesión para continuar" });
 
       /** 👉  manda al formulario de login **/
-      router.push("/auth/login");
+      router.push("/login");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
