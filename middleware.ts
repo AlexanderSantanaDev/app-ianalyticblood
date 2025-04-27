@@ -7,7 +7,7 @@ export async function middleware(req: NextRequest) {
     const protectedPath = req.nextUrl.pathname.startsWith("/dashboard");
     if (!protectedPath) return NextResponse.next();
 
-    /* Usa SIEMPRE la misma clave que pasaste a NextAuth ---------------------- */
+    /* Usar SIEMPRE la misma clave que pasaste a NextAuth ---------------------- */
     const secret = process.env.NEXTAUTH_SECRET;      // ✅
     const token = await getToken({ req, secret });  // ⬅️  ahora no es undefined
 
