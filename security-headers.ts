@@ -33,11 +33,19 @@ const securityHeaders: Record<string, string> = {
 const isProd = process.env.NODE_ENV === "production";
 
 //  ───────────── CSP:  ajusta tus fuentes ─────────────
-const csp = `
+/* const csp = `// añadir mas adelante para segirdad
   default-src 'self';
   frame-ancestors 'none';
   img-src 'self' https: data:;
   script-src 'self' ${isProd ? "" : "'unsafe-inline' 'unsafe-eval'"} 'wasm-unsafe-eval' 'inline-speculation-rules';
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://api.deepseek.com ${process.env.NEXT_PUBLIC_API_URL};
+`.replace(/\s{2,}/g, " ").trim(); */
+const csp = `
+  default-src 'self';
+  frame-ancestors 'none';
+  img-src 'self' https: data:;
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' 'inline-speculation-rules';
   style-src 'self' 'unsafe-inline';
   connect-src 'self' https://api.deepseek.com ${process.env.NEXT_PUBLIC_API_URL};
 `.replace(/\s{2,}/g, " ").trim();
