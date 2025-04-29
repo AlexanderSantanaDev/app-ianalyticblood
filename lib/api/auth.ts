@@ -1,6 +1,7 @@
 import { signOut } from "next-auth/react";
 import { post } from "./client";
 import type { RegisterBody, LoginResponse } from "./types";
+import { redirect } from "next/navigation";
 
 /************************************************************************************************************/
 /** Registro  */
@@ -9,6 +10,10 @@ export async function register(body: RegisterBody) {
 }
 
 /** Logout */
-export function logout() {
-  signOut({ callbackUrl: "/login" });
+export async function logout() {
+  // 1. Esperamos a que NextAuth envíe la cabecera Set-Cookie
+  await signOut({ redirect: false });
+
+  // 2. Una vez vacía la cookie, navegamos al login
+  redirect("/login");
 }

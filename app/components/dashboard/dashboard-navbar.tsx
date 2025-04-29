@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, Search, LogOut } from "lucide-react";
+import { logout } from "@/lib/api/auth";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useMobile } from "hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSession } from "next-auth/react";
 
 interface DashboardNavbarProps {
   onToggleSidebar: () => void;
@@ -36,6 +38,11 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
   const isMobile = useMobile();
+  const { data: session } = useSession();
+  console.log("session", session);
+  const user = session?.user;
+  const avatar = (user as any)?.image ?? (user as any)?.picture ?? undefined;
+  const name = user?.name ?? user?.email ?? "Usuario";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,6 +58,14 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
     if (!path || path === "dashboard") return "Panel de Control";
     return path.charAt(0).toUpperCase() + path.slice(1);
   };
+
+  const getInitials = (str = "") =>
+    str
+      .split(/\s+/)
+      .map((w) => w[0] || "")
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
 
   return (
     <header
@@ -194,13 +209,14 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg?height=32&width=32" alt="Usuario" />
-                  <AvatarFallback>US</AvatarFallback>
+                  {/* si hay foto la usamos, si no… fallback con iniciales */}
+                  {avatar && <AvatarImage src={avatar} alt={name} />}
+                  <AvatarFallback>{getInitials(name)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
+              <DropdownMenuLabel>{name.replace(/\b\w/g, (c) => c.toUpperCase())}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/profile">Perfil</Link>
@@ -212,11 +228,9 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
                 <Link href="/dashboard/subscription">Suscripción</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/" className="flex items-center">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Cerrar sesión
-                </Link>
+              <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                <LogOut className="h-4 w-4 mr-2" />
+                Cerrar sesión
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

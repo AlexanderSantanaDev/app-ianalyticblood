@@ -1,17 +1,45 @@
-import NextAuth, { type NextAuthOptions, type DefaultSession, type User } from "next-auth";
+import NextAuth, {
+  type NextAuthOptions,
+  type DefaultSession,
+  type User,
+} from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-/* AuthOptions con tipado */
+/* ───────── helper ───────── */
+async function fetchGoogleAvatar(accessToken: string | undefined) {
+  if (!accessToken) return null;
+
+  try {
+    const res = await fetch(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();              // { picture: "https://..." }
+    return data.picture ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────
+   CONFIGURACIÓN PRINCIPAL
+   ──────────────────────────────────────────────────────────────── */
 export const authOptions: NextAuthOptions = {
   providers: [
-    /* Google */
+    /* ───────── Google ───────── */
     GoogleProvider({
       clientId: process.env.GOOGLE_ID!,
       clientSecret: process.env.GOOGLE_SECRET!,
+      authorization: {
+        params: {
+          scope: "openid email profile",        // pide foto
+        },
+      },
     }),
 
-    /* Email + contraseña */
+    /* ───────── Email + contraseña ───────── */
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -19,7 +47,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials) return null;                 // guard-rail TS
+        if (!credentials) return null;
 
         const body = new URLSearchParams({
           username: credentials.email,
@@ -28,13 +56,12 @@ export const authOptions: NextAuthOptions = {
 
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-          { method: "POST", body },
+          { method: "POST", body }
         );
         if (!res.ok) return null;
 
-        const data = await res.json();                 // { access_token, ... }
+        const data = await res.json(); // { access_token, ... }
 
-        /* Objeto que se inyecta en `user` de callbacks */
         return {
           id: credentials.email,
           email: credentials.email,
@@ -46,12 +73,12 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
-  /*  Literal cast para que TS no proteste */
-  session: { strategy: "jwt" as const },
+  /* Estrategia JWT */
+  session: { strategy: "jwt" },
 
+  /* ────────────────── CALLBACKS ────────────────── */
   callbacks: {
-    /* ---------- TIPOS EXPLÍCITOS EN CADA CALLBACK ---------- */
-
+    /* ▒▒▒ signIn ▒▒▒  — puentea datos a tu FastAPI si viene de Google */
     async signIn({ user }: { user: User & { provider?: string } }) {
       if (user.provider === "google") {
         await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
@@ -69,62 +96,64 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({
-      token,
-      user,
-    }: {
-      token: any;                  // JWT que NextAuth crea
-      user?: User & { accessToken?: string };
-    }) {
-      /* desde CredentialsProvider */
-      if (user?.accessToken) {
-        token.accessToken = user.accessToken;
+    /** jwt: mete foto si falta */
+    async jwt({ token, user, account }: { token: any; user?: User; account?: any }) {
+      // 1. Primera vez (user existe)
+      if (user) {
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = (user as any).image ?? (user as any).picture ?? null;
       }
 
-      /* desde GoogleProvider (puente FastAPI) */
-      if (!token.accessToken && token.email && !user) {
-        const body = new URLSearchParams({
-          username: token.email as string,
-          password: "oauth",
-        });
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-          { method: "POST", body },
-        ).then(r => r.json());
-
-        token.accessToken = res.access_token;
-        token.picture = res.picture;
+      // 2. Guarda el access_token de Google (solo sirve para userinfo)
+      if (account?.provider === "google" && account.access_token) {
+        token.googleAccessToken = account.access_token as string;
       }
+
+      // 3. Si aún no hay foto: la pedimos a Google una sola vez
+      if (!token.picture && token.googleAccessToken) {
+        token.picture = await fetchGoogleAvatar(token.googleAccessToken);
+      }
+
       return token;
     },
 
-    async session({
-      session,
-      token,
-    }: {
-      session: DefaultSession & { accessToken?: string };
-      token: any;
-    }) {
-      session.accessToken = token.accessToken;
-      if (token.picture && session.user) {
-        session.user.image = token.picture;
-      }
-      return session;
+    /* ▒▒▒ session ▒▒▒  — lo que llega al cliente por useSession() */
+    async session({ session, token }) {
+      session.user = {
+        ...session.user,
+        name: token.name,
+        email: token.email,
+        image: token.picture ?? null,
+      };
+      session.accessToken = token.accessToken as string | undefined;
+      return session as DefaultSession & { accessToken?: string };
     },
 
+    /* ▒▒▒ redirect ▒▒▒  — mantén tu lógica */
     redirect({ url, baseUrl }) {
-      // 1.  misma origin
       if (url.startsWith(baseUrl)) return url;
-
-      // 2.  ruta relativa → la anteponemos al dominio
       if (url.startsWith("/")) return `${baseUrl}${url}`;
-
-      // 3.  lo demás al dashboard
       return `${baseUrl}/dashboard`;
+    },
+  },
+
+  cookies: {
+    sessionToken: {
+      /* ❗  NextAuth usa este nombre por defecto, pero aquí 
+       *    le fijamos un path para que el borrado coincida */
+      name: "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",          // <── importante
+      },
     },
   },
 };
 
-/* Creamos el handler */
+/* ────────────────────────────────────────────────────────────────
+   HANDLER
+   ──────────────────────────────────────────────────────────────── */
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
