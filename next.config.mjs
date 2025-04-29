@@ -10,10 +10,20 @@ const nextConfig = {
     unoptimized: true,
   },
   experimental: {
-    // Comenta o elimina estas opciones
     // webpackBuildWorker: true,
     // parallelServerBuildTraces: true,
     // parallelServerCompiles: true,
+  },
+  headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), geolocation=(), microphone=()" },
+        ],
+      },
+    ];
   },
   transpilePackages: ["lucide-react"],
 };

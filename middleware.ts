@@ -1,23 +1,28 @@
-
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { withSecurityHeaders } from "./security-headers";
+import { NextFetchEvent, NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-export async function middleware(req: NextRequest) {
-    const protectedPath = req.nextUrl.pathname.startsWith("/dashboard");
-    if (!protectedPath) return NextResponse.next();
+export async function middleware(req: NextRequest, ev: NextFetchEvent) {
+  /* ① Añadimos siempre las cabeceras seguras */
+  const res = (await withSecurityHeaders(req, ev)) as NextResponse;
 
-    /* Usar SIEMPRE la misma clave que pasaste a NextAuth ---------------------- */
-    const secret = process.env.NEXTAUTH_SECRET;      // ✅
-    const token = await getToken({ req, secret });  // ⬅️  ahora no es undefined
+  /* ② Protegemos las rutas privadas */
+  if (req.nextUrl.pathname.startsWith("/dashboard")) {
+    const secret = process.env.NEXTAUTH_SECRET!;
+    const token = await getToken({ req, secret });
 
     if (!token) {
-        const login = new URL("/login", req.url);
-        login.searchParams.set("callbackUrl", req.nextUrl.pathname);
-        return NextResponse.redirect(login);
+      const login = new URL("/login", req.url);
+      login.searchParams.set("callbackUrl", req.nextUrl.pathname);
+      return NextResponse.redirect(login, { headers: res.headers });
     }
-    return NextResponse.next();
+  }
+
+  return res; // ← pasa al route handler
 }
 
-/* Limita el middleware solo a lo privado */
-export const config = { matcher: ["/dashboard/:path*"] };
+/* Ejecuta el middleware en toda la app
+   (si solo quieres algunas carpetas, ajusta aquí) */
+export const config = {
+  matcher: ["/((?!api|_next|static|favicon.ico).*)"],
+};
