@@ -17,7 +17,7 @@ const securityHeaders: Record<string, string> = {
   // CORS pre-flight más seguro (solo ejemplos, tu API ya tiene CORS propio)
   "Access-Control-Allow-Origin":
     process.env.NODE_ENV === "production"
-      ? "https://app-ianalyticblood.vercel.app/"
+      ? "https://app-ianalyticblood.vercel.app"
       : "http://localhost:3000",
 
   // Evita que el navegador infera MIME
