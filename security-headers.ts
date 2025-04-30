@@ -47,7 +47,7 @@ const csp = `
   img-src 'self' https: data:;
   script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' 'inline-speculation-rules';
   style-src 'self' 'unsafe-inline';
-  connect-src 'self' https://api.deepseek.com ${process.env.NEXT_PUBLIC_API_URL};
+  connect-src 'self' https://api-ianalyticblood.onrender.com;
 `.replace(/\s{2,}/g, " ").trim();
 
 export const withSecurityHeaders: NextMiddleware = (req: NextRequest, _ev?: NextFetchEvent) => {
