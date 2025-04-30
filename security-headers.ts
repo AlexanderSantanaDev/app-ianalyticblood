@@ -5,29 +5,29 @@ import { NextResponse } from "next/server";
 //  Cabeceras “baseline” que hoy aconseja OWASP / Mozilla
 // ─────────────────────────────────────────────────────────────
 const securityHeaders: Record<string, string> = {
-    // Previene click-jacking
-    "X-Frame-Options": "DENY",
+  // Previene click-jacking
+  "X-Frame-Options": "DENY",
 
-    // Previene XXS reflexivo - viejo pero siguen pidiéndolo algunos scanners
-    "X-XSS-Protection": "1; mode=block",
+  // Previene XXS reflexivo - viejo pero siguen pidiéndolo algunos scanners
+  "X-XSS-Protection": "1; mode=block",
 
-    // Oculta versión del servidor
-    "X-Powered-By": "Next.js",          // (cambio “Express” típico)
+  // Oculta versión del servidor
+  "X-Powered-By": "Next.js",          // (cambio “Express” típico)
 
-    // CORS pre-flight más seguro (solo ejemplos, tu API ya tiene CORS propio)
-    "Access-Control-Allow-Origin":
-        process.env.NODE_ENV === "production"
-            ? "https://ianalyticblood.com"
-            : "http://localhost:3000",
+  // CORS pre-flight más seguro (solo ejemplos, tu API ya tiene CORS propio)
+  "Access-Control-Allow-Origin":
+    process.env.NODE_ENV === "production"
+      ? "https://app-ianalyticblood.vercel.app/"
+      : "http://localhost:3000",
 
-    // Evita que el navegador infera MIME
-    "X-Content-Type-Options": "nosniff",
+  // Evita que el navegador infera MIME
+  "X-Content-Type-Options": "nosniff",
 
-    // HTTPS obligatorio + HSTS 6 meses + preload
-    "Strict-Transport-Security": "max-age=15552000; includeSubDomains; preload",
+  // HTTPS obligatorio + HSTS 6 meses + preload
+  "Strict-Transport-Security": "max-age=15552000; includeSubDomains; preload",
 
-    // DNS prefetch 👇🏼  (opcional)
-    "X-DNS-Prefetch-Control": "on",
+  // DNS prefetch 👇🏼  (opcional)
+  "X-DNS-Prefetch-Control": "on",
 };
 
 const isProd = process.env.NODE_ENV === "production";
@@ -51,13 +51,13 @@ const csp = `
 `.replace(/\s{2,}/g, " ").trim();
 
 export const withSecurityHeaders: NextMiddleware = (req: NextRequest, _ev?: NextFetchEvent) => {
-    const res = NextResponse.next();
+  const res = NextResponse.next();
 
-    // 1) Cabeceras fijas
-    Object.entries(securityHeaders).forEach(([k, v]) => res.headers.set(k, v));
+  // 1) Cabeceras fijas
+  Object.entries(securityHeaders).forEach(([k, v]) => res.headers.set(k, v));
 
-    // 2) CSP
-    res.headers.set("Content-Security-Policy", csp);
+  // 2) CSP
+  res.headers.set("Content-Security-Policy", csp);
 
-    return res;
+  return res;
 };
