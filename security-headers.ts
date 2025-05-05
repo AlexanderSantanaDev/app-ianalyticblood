@@ -31,6 +31,7 @@ const securityHeaders: Record<string, string> = {
 };
 
 const isProd = process.env.NODE_ENV === "production";
+const apiOrigin = new URL(process.env.NEXT_PUBLIC_API_URL!).origin;
 
 //  ───────────── CSP:  ajusta tus fuentes ─────────────
 /* const csp = `// añadir mas adelante para segirdad
@@ -47,7 +48,7 @@ const csp = `
   img-src 'self' https: data:;
   script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' 'inline-speculation-rules';
   style-src 'self' 'unsafe-inline';
-  connect-src 'self' https://api-ianalyticblood.onrender.com ${process.env.NEXT_PUBLIC_API_URL};
+  connect-src 'self' https://api-ianalyticblood.onrender.com ${apiOrigin};
 `.replace(/\s{2,}/g, " ").trim();
 
 export const withSecurityHeaders: NextMiddleware = (req: NextRequest, _ev?: NextFetchEvent) => {
