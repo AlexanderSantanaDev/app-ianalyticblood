@@ -35,6 +35,7 @@ export const authOptions: NextAuthOptions = {
       authorization: {
         params: {
           scope: "openid email profile",        // pide foto
+          redirect_uri: process.env.NEXTAUTH_URL + "/api/auth/callback/google",
         },
       },
     }),
