@@ -75,6 +75,9 @@ export const authOptions: NextAuthOptions = {
 
   /* Estrategia JWT */
   session: { strategy: "jwt" },
+  /** 👇🏼 ESTO fuerza que, en producción, se escriba
+   *  __Secure-next-auth.session-token */
+  useSecureCookies: process.env.NODE_ENV === "production",
 
   /* ────────────────── CALLBACKS ────────────────── */
   callbacks: {
