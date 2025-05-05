@@ -7,11 +7,13 @@ import { ModeToggle } from "./mode-toggle";
 import { Menu, X } from "lucide-react";
 import { useMobile } from "hooks/use-mobile";
 import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useMobile();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -123,12 +125,29 @@ export default function Navbar() {
             </nav>
 
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="/login">
+              {status === "authenticated" ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button variant="outline">Dashboard</Button>
+                  </Link>
+                  {/* <Button onClick={() => signOut({ callbackUrl: "/" })}>Cerrar Sesión</Button> */}
+                </>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="outline">Iniciar Sesión</Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button>Registrarse</Button>
+                  </Link>
+                </>
+              )}
+              {/* <Link href="/login">
                 <Button variant="outline">Iniciar Sesión</Button>
               </Link>
               <Link href="/register">
                 <Button>Registrarse</Button>
-              </Link>
+              </Link> */}
               <ModeToggle />
             </div>
           </>

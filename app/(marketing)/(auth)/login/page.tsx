@@ -66,6 +66,11 @@ export default function LoginPage() {
     await signIn("google", { callbackUrl: "/dashboard" });
   };
 
+  // Mostrar carga mientras se verifica la sesión
+  if (status === "loading") {
+    return <div>Cargando...</div>;
+  }
+
   return (
     <div className="pt-32 pb-20 min-h-screen flex items-center justify-center">
       <div className="container mx-auto px-4">
