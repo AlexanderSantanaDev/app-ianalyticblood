@@ -42,7 +42,8 @@ export default function LoginPage() {
       const result = await signIn("credentials", {
         email,
         password,
-        redirect: false,
+        redirect: true,
+        callbackUrl: "/dashboard",
       });
 
       if (rememberMe) {
@@ -54,7 +55,7 @@ export default function LoginPage() {
       if (result?.error) {
         toast({ title: "Error", description: result.error, variant: "destructive" });
       } else {
-        router.push("/dashboard");
+        //router.push("/dashboard");
         toast({ title: "¡Bienvenido!" });
       }
     } catch (err: any) {
