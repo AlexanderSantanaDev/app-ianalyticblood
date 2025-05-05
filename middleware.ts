@@ -8,7 +8,7 @@ export async function middleware(req: NextRequest, ev: NextFetchEvent) {
 
   /* ② Protegemos las rutas privadas */
   if (req.nextUrl.pathname.startsWith("/dashboard")) {
-    const secret = process.env.NEXTAUTH_SECRET!;
+    //const secret = process.env.NEXTAUTH_SECRET!;
     const token = await getToken({ req });
 
     if (!token) {
