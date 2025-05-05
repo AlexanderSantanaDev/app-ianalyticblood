@@ -141,18 +141,18 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  cookies: {
-    sessionToken: {
-      /* ❗  NextAuth usa este nombre por defecto, pero aquí 
-       *    le fijamos un path para que el borrado coincida */
-      name: "next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",          // <── importante
-      },
-    },
-  },
+  // cookies: {
+  //   sessionToken: {
+  //     /* ❗  NextAuth usa este nombre por defecto, pero aquí 
+  //      *    le fijamos un path para que el borrado coincida */
+  //     name: "next-auth.session-token",
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: "lax",
+  //       path: "/",          // <── importante
+  //     },
+  //   },
+  // },
 };
 
 /* ────────────────────────────────────────────────────────────────
