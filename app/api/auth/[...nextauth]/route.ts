@@ -4,6 +4,13 @@ import NextAuth, {
   type User,
 } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+
+/* Extend User type to include accessToken */
+declare module "next-auth" {
+  interface User {
+    accessToken?: string;
+  }
+}
 import CredentialsProvider from "next-auth/providers/credentials";
 
 /* ───────── helper ───────── */
@@ -57,7 +64,13 @@ export const authOptions: NextAuthOptions = {
 
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-          { method: "POST", body }
+          {
+            method: "POST", /* body */
+            body: new URLSearchParams({
+              username: credentials.email,
+              password: credentials.password,
+            }),
+          }
         );
         if (!res.ok) return null;
 
@@ -102,11 +115,12 @@ export const authOptions: NextAuthOptions = {
 
     /** jwt: mete foto si falta */
     async jwt({ token, user, account }: { token: any; user?: User; account?: any }) {
-      // 1. Primera vez (user existe)
+      // 1. Cuando el usuario se autentica por primera vez (user existe)
       if (user) {
         token.name = user.name;
         token.email = user.email;
         token.picture = (user as any).image ?? (user as any).picture ?? null;
+        token.accessToken = user.accessToken;
       }
 
       // 2. Guarda el access_token de Google (solo sirve para userinfo)

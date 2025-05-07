@@ -39,7 +39,6 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
   const pathname = usePathname();
   const isMobile = useMobile();
   const { data: session } = useSession();
-  console.log("session", session);
   const user = session?.user;
   const avatar = (user as any)?.image ?? (user as any)?.picture ?? undefined;
   const name = user?.name ?? user?.email ?? "Usuario";
