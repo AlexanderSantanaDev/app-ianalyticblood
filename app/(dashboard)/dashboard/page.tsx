@@ -159,7 +159,11 @@ const FileUpload = ({ onUpload }: FileUploadProps) => {
       />
 
       <label htmlFor="file-upload">
-        <Button variant={file ? "outline" : "default"} className={file ? "" : "gradient-bg"}>
+        <Button
+          variant={file ? "outline" : "default"}
+          onClick={() => document.getElementById("file-upload")?.click()}
+          className={file ? "" : "gradient-bg"}
+        >
           {file ? "Cambiar archivo" : "Seleccionar archivo"}
         </Button>
       </label>
