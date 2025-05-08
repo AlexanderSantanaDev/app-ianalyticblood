@@ -4,50 +4,65 @@ import NextAuth, {
   type User,
 } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { publicApiFetch } from "@/lib/api/client";
 
-/* Extend User type to include accessToken */
+/* Extend User type to include accessToken, refreshToken, and provider */
 declare module "next-auth" {
   interface User {
     accessToken?: string;
+    refreshToken?: string;
+    provider?: string;
+  }
+  interface Session {
+    accessToken?: string;
+    refreshToken?: string;
   }
 }
-import CredentialsProvider from "next-auth/providers/credentials";
 
-/* ───────── helper ───────── */
+/* Helper function to fetch Google avatar */
 async function fetchGoogleAvatar(accessToken: string | undefined) {
-  if (!accessToken) return null;
+  if (!accessToken) {
+    console.log("No accessToken provided for fetchGoogleAvatar");
+    return null;
+  }
 
   try {
     const res = await fetch(
       "https://www.googleapis.com/oauth2/v3/userinfo",
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
-    if (!res.ok) return null;
-    const data = await res.json();              // { picture: "https://..." }
+    if (!res.ok) {
+      console.log("Failed to fetch userinfo:", res.status, res.statusText);
+      return null;
+    }
+    const data = await res.json();
+    console.log("Fetched userinfo:", data);
     return data.picture ?? null;
-  } catch {
+  } catch (error) {
+    console.error("Error fetching Google avatar:", error);
     return null;
   }
 }
 
-/* ────────────────────────────────────────────────────────────────
-   CONFIGURACIÓN PRINCIPAL
-   ──────────────────────────────────────────────────────────────── */
+/* Main configuration */
 export const authOptions: NextAuthOptions = {
   providers: [
-    /* ───────── Google ───────── */
+    /* Google Provider */
     GoogleProvider({
       clientId: process.env.GOOGLE_ID!,
       clientSecret: process.env.GOOGLE_SECRET!,
       authorization: {
         params: {
-          scope: "openid email profile",        // pide foto
-          redirect_uri: process.env.NEXTAUTH_URL + "/api/auth/callback/google",
+          scope: "openid email profile",
+          redirect_uri: process.env.NODE_ENV === "production"
+            ? "https://app-ianalyticblood.vercel.app/api/auth/callback/google"
+            : "http://localhost:3000/api/auth/callback/google",
         },
       },
     }),
 
-    /* ───────── Email + contraseña ───────── */
+    /* Credentials Provider */
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -57,15 +72,10 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials) return null;
 
-        const body = new URLSearchParams({
-          username: credentials.email,
-          password: credentials.password,
-        });
-
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
           {
-            method: "POST", /* body */
+            method: "POST",
             body: new URLSearchParams({
               username: credentials.email,
               password: credentials.password,
@@ -74,104 +84,109 @@ export const authOptions: NextAuthOptions = {
         );
         if (!res.ok) return null;
 
-        const data = await res.json(); // { access_token, ... }
+        const data = await res.json();
 
         return {
           id: credentials.email,
           email: credentials.email,
           name: credentials.email,
           accessToken: data.access_token,
+          refreshToken: data.refresh_token,
           provider: "credentials",
-        } as User & { accessToken: string; provider: string };
+        } as User & { accessToken: string; refreshToken: string; provider: string };
       },
     }),
   ],
 
-  /* Estrategia JWT */
   session: { strategy: "jwt" },
-  /** 👇🏼 ESTO fuerza que, en producción, se escriba
-   *  __Secure-next-auth.session-token */
   useSecureCookies: process.env.NODE_ENV === "production",
 
-  /* ────────────────── CALLBACKS ────────────────── */
+  /* Callbacks */
   callbacks: {
-    /* ▒▒▒ signIn ▒▒▒  — puentea datos a tu FastAPI si viene de Google */
-    async signIn({ user }: { user: User & { provider?: string } }) {
-      if (user.provider === "google") {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: user.email,
-            name: user.name,
-            password: "oauth",
-            picture: user.image,
-            provider: "google",
-          }),
-        }).catch(() => { });
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        try {
+          const res = await publicApiFetch<{ access_token: string; refresh_token: string }>(
+            "/auth/google",
+            {
+              method: "POST",
+              body: JSON.stringify({
+                email: user.email,
+                name: user.name,
+                picture: user.image, // ➡️ Enviamos la imagen proporcionada por Google
+                provider: "google",
+              }),
+            }
+          );
+
+          if (res) {
+            user.accessToken = res.access_token;
+            user.refreshToken = res.refresh_token;
+            user.provider = "google";
+          } else {
+            return false;
+          }
+        } catch (error) {
+          console.error("Error al registrar/iniciar sesión con Google en el backend:", error);
+          return false;
+        }
       }
       return true;
     },
 
-    /** jwt: mete foto si falta */
-    async jwt({ token, user, account }: { token: any; user?: User; account?: any }) {
-      // 1. Cuando el usuario se autentica por primera vez (user existe)
+    async jwt({ token, user, account }) {
       if (user) {
         token.name = user.name;
         token.email = user.email;
-        token.picture = (user as any).image ?? (user as any).picture ?? null;
+        token.picture = user.image ?? null;
         token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
+        token.provider = user.provider;
       }
 
-      // 2. Guarda el access_token de Google (solo sirve para userinfo)
       if (account?.provider === "google" && account.access_token) {
+        console.log("Google account access_token:", account.access_token); // ➡️ Log para depurar
         token.googleAccessToken = account.access_token as string;
       }
 
-      // 3. Si aún no hay foto: la pedimos a Google una sola vez
+      // ➡️ Intentamos obtener la imagen si no está presente
       if (!token.picture && token.googleAccessToken) {
-        token.picture = await fetchGoogleAvatar(token.googleAccessToken);
+        console.log("Attempting to fetch Google avatar with access_token:", token.googleAccessToken);
+        const fetchedPicture = await fetchGoogleAvatar(token.googleAccessToken as string);
+        if (fetchedPicture) {
+          token.picture = fetchedPicture;
+        }
       }
+
+      // ➡️ Log para verificar el estado de token.picture
+      console.log("Token picture after fetch attempt:", token.picture);
 
       return token;
     },
 
-    /* ▒▒▒ session ▒▒▒  — lo que llega al cliente por useSession() */
     async session({ session, token }) {
       session.user = {
         ...session.user,
         name: token.name,
         email: token.email,
-        image: token.picture ?? null,
+        image: token.picture ?? null, // ➡️ Aseguramos que session.user.image sea token.picture
       };
       session.accessToken = token.accessToken as string | undefined;
-      return session as DefaultSession & { accessToken?: string };
+      session.refreshToken = token.refreshToken as string | undefined;
+
+      // ➡️ Log para depurar session.user.image
+      console.log("Session user image:", session.user.image);
+
+      return session as DefaultSession & { accessToken?: string; refreshToken?: string };
     },
 
-    /* ▒▒▒ redirect ▒▒▒  — mantén tu lógica */
     redirect({ url, baseUrl }) {
       if (url.startsWith(baseUrl)) return url;
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       return `${baseUrl}/dashboard`;
     },
   },
-
-  // cookies: {
-  //   sessionToken: {
-  //     /* ❗  NextAuth usa este nombre por defecto, pero aquí 
-  //      *    le fijamos un path para que el borrado coincida */
-  //     name: "next-auth.session-token",
-  //     options: {
-  //       httpOnly: true,
-  //       sameSite: "lax",
-  //       path: "/",          // <── importante
-  //     },
-  //   },
-  // },
 };
 
-/* ────────────────────────────────────────────────────────────────
-   HANDLER
-   ──────────────────────────────────────────────────────────────── */
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

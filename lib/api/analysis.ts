@@ -1,45 +1,62 @@
-import { get, post } from "./client";
+// lib/api/analysis.ts
 import type { AnalysisDoc, ApiSuccess } from "./types";
-
 
 export interface DashboardStats {
   analyses_total: number;
   analyses_this_month: number;
-  general_state: string;          // "—" cuando aún no hay datos
-  next_reminder: string | null;   // ISO 8601 ó null
+  general_state: string;
+  next_reminder: string | null;
 }
 
 export interface AnalysisSummary {
   id: string;
-  date: string;          // ISO 8601
+  date: string;
   summary: string;
   alert_level: "normal" | "attention" | "alert";
 }
 
-/************************************************************************************************************/
-/** Subir imagen/PDF  */
-export async function uploadFile(file: File) {
+/** Subir imagen/PDF */
+export async function uploadFile(
+  file: File,
+  apiFetch: <T>(path: string, options?: RequestInit) => Promise<T>
+) {
   const form = new FormData();
   form.append("file", file);
-  return post<{ status: "success"; analysis_id: string }>("/upload", form, true);
+  return apiFetch<{ status: "success"; analysis_id: string }>("/upload", {
+    method: "POST",
+    body: form,
+  });
 }
 
-/** Listar análisis  */
-export async function getAnalyses() {
-  return get<ApiSuccess<AnalysisDoc[]>>("/analysis");
+/** Listar análisis */
+export async function getAnalyses(
+  apiFetch: <T>(path: string, options?: RequestInit) => Promise<T>,
+  skip = 0,
+  limit = 10
+) {
+  return apiFetch<ApiSuccess<AnalysisDoc[]>>(`/analysis?skip=${skip}&limit=${limit}`);
 }
 
-/** Listar análisis por id  */
-export async function getAnalysis(id: string) {
-  return get<ApiSuccess<AnalysisDoc>>(`/analysis/${id}`);
+/** Listar análisis por id */
+export async function getAnalysis(
+  apiFetch: <T>(path: string, options?: RequestInit) => Promise<T>,
+  id: string
+) {
+  return apiFetch<ApiSuccess<AnalysisDoc>>(`/analysis/${id}`);
 }
 
-/** KPI del header (⇠ /dashboard) */
-export async function getDashboardStats() {
-  return get<DashboardStats>("/dashboard");
+/** KPI del header */
+export async function getDashboardStats(
+  apiFetch: <T>(path: string, options?: RequestInit) => Promise<T>
+) {
+  return apiFetch<DashboardStats>("/dashboard");
 }
 
-/** Últimos análisis resumidos (⇠ /analysis/summary) */
-export async function getAnalysesSummary(skip = 0, limit = 10) {
-  return get<AnalysisSummary[]>(`/analysis/summary?skip=${skip}&limit=${limit}`);
+/** Últimos análisis resumidos */
+export async function getAnalysesSummary(
+  apiFetch: <T>(path: string, options?: RequestInit) => Promise<T>,
+  skip = 0,
+  limit = 10
+) {
+  return apiFetch<AnalysisSummary[]>(`/analysis/summary?skip=${skip}&limit=${limit}`);
 }

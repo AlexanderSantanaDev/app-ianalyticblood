@@ -34,14 +34,12 @@ interface DashboardNavbarProps {
 }
 
 export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProps) {
+  // Todos los Hooks se llaman al inicio, antes de cualquier condicional
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
-  const isMobile = useMobile();
-  const { data: session } = useSession();
-  const user = session?.user;
-  const avatar = (user as any)?.image ?? (user as any)?.picture ?? undefined;
-  const name = user?.name ?? user?.email ?? "Usuario";
+  const { data: session, status } = useSession();
+  const isMobile = useMobile(); // --> Esta es la modificación: mover useMobile aquí para que se llame siempre
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,6 +63,19 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
       .join("")
       .toUpperCase()
       .slice(0, 2);
+
+  // Renderizado condicional después de todos los Hooks
+  if (status === "loading") {
+    return (
+      <div className="fixed top-0 left-0 right-0 h-16 bg-background border-b flex items-center justify-center">
+        Cargando...
+      </div>
+    );
+  }
+
+  const user = session?.user;
+  const avatar = user?.image ?? undefined;
+  const name = user?.name ?? user?.email ?? "Usuario";
 
   return (
     <header
@@ -208,7 +219,6 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
-                  {/* si hay foto la usamos, si no… fallback con iniciales */}
                   {avatar && <AvatarImage src={avatar} alt={name} />}
                   <AvatarFallback>{getInitials(name)}</AvatarFallback>
                 </Avatar>
