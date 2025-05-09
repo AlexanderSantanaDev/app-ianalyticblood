@@ -17,205 +17,24 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
-  AnalysisSummary,
   DashboardStats,
   getAnalysesSummary,
   getDashboardStats,
   uploadFile,
 } from "@/lib/api/analysis";
+
 import { useApiFetch } from "@/lib/api/client";
 import { useSession } from "next-auth/react";
+import { Analysis, AnalysisSummary } from "@/types/dashboard";
+import { FileUpload } from "@/components/dashboard/file-upload";
+/***********************************************************************************************************************/
 
-interface FileUploadProps {
-  onUpload: (file: File) => void;
+interface RecentProps {
+  analysis: AnalysisSummary;
 }
 
-interface Analysis {
-  id: number;
-  title: string;
-  date: string;
-  status: "normal" | "warning" | "alert";
-  statusText: string;
-  description: string;
-}
-
-interface RecentAnalysisProps {
-  analysis: Analysis;
-}
-
-const FileUpload = ({ onUpload }: FileUploadProps) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [isSending, setIsSending] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const apiFetch = useApiFetch();
-
-  const handleChange = (f: File) => {
-    setFile(f);
-    if (f.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => setPreviewUrl(reader.result as string);
-      reader.readAsDataURL(f);
-    }
-  };
-
-  const handleProcess = async () => {
-    if (!file) return;
-    setIsSending(true);
-    try {
-      await uploadFile(file, apiFetch);
-      onUpload(file);
-    } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setIsSending(false);
-      setFile(null);
-      setPreviewUrl(null);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => setIsDragging(false);
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const droppedFile = files[0];
-      const isPdf = droppedFile.type === "application/pdf";
-      const isImage = droppedFile.type.startsWith("image/");
-      if (isPdf || isImage) {
-        handleChange(droppedFile);
-      } else {
-        console.warn("Formato de archivo no válido. Sube un PDF o una imagen.");
-      }
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const { files } = e.target;
-    if (files && files.length > 0) {
-      const selectedFile = files[0];
-      const isPdf = selectedFile.type === "application/pdf";
-      const isImage = selectedFile.type.startsWith("image/");
-      if (isPdf || isImage) {
-        handleChange(selectedFile);
-      } else {
-        console.warn("Formato de archivo no válido. Sube un PDF o una imagen.");
-      }
-    }
-  };
-
-  return (
-    <div
-      className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-        isDragging ? "border-primary bg-primary/5" : "border-border"
-      }`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      <div className="mx-auto w-16 h-16 mb-4 text-muted-foreground">
-        <Upload className="w-full h-full" />
-      </div>
-      <h3 className="text-lg font-medium mb-2">
-        {file ? file.name : "Arrastra y suelta tu PDF o imagen aquí"}
-      </h3>
-      <p className="text-muted-foreground mb-4">
-        {file
-          ? `${(file.size / 1024 / 1024).toFixed(2)} MB`
-          : "o haz clic para seleccionar un archivo"}
-      </p>
-      <input
-        type="file"
-        id="file-upload"
-        className="hidden"
-        accept=".pdf,image/*"
-        onChange={handleFileChange}
-      />
-      <label htmlFor="file-upload">
-        <Button
-          variant={file ? "outline" : "default"}
-          onClick={(e) => {
-            e.preventDefault();
-            document.getElementById("file-upload")?.click();
-          }}
-          className={file ? "" : "gradient-bg"}
-        >
-          {file ? "Cambiar archivo" : "Seleccionar archivo"}
-        </Button>
-      </label>
-      {previewUrl && (
-        <div className="mt-4">
-          <img
-            src={previewUrl}
-            alt="Vista previa"
-            className="w-32 h-32 object-cover rounded-lg mx-auto"
-          />
-        </div>
-      )}
-      {file && (
-        <Button className="ml-2 gradient-bg" onClick={handleProcess} disabled={isSending}>
-          {isSending ? "Subiendo…" : "Procesar archivo"}
-        </Button>
-      )}
-    </div>
-  );
-};
-
-const RecentAnalysis = ({ analysis }: RecentAnalysisProps) => {
-  return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">{analysis.title}</CardTitle>
-            <CardDescription>{analysis.date}</CardDescription>
-          </div>
-          <div
-            className={`px-2 py-1 rounded-full text-xs font-medium ${
-              analysis.status === "normal"
-                ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100"
-                : analysis.status === "warning"
-                ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100"
-                : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100"
-            }`}
-          >
-            {analysis.statusText}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-sm text-muted-foreground mb-4">{analysis.description}</div>
-        <div className="flex justify-between">
-          <Button variant="outline" size="sm">
-            <FileText className="h-4 w-4 mr-2" />
-            Ver detalles
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Descargar
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
+/***********************************************************************************************************************/
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recent, setRecent] = useState<AnalysisSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"upload" | "history" | "insights">("upload");
-  const apiFetch = useApiFetch();
-  const { status } = useSession();
-
   const recentAnalyses: Analysis[] = [
     {
       id: 1,
@@ -242,6 +61,77 @@ export default function DashboardPage() {
       description: "Niveles de hierro bajos.",
     },
   ];
+  /***********************************************************************************************************************/
+  // Estaods
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recent, setRecent] = useState<AnalysisSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"upload" | "history" | "insights">("upload");
+  /***********************************************************************************************************************/
+  // Hooks
+  const apiFetch = useApiFetch();
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchData();
+    }
+  }, [status]);
+
+  /***********************************************************************************************************************/
+  // Métodos
+  function RecentCard({ analysis }: RecentProps) {
+    const badge =
+      analysis.alert_level === "normal"
+        ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100"
+        : analysis.alert_level === "attention"
+        ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100"
+        : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100";
+
+    return (
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-lg">
+                Análisis {new Date(analysis.date).toLocaleDateString("es-ES")}
+              </CardTitle>
+              <CardDescription>{analysis.summary}</CardDescription>
+            </div>
+            <div className={`px-2 py-1 rounded-full text-xs font-medium ${badge}`}>
+              {analysis.alert_level === "normal"
+                ? "Normal"
+                : analysis.alert_level === "attention"
+                ? "Atención"
+                : "Alerta"}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" size="sm">
+            <FileText className="h-4 w-4 mr-2" />
+            Ver detalles
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Descargar
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  function EmptyPlaceholder() {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed rounded-lg">
+        <Inbox className="w-10 h-10 mb-4 text-muted-foreground" />
+        <p className="font-medium">Todavía no hay análisis recientes</p>
+        <p className="text-muted-foreground text-sm mt-2">
+          Cuando subas tu primer archivo, aparecerá aquí.
+        </p>
+      </div>
+    );
+  }
 
   const fetchData = async () => {
     if (status !== "authenticated") return;
@@ -259,12 +149,6 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchData();
-    }
-  }, [status]);
 
   const generalStateBadge = useMemo(() => {
     if (!stats) return null;
@@ -289,6 +173,8 @@ export default function DashboardPage() {
     fetchData();
   };
 
+  /***********************************************************************************************************************/
+  //JSX
   return (
     <div className="pt-12 pb-2">
       <div className="container mx-auto px-4">
@@ -508,59 +394,6 @@ export default function DashboardPage() {
           </Tabs>
         </motion.div>
       </div>
-    </div>
-  );
-}
-
-interface RecentProps {
-  analysis: AnalysisSummary;
-}
-
-function RecentCard({ analysis }: RecentProps) {
-  const badge =
-    analysis.alert_level === "normal"
-      ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100"
-      : analysis.alert_level === "attention"
-      ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100"
-      : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100";
-
-  return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">
-              Análisis {new Date(analysis.date).toLocaleDateString("es-ES")}
-            </CardTitle>
-            <CardDescription>{analysis.summary}</CardDescription>
-          </div>
-          <div className={`px-2 py-1 rounded-full text-xs font-medium ${badge}`}>
-            {analysis.alert_level === "normal"
-              ? "Normal"
-              : analysis.alert_level === "attention"
-              ? "Atención"
-              : "Alerta"}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Button variant="outline" size="sm">
-          <FileText className="h-4 w-4 mr-2" />
-          Ver detalles
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-function EmptyPlaceholder() {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed rounded-lg">
-      <Inbox className="w-10 h-10 mb-4 text-muted-foreground" />
-      <p className="font-medium">Todavía no hay análisis recientes</p>
-      <p className="text-muted-foreground text-sm mt-2">
-        Cuando subas tu primer archivo, aparecerá aquí.
-      </p>
     </div>
   );
 }
