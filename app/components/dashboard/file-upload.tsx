@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useApiFetch } from "@/lib/api/client";
 import { uploadFile } from "@/lib/api/analysis";
+import { useLoading } from "hooks/loading-context";
 
 export const FileUpload = ({ onUpload }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [isSending, setIsSending] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const apiFetch = useApiFetch();
+  const { setIsLoading } = useLoading(); // 👈 Usamos el contexto para controlar isLoading
 
   const handleChange = (f: File) => {
     setFile(f);
@@ -25,14 +26,14 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
 
   const handleProcess = async () => {
     if (!file) return;
-    setIsSending(true);
+    setIsLoading(true); // 👈 Usamos setIsLoading en lugar de setIsSending
     try {
       await uploadFile(file, apiFetch);
       onUpload(file);
     } catch (err: any) {
       alert(err.message);
     } finally {
-      setIsSending(false);
+      setIsLoading(false); // 👈 Usamos setIsLoading en lugar de setIsSending
       setFile(null);
       setPreviewUrl(null);
     }
@@ -80,11 +81,12 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
     <div
       className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
         isDragging ? "border-primary bg-primary/5" : "border-border"
-      }`}
+      }`} // 👈 Eliminamos el estilo condicional para el loader
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      {/* 👈 Eliminamos la condición para mostrar el Loader aquí */}
       <div className="mx-auto w-16 h-16 mb-4 text-muted-foreground">
         <Upload className="w-full h-full" />
       </div>
@@ -125,8 +127,9 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
         </div>
       )}
       {file && (
-        <Button className="ml-2 gradient-bg" onClick={handleProcess} disabled={isSending}>
-          {isSending ? "Subiendo…" : "Procesar archivo"}
+        <Button className="ml-2 gradient-bg" onClick={handleProcess}>
+          Procesar archivo{" "}
+          {/* 👈 Eliminamos el texto "Subiendo…" porque el overlay ya indica que está cargando */}
         </Button>
       )}
     </div>
