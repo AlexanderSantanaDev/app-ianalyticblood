@@ -33,14 +33,14 @@ const DashboardContent = ({
         </div>
         <Toaster />
       </div>
-      {isLoading && (
+      {/* {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="flex flex-col gap-12 items-center">
             <Loader />
             <p className="mt-4 text-white text-lg font-medium">Analizando...</p>
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 };
