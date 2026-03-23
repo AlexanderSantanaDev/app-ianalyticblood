@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Upload,
-  FileText,
   AlertCircle,
   CheckCircle,
   Clock,
@@ -14,135 +13,142 @@ import {
   Calendar,
   Download,
   Inbox,
+  Eye,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   DashboardStats,
   getAnalysesSummary,
   getDashboardStats,
-  uploadFile,
+  getAnalysis,
 } from "@/lib/api/analysis";
-
 import { useApiFetch } from "@/lib/api/client";
 import { useSession } from "next-auth/react";
-import { Analysis, AnalysisSummary } from "@/types/dashboard";
+import { AnalysisSummary } from "@/types/dashboard";
 import { FileUpload } from "@/components/dashboard/file-upload";
+import { AnalysisDetailDialog } from "@/components/dashboard/analysis-detail-dialog";
+import { toast } from "sonner";
+import { downloadAnalysisAsHTML } from "@/lib/api/download-analysis";
 /***********************************************************************************************************************/
+/** Helper para badge de nivel de alerta. */
+function getAlertBadgeClasses(level: string) {
+  switch (level) {
+    case "normal":
+      return "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20";
+    case "attention":
+      return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20";
+    default:
+      return "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20";
+  }
+}
 
-interface RecentProps {
-  analysis: AnalysisSummary;
+/** Helper para label de nivel de alerta. */
+function getAlertLabel(level: string) {
+  switch (level) {
+    case "normal":
+      return "Normal";
+    case "attention":
+      return "Atención";
+    default:
+      return "Alerta";
+  }
+}
+
+/** Helper para icono de nivel de alerta. */
+function getAlertIcon(level: string) {
+  switch (level) {
+    case "normal":
+      return CheckCircle;
+    case "attention":
+      return Clock;
+    default:
+      return AlertCircle;
+  }
 }
 
 /***********************************************************************************************************************/
+/** Skeleton para el estado de carga del dashboard. */
+function DashboardSkeleton() {
+  return (
+    <div className="pt-12 pb-2">
+      <div className="container mx-auto px-4">
+        {/* Header skeleton */}
+        <div className="mb-8">
+          <Skeleton className="h-9 w-64 mb-2" />
+          <Skeleton className="h-5 w-96" />
+        </div>
+        {/* Stats cards skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-5 w-40" />
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        {/* Tabs skeleton */}
+        <Skeleton className="h-10 w-full mb-8 rounded-lg" />
+        {/* Content skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-72 mt-1" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-48 w-full rounded-xl" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+/***********************************************************************************************************************/
 export default function DashboardPage() {
-  const recentAnalyses: Analysis[] = [
-    {
-      id: 1,
-      title: "Análisis de sangre completo",
-      date: "10 de abril, 2025",
-      status: "normal",
-      statusText: "Normal",
-      description: "Todos los valores están dentro de los rangos normales.",
-    },
-    {
-      id: 2,
-      title: "Perfil lipídico",
-      date: "28 de marzo, 2025",
-      status: "warning",
-      statusText: "Atención",
-      description: "Niveles de colesterol ligeramente elevados.",
-    },
-    {
-      id: 3,
-      title: "Hemograma",
-      date: "15 de febrero, 2025",
-      status: "alert",
-      statusText: "Alerta",
-      description: "Niveles de hierro bajos.",
-    },
-  ];
-  /***********************************************************************************************************************/
-  // Estaods
+  // Estados
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recent, setRecent] = useState<AnalysisSummary[]>([]);
+  const [historyData, setHistoryData] = useState<AnalysisSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"upload" | "history" | "insights">("upload");
+  // Estados para el dialog de detalle
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null);
   /***********************************************************************************************************************/
   // Hooks
   const apiFetch = useApiFetch();
-  const { status } = useSession();
-
+  const { data: session, status } = useSession();
+  // Hook para obtener los datos del dashboard
   useEffect(() => {
     if (status === "authenticated") {
       fetchData();
     }
   }, [status]);
-
   /***********************************************************************************************************************/
   // Métodos
-  function RecentCard({ analysis }: RecentProps) {
-    const badge =
-      analysis.alert_level === "normal"
-        ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100"
-        : analysis.alert_level === "attention"
-        ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100"
-        : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100";
-
-    return (
-      <Card className="hover:shadow-md transition-shadow">
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="text-lg">
-                Análisis {new Date(analysis.date).toLocaleDateString("es-ES")}
-              </CardTitle>
-              <CardDescription>{analysis.summary}</CardDescription>
-            </div>
-            <div className={`px-2 py-1 rounded-full text-xs font-medium ${badge}`}>
-              {analysis.alert_level === "normal"
-                ? "Normal"
-                : analysis.alert_level === "attention"
-                ? "Atención"
-                : "Alerta"}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Button variant="outline" size="sm">
-            <FileText className="h-4 w-4 mr-2" />
-            Ver detalles
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Descargar
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  function EmptyPlaceholder() {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed rounded-lg">
-        <Inbox className="w-10 h-10 mb-4 text-muted-foreground" />
-        <p className="font-medium">Todavía no hay análisis recientes</p>
-        <p className="text-muted-foreground text-sm mt-2">
-          Cuando subas tu primer archivo, aparecerá aquí.
-        </p>
-      </div>
-    );
-  }
-
+  /** Función para obtener los datos del dashboard. */
   const fetchData = async () => {
     if (status !== "authenticated") return;
     setLoading(true);
     try {
-      const [statsRes, recentRes] = await Promise.all([
+      // Traemos datos para recientes (3) e historial (20)
+      const [statsRes, recentRes, historyRes] = await Promise.all([
         getDashboardStats(apiFetch),
         getAnalysesSummary(apiFetch, 0, 3),
+        getAnalysesSummary(apiFetch, 0, 20),
       ]);
       setStats(statsRes);
       setRecent(recentRes);
+      setHistoryData(historyRes);
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -150,6 +156,28 @@ export default function DashboardPage() {
     }
   };
 
+  /** Handler para abrir detalle de un análisis. */
+  const handleViewDetails = useCallback((id: string) => {
+    setSelectedAnalysisId(id);
+    setDetailDialogOpen(true);
+  }, []);
+
+  /** Handler para descargar un análisis. */
+  const handleDownload = useCallback(
+    async (id: string) => {
+      try {
+        const res = await getAnalysis(apiFetch, id);
+        downloadAnalysisAsHTML(res.data);
+        toast.success("Informe descargado correctamente");
+      } catch (err: any) {
+        console.error(err);
+        toast.error("Error al descargar el informe");
+      }
+    },
+    [apiFetch],
+  );
+
+  /** Badge de estado general. */
   const generalStateBadge = useMemo(() => {
     if (!stats) return null;
     const st = stats.general_state.toLowerCase();
@@ -160,18 +188,19 @@ export default function DashboardPage() {
     return "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100";
   }, [stats]);
 
+  // Loading
   if (status === "loading" || loading) {
-    return (
-      <div className="p-10">
-        <p>Cargando datos del dashboard… 🩸</p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
+  /** Handler para subir un archivo. */
   const handleFileUpload = (file: File) => {
     console.log("Archivo subido:", file);
     fetchData();
   };
+
+  // Nombre del usuario desde la sesión
+  const userName = session?.user?.name || "Usuario";
 
   /***********************************************************************************************************************/
   //JSX
@@ -183,92 +212,112 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-3xl font-bold mb-2">Bienvenido, Usuario</h1>
+          <h1 className="text-3xl font-bold mb-2">Bienvenido, {userName}</h1>
           <p className="text-muted-foreground mb-8">
             {stats?.analyses_total
               ? "Gestiona tus análisis de sangre y obtén información valiosa sobre tu salud."
               : "Aún no has subido ningún análisis. ¡Empieza cargando tu primer PDF o imagen! 🚀"}
           </p>
 
+          {/* Stats cards con animación */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Análisis realizados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center">
-                  <div className="text-4xl font-bold mr-4">{stats?.analyses_total ?? 0}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {stats?.analyses_this_month ? (
-                      <div className="flex items-center text-green-600">
-                        <span className="mr-1">+{stats.analyses_this_month}</span>
-                        <span>este mes</span>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Análisis realizados</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <div className="text-4xl font-bold mr-4">{stats?.analyses_total ?? 0}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {stats?.analyses_this_month ? (
+                        <div className="flex items-center text-green-600">
+                          <span className="mr-1">+{stats.analyses_this_month}</span>
+                          <span>este mes</span>
+                        </div>
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Estado general</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <div
+                      className={`rounded-full w-10 h-10 flex items-center justify-center mr-4 ${generalStateBadge}`}
+                    >
+                      {stats?.general_state && stats.general_state !== "—" ? (
+                        <CheckCircle className="h-6 w-6" />
+                      ) : (
+                        <Inbox className="h-6 w-6" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-medium">
+                        {stats?.general_state && stats.general_state !== "—"
+                          ? stats.general_state
+                          : "Sin datos"}
                       </div>
-                    ) : (
-                      <span>—</span>
-                    )}
+                      <div className="text-sm text-muted-foreground">
+                        {stats?.general_state && stats.general_state !== "—"
+                          ? "Basado en tus últimos análisis"
+                          : "Sube tu primer informe"}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Estado general</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center">
-                  <div
-                    className={`rounded-full w-10 h-10 flex items-center justify-center mr-4 ${generalStateBadge}`}
-                  >
-                    {stats?.general_state && stats.general_state !== "—" ? (
-                      <CheckCircle className="h-6 w-6" />
-                    ) : (
-                      <Inbox className="h-6 w-6" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {stats?.general_state && stats.general_state !== "—"
-                        ? stats.general_state
-                        : "Sin datos"}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Próximo recordatorio</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <div className="rounded-full w-10 h-10 flex items-center justify-center bg-primary/20 text-primary mr-4">
+                      <Calendar className="h-6 w-6" />
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {stats?.general_state && stats.general_state !== "—"
-                        ? "Basado en tus últimos análisis"
-                        : "Sube tu primer informe"}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Próximo recordatorio</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center">
-                  <div className="rounded-full w-10 h-10 flex items-center justify-center bg-primary/20 text-primary mr-4">
-                    <Calendar className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {stats?.next_reminder
-                        ? new Date(stats.next_reminder).toLocaleDateString("es-ES")
-                        : "—"}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {stats?.next_reminder
-                        ? "Analítica programada"
-                        : "Se mostrará tras tu primer análisis"}
+                    <div>
+                      <div className="font-medium">
+                        {stats?.next_reminder
+                          ? new Date(stats.next_reminder).toLocaleDateString("es-ES")
+                          : "—"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {stats?.next_reminder
+                          ? "Analítica programada"
+                          : "Se mostrará tras tu primer análisis"}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
+          {/* Tabs con contenido mejorado */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-8">
             <TabsList className="grid grid-cols-3 mb-8">
               <TabsTrigger value="upload">Subir análisis</TabsTrigger>
@@ -276,6 +325,7 @@ export default function DashboardPage() {
               <TabsTrigger value="insights">Estadísticas</TabsTrigger>
             </TabsList>
 
+            {/* TAB: Subir análisis */}
             <TabsContent value="upload" className="space-y-8">
               <Card>
                 <CardHeader>
@@ -287,20 +337,99 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
+              {/* Análisis recientes mejorados con más info y botones funcionales */}
               <div>
                 <h3 className="text-xl font-bold mb-4">Análisis recientes</h3>
                 {recent.length ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {recent.map((a) => (
-                      <RecentCard key={a.id} analysis={a} />
-                    ))}
+                    {recent.map((analysis) => {
+                      const Icon = getAlertIcon(analysis.alert_level);
+                      return (
+                        <Card
+                          key={analysis.id}
+                          className="hover:shadow-lg transition-all duration-300 group"
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="flex items-start gap-3 min-w-0">
+                                {/* Icono de estado a la izquierda */}
+                                <div
+                                  className={`rounded-full w-9 h-9 flex-shrink-0 flex items-center justify-center 
+                                    mt-0.5 ${getAlertBadgeClasses(analysis.alert_level)}`}
+                                >
+                                  <Icon className="h-4 w-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <CardTitle className="text-base">
+                                    Análisis{" "}
+                                    {new Date(analysis.date).toLocaleDateString("es-ES", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
+                                  </CardTitle>
+                                  {/* Fecha relativa */}
+                                  <CardDescription className="text-xs mt-0.5">
+                                    {new Date(analysis.date).toLocaleTimeString("es-ES", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </CardDescription>
+                                </div>
+                              </div>
+                              {/* Badge premium */}
+                              <span
+                                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold 
+                                  flex-shrink-0 ${getAlertBadgeClasses(analysis.alert_level)}`}
+                              >
+                                {getAlertLabel(analysis.alert_level)}
+                              </span>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            {/* Summary truncado a 2 líneas */}
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+                              {analysis.summary}
+                            </p>
+                            {/* Botones funcionales */}
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 hover:border-primary/50 hover:text-primary transition-colors"
+                                onClick={() => handleViewDetails(analysis.id)}
+                              >
+                                <Eye className="h-4 w-4 mr-1.5" />
+                                Ver detalles
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 hover:border-primary/50 hover:text-primary transition-colors"
+                                onClick={() => handleDownload(analysis.id)}
+                              >
+                                <Download className="h-4 w-4 mr-1.5" />
+                                Descargar
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <EmptyPlaceholder />
+                  <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed rounded-lg">
+                    <Inbox className="w-10 h-10 mb-4 text-muted-foreground" />
+                    <p className="font-medium">Todavía no hay análisis recientes</p>
+                    <p className="text-muted-foreground text-sm mt-2">
+                      Cuando subas tu primer archivo, aparecerá aquí.
+                    </p>
+                  </div>
                 )}
               </div>
             </TabsContent>
 
+            {/* TAB: Historial — datos reales de la API */}
             <TabsContent value="history">
               <Card>
                 <CardHeader>
@@ -310,55 +439,85 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-6">
-                    {[...recentAnalyses, ...recentAnalyses].map((analysis, index) => (
-                      <div
-                        key={`${analysis.id}-${index}`}
-                        className="flex items-start border-b border-border pb-4 last:border-0 last:pb-0"
-                      >
-                        <div
-                          className={`rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center mr-4 ${
-                            analysis.status === "normal"
-                              ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100"
-                              : analysis.status === "warning"
-                              ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-100"
-                              : "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100"
-                          }`}
-                        >
-                          {analysis.status === "normal" ? (
-                            <CheckCircle className="h-5 w-5" />
-                          ) : analysis.status === "warning" ? (
-                            <Clock className="h-5 w-5" />
-                          ) : (
-                            <AlertCircle className="h-5 w-5" />
-                          )}
-                        </div>
-                        <div className="flex-grow">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium">{analysis.title}</h4>
-                              <p className="text-sm text-muted-foreground">{analysis.date}</p>
+                  {historyData.length > 0 ? (
+                    <div className="space-y-4">
+                      {historyData.map((analysis) => {
+                        const Icon = getAlertIcon(analysis.alert_level);
+                        return (
+                          <div
+                            key={analysis.id}
+                            className="flex items-start border-b border-border pb-4 last:border-0 last:pb-0 gap-4"
+                          >
+                            {/* Icono según nivel de alerta real */}
+                            <div
+                              className={`rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center
+                                 ${getAlertBadgeClasses(analysis.alert_level)}`}
+                            >
+                              <Icon className="h-5 w-5" />
                             </div>
-                            <div className="flex space-x-2">
-                              <Button variant="outline" size="sm">
-                                <FileText className="h-4 w-4 mr-2" />
-                                Ver
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Download className="h-4 w-4 mr-2" />
-                                PDF
-                              </Button>
+                            <div className="flex-grow min-w-0">
+                              <div className="flex justify-between items-start gap-2">
+                                <div className="min-w-0">
+                                  <h4 className="font-medium">
+                                    Análisis{" "}
+                                    {new Date(analysis.date).toLocaleDateString("es-ES", {
+                                      day: "numeric",
+                                      month: "long",
+                                      year: "numeric",
+                                    })}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {new Date(analysis.date).toLocaleTimeString("es-ES", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </p>
+                                </div>
+                                {/* Botones funcionales del historial */}
+                                <div className="flex gap-2 flex-shrink-0">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleViewDetails(analysis.id)}
+                                    className="hover:border-primary/50 hover:text-primary transition-colors"
+                                  >
+                                    <Eye className="h-4 w-4 mr-1.5" />
+                                    Ver
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDownload(analysis.id)}
+                                    className="hover:border-primary/50 hover:text-primary transition-colors"
+                                  >
+                                    <Download className="h-4 w-4 mr-1.5" />
+                                    PDF
+                                  </Button>
+                                </div>
+                              </div>
+                              {/* Summary truncado */}
+                              <p className="text-sm mt-2 text-muted-foreground line-clamp-2 leading-relaxed">
+                                {analysis.summary}
+                              </p>
                             </div>
                           </div>
-                          <p className="text-sm mt-2">{analysis.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Inbox className="w-10 h-10 mb-4 text-muted-foreground" />
+                      <p className="font-medium">Sin historial</p>
+                      <p className="text-muted-foreground text-sm mt-2">
+                        Tus análisis aparecerán aquí cuando subas archivos.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
 
+            {/* TAB: Estadísticas (placeholder) */}
             <TabsContent value="insights">
               <Card>
                 <CardHeader>
@@ -375,6 +534,7 @@ export default function DashboardPage() {
                         <div className="text-center">
                           <BarChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                           <p className="text-muted-foreground">Gráfico de tendencias</p>
+                          <p className="text-xs text-muted-foreground mt-1">Próximamente</p>
                         </div>
                       </div>
                     </div>
@@ -384,6 +544,7 @@ export default function DashboardPage() {
                         <div className="text-center">
                           <BarChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                           <p className="text-muted-foreground">Gráfico de tendencias</p>
+                          <p className="text-xs text-muted-foreground mt-1">Próximamente</p>
                         </div>
                       </div>
                     </div>
@@ -393,6 +554,13 @@ export default function DashboardPage() {
             </TabsContent>
           </Tabs>
         </motion.div>
+
+        {/* Dialog de detalle de análisis */}
+        <AnalysisDetailDialog
+          analysisId={selectedAnalysisId}
+          open={detailDialogOpen}
+          onOpenChange={setDetailDialogOpen}
+        />
       </div>
     </div>
   );
