@@ -108,7 +108,11 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "google") {
         try {
           const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-          console.log(`Intentando login Google en: ${apiUrl}/auth/google`); // 🔍 Cambio: Log de depuración
+          // ✨ Cambio: Log ultra-detallado para depurar en Vercel
+          console.log(`[AUTH DEBUG] Intentando registro/login Google`);
+          console.log(`[AUTH DEBUG] Backend URL base: ${apiUrl}`);
+          console.log(`[AUTH DEBUG] Endpoint final: ${apiUrl}/auth/google`);
+          console.log(`[AUTH DEBUG] Email: ${user.email}`);
 
           const res = await publicApiFetch<{ access_token: string; refresh_token: string }>(
             "/auth/google",
@@ -123,18 +127,19 @@ export const authOptions: NextAuthOptions = {
             }
           );
 
-          if (res) {
+          if (res && res.access_token) {
+            console.log(`[AUTH DEBUG] ✅ Autenticación exitosa con el backend`);
             user.accessToken = res.access_token;
             user.refreshToken = res.refresh_token;
             user.provider = "google";
             return true;
           }
           
-          console.error("No se recibió respuesta del backend en signIn"); // 🔍 Cambio: Log de error
+          console.error("[AUTH DEBUG] ❌ No se recibió access_token del backend");
           return false; 
-        } catch (error) {
-          console.error("Error al registrar/iniciar sesión con Google en el backend:", error);
-          // 🩸 Nota: Si esto falla con 404, revisa NEXT_PUBLIC_API_URL en Vercel
+        } catch (error: any) {
+          console.error("[AUTH DEBUG] ❌ Error crítico en el backend:", error.message);
+          // 🩸 Nota: Si ves "Not Found" aquí, es que falta el sufijo /api en NEXT_PUBLIC_API_URL
           return false;
         }
       }
