@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardNavbar from "@/components/dashboard/dashboard-navbar";
 import DashboardSidebar from "@/components/dashboard/dashboard-sidebar";
 import DashboardFooter from "@/components/dashboard/dashboard-footer";
@@ -15,12 +15,10 @@ const DashboardContent = ({
   children,
   setSidebarOpen,
   isOpen,
-  sidebarOpen,
 }: {
   children: ReactNode;
   setSidebarOpen: (open: boolean) => void;
   isOpen: boolean;
-  sidebarOpen: boolean;
 }) => {
   // Estados
   const { isLoading } = useLoading();
@@ -31,7 +29,7 @@ const DashboardContent = ({
       <div className="flex min-h-screen bg-background">
         <DashboardSidebar open={isOpen} onOpenChange={(open) => setSidebarOpen(open)} />
         <div className="flex-1 flex flex-col">
-          <DashboardNavbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+          <DashboardNavbar onToggleSidebar={() => setSidebarOpen(!isOpen)} />
           <main className="flex-1 pt-16 px-4 md:px-6 lg:px-8 pb-8">{children}</main>
           {/* Footer compacto del dashboard. */}
           <DashboardFooter />
@@ -44,18 +42,22 @@ const DashboardContent = ({
 
 /** Layout principal del dashboard. */
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useMobile();
-  // En móviles, la barra lateral está cerrada por defecto
-  const isOpen = isMobile ? false : sidebarOpen;
+  // En escritorio abierta por defecto, en móvil cerrada por defecto
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
+
+  const isOpen = sidebarOpen;
 
   //JSX
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       <LoadingProvider>
         {" "}
-        {/* 👈 Envolvemos el contenido con el LoadingProvider */}
-        <DashboardContent setSidebarOpen={setSidebarOpen} isOpen={isOpen} sidebarOpen={sidebarOpen}>
+        {/* Envolvemos el contenido con el LoadingProvider */}
+        <DashboardContent setSidebarOpen={setSidebarOpen} isOpen={isOpen}>
           {children}
         </DashboardContent>
       </LoadingProvider>

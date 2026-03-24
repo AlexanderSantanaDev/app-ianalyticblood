@@ -8,6 +8,8 @@ import { useApiFetch } from "@/lib/api/client";
 import { uploadFile } from "@/lib/api/analysis";
 import { useLoading } from "hooks/loading-context";
 import { Loader } from "@/components/ui/loader";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 /****************************************************************************************************************************/
 export const FileUpload = ({ onUpload }: FileUploadProps) => {
   // Estados
@@ -34,9 +36,16 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
     setIsLoading(true);
     try {
       await uploadFile(file, apiFetch);
+      // Toast de éxito
+      toast.success("Análisis completado", {
+        description: "Tu informe ha sido procesado correctamente con IA.",
+      });
       onUpload(file);
     } catch (err: any) {
-      alert(err.message);
+      // Toast de error
+      toast.error("Error al procesar", {
+        description: err.message || "No se pudo analizar el informe. Reintenta.",
+      });
     } finally {
       setIsLoading(false);
       setFile(null);
@@ -96,15 +105,30 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* Loader */}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-xl z-10">
-          <div className="flex flex-col gap-3 items-center">
-            <Loader size="sm" />
-            <p className="text-white/90 text-sm font-medium tracking-wide">Analizando con IA...</p>
+      {/* Loader overlay más premium con AnimatePresence */}
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-md rounded-xl z-50 p-4"
+        >
+          <div className="flex flex-col gap-4 items-center text-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+              <Loader size="lg" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-foreground font-bold text-base tracking-tight">
+                Analizando informe...
+              </p>
+              <p className="text-muted-foreground text-xs font-medium animate-pulse">
+                Nuestra IA está extrayendo tus datos clínicos
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        </motion.div>
+      </AnimatePresence>
       <div className="mx-auto w-16 h-16 mb-4 text-muted-foreground">
         <Upload className="w-full h-full" />
       </div>

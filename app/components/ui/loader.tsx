@@ -8,7 +8,7 @@ interface LoaderProps {
 const sizeMap = {
   sm: { frame: "w-[60px] h-[60px]", svg: "w-[206px] h-[206px]" },
   md: { frame: "w-[100px] h-[100px]", svg: "w-[344px] h-[344px]" },
-  lg: { frame: "w-[150px] h-[150px]", svg: "w-[516px] h-[516px]" },
+  lg: { frame: "w-[204px] h-[188px]", svg: "w-[338px] h-[326px]" },
 };
 /****************************************************************************************************************************/
 export const Loader = ({ size = "md" }: LoaderProps) => {

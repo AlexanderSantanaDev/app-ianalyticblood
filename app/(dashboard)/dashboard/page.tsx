@@ -5,16 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  BarChart,
-  Calendar,
-  Download,
-  Inbox,
-  Eye,
-} from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Calendar, Download, Inbox, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   DashboardStats,
@@ -452,7 +443,7 @@ export default function DashboardPage() {
                         return (
                           <div
                             key={analysis.id}
-                            className="flex items-start border-b border-border pb-4 last:border-0 last:pb-0 gap-4"
+                            className="flex flex-col sm:flex-row items-start border-b border-border pb-6 last:border-0 last:pb-0 gap-4 group"
                           >
                             {/* Icono según nivel de alerta real */}
                             <div
@@ -461,10 +452,10 @@ export default function DashboardPage() {
                             >
                               <Icon className="h-5 w-5" />
                             </div>
-                            <div className="flex-grow min-w-0">
-                              <div className="flex justify-between items-start gap-2">
+                            <div className="flex-grow min-w-0 w-full">
+                              <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                                 <div className="min-w-0">
-                                  <h4 className="font-medium">
+                                  <h4 className="font-bold text-base group-hover:text-primary transition-colors">
                                     Análisis{" "}
                                     {new Date(analysis.date).toLocaleDateString("es-ES", {
                                       day: "numeric",
@@ -472,37 +463,38 @@ export default function DashboardPage() {
                                       year: "numeric",
                                     })}
                                   </h4>
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
+                                    <Clock className="h-3 w-3" />
                                     {new Date(analysis.date).toLocaleTimeString("es-ES", {
                                       hour: "2-digit",
                                       minute: "2-digit",
                                     })}
                                   </p>
                                 </div>
-                                {/* Botones funcionales del historial */}
-                                <div className="flex gap-2 flex-shrink-0">
+                                {/* Botones funcionales del historial - stack en móvil */}
+                                <div className="flex gap-2 w-full sm:w-auto">
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleViewDetails(analysis.id)}
-                                    className="hover:border-primary/50 hover:text-primary transition-colors"
+                                    className="flex-1 sm:flex-none h-9 px-4 hover:border-primary/50 hover:text-primary transition-all"
                                   >
-                                    <Eye className="h-4 w-4 mr-1.5" />
+                                    <Eye className="h-4 w-4 mr-2" />
                                     Ver
                                   </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleDownload(analysis.id)}
-                                    className="hover:border-primary/50 hover:text-primary transition-colors"
+                                    className="flex-1 sm:flex-none h-9 px-4 hover:border-primary/50 hover:text-primary transition-all"
                                   >
-                                    <Download className="h-4 w-4 mr-1.5" />
+                                    <Download className="h-4 w-4 mr-2" />
                                     PDF
                                   </Button>
                                 </div>
                               </div>
                               {/* Summary truncado */}
-                              <p className="text-sm mt-2 text-muted-foreground line-clamp-2 leading-relaxed">
+                              <p className="text-sm mt-3 text-muted-foreground line-clamp-2 leading-relaxed bg-muted/30 p-3 rounded-lg border border-border/50">
                                 {analysis.summary}
                               </p>
                             </div>
