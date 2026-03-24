@@ -107,27 +107,29 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
     >
       {/* Loader overlay más premium con AnimatePresence */}
       <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-md rounded-xl z-50 p-4"
-        >
-          <div className="flex flex-col gap-4 items-center text-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-              <Loader size="lg" />
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-md rounded-xl z-50 p-4"
+          >
+            <div className="flex flex-col gap-4 items-center text-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+                <Loader size="lg" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-foreground font-bold text-base tracking-tight">
+                  Analizando informe...
+                </p>
+                <p className="text-muted-foreground text-xs font-medium animate-pulse">
+                  Nuestra IA está extrayendo tus datos clínicos
+                </p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <p className="text-foreground font-bold text-base tracking-tight">
-                Analizando informe...
-              </p>
-              <p className="text-muted-foreground text-xs font-medium animate-pulse">
-                Nuestra IA está extrayendo tus datos clínicos
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
       <div className="mx-auto w-16 h-16 mb-4 text-muted-foreground">
         <Upload className="w-full h-full" />
