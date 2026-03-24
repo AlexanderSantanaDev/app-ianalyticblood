@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./mode-toggle";
 import { Menu, X } from "lucide-react";
-import { useMobile } from "hooks/use-mobile";
+import { useMobile } from "@/hooks/use-mobile";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 

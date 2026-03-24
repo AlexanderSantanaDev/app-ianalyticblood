@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useApiFetch } from "@/lib/api/client";
 import { uploadFile } from "@/lib/api/analysis";
-import { useLoading } from "hooks/loading-context";
+import { useLoading } from "@/hooks/loading-context";
 import { Loader } from "@/components/ui/loader";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";

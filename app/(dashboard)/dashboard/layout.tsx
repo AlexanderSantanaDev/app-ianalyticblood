@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import DashboardNavbar from "@/components/dashboard/dashboard-navbar";
 import DashboardSidebar from "@/components/dashboard/dashboard-sidebar";
 import DashboardFooter from "@/components/dashboard/dashboard-footer";
-import { useMobile } from "hooks/use-mobile";
+import { useMobile } from "@/hooks/use-mobile";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
-import { LoadingProvider, useLoading } from "hooks/loading-context";
+import { LoadingProvider, useLoading } from "@/hooks/loading-context";
 import { ReactNode } from "react";
 /****************************************************************************************************************************/
 /** Contenido del dashboard. */

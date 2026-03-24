@@ -33,10 +33,10 @@
     "paths": {
       "@/components/*": ["app/components/*"],
       "@/ui/*":        ["app/components/ui/*"],       // opcional, por legibilidad
-      "@/hooks/*":     ["app/hooks/*"],
+      "@/hooks/*":     ["hooks/*"],
       "@/lib/*":       ["lib/*"],
-      "@/types/*":     ["app/types/*"],               // si usas tipos propios
-      "@/*":           ["app/*"]                      // alias genérico (ya lo tenías)
+      "@/types/*":     ["app/types/*"],
+      "@/*":           ["app/*"]                      // alias genérico 
     }
   },
 
