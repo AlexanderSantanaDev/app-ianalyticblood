@@ -99,6 +99,7 @@ export const authOptions: NextAuthOptions = {
   ],
 
   session: { strategy: "jwt" },
+  secret: process.env.NEXTAUTH_SECRET, // 🛡️ Cambio: Se añade secret explícito para producción
   useSecureCookies: process.env.NODE_ENV === "production",
 
   /* Callbacks */
@@ -106,6 +107,9 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+          console.log(`Intentando login Google en: ${apiUrl}/auth/google`); // 🔍 Cambio: Log de depuración
+
           const res = await publicApiFetch<{ access_token: string; refresh_token: string }>(
             "/auth/google",
             {
@@ -113,7 +117,7 @@ export const authOptions: NextAuthOptions = {
               body: JSON.stringify({
                 email: user.email,
                 name: user.name,
-                picture: user.image, // ➡️ Enviamos la imagen proporcionada por Google
+                picture: user.image,
                 provider: "google",
               }),
             }
@@ -123,11 +127,14 @@ export const authOptions: NextAuthOptions = {
             user.accessToken = res.access_token;
             user.refreshToken = res.refresh_token;
             user.provider = "google";
-          } else {
-            return false;
+            return true;
           }
+          
+          console.error("No se recibió respuesta del backend en signIn"); // 🔍 Cambio: Log de error
+          return false; 
         } catch (error) {
           console.error("Error al registrar/iniciar sesión con Google en el backend:", error);
+          // 🩸 Nota: Si esto falla con 404, revisa NEXT_PUBLIC_API_URL en Vercel
           return false;
         }
       }
