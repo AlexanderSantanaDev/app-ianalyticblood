@@ -20,7 +20,7 @@ import {
 import { getAnalysis } from "@/lib/api/analysis";
 import { useApiFetch } from "@/lib/api/client";
 import type { AnalysisDoc } from "@/lib/api/types";
-import { downloadAnalysisAsHTML } from "@/lib/api/download-analysis";
+import { downloadAnalysisAsPDF } from "@/lib/api/download-analysis";
 /****************************************************************************************************************************/
 /** Tipado de props del dialog */
 interface AnalysisDetailDialogProps {
@@ -124,7 +124,7 @@ export function AnalysisDetailDialog({
   /** Handler para descargar análisis como HTML/PDF. */
   const handleDownload = () => {
     if (!data) return;
-    downloadAnalysisAsHTML(data);
+    downloadAnalysisAsPDF(data);
   };
   /****************************************************************************************************************************/
   // JSX

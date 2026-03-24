@@ -21,14 +21,17 @@ import {
   getAnalysesSummary,
   getDashboardStats,
   getAnalysis,
+  getAnalyses,
 } from "@/lib/api/analysis";
 import { useApiFetch } from "@/lib/api/client";
 import { useSession } from "next-auth/react";
 import { AnalysisSummary } from "@/types/dashboard";
+import { AnalysisDoc } from "@/lib/api/types";
 import { FileUpload } from "@/components/dashboard/file-upload";
 import { AnalysisDetailDialog } from "@/components/dashboard/analysis-detail-dialog";
+import StatsCharts from "@/components/dashboard/stats-charts";
 import { toast } from "sonner";
-import { downloadAnalysisAsHTML } from "@/lib/api/download-analysis";
+import { downloadAnalysisAsPDF } from "@/lib/api/download-analysis";
 /***********************************************************************************************************************/
 /** Helper para badge de nivel de alerta. */
 function getAlertBadgeClasses(level: string) {
@@ -118,6 +121,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recent, setRecent] = useState<AnalysisSummary[]>([]);
   const [historyData, setHistoryData] = useState<AnalysisSummary[]>([]);
+  const [allAnalyses, setAllAnalyses] = useState<AnalysisDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"upload" | "history" | "insights">("upload");
   // Estados para el dialog de detalle
@@ -140,15 +144,17 @@ export default function DashboardPage() {
     if (status !== "authenticated") return;
     setLoading(true);
     try {
-      // Traemos datos para recientes (3) e historial (20)
-      const [statsRes, recentRes, historyRes] = await Promise.all([
+      // Traemos datos para recientes (3), historial (20) y todas para stats (50)
+      const [statsRes, recentRes, historyRes, allRes] = await Promise.all([
         getDashboardStats(apiFetch),
         getAnalysesSummary(apiFetch, 0, 3),
         getAnalysesSummary(apiFetch, 0, 20),
+        getAnalyses(apiFetch, 0, 50),
       ]);
       setStats(statsRes);
       setRecent(recentRes);
       setHistoryData(historyRes);
+      setAllAnalyses(allRes.data);
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -167,7 +173,7 @@ export default function DashboardPage() {
     async (id: string) => {
       try {
         const res = await getAnalysis(apiFetch, id);
-        downloadAnalysisAsHTML(res.data);
+        await downloadAnalysisAsPDF(res.data);
         toast.success("Informe descargado correctamente");
       } catch (err: any) {
         console.error(err);
@@ -527,28 +533,7 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-8">
-                    <div>
-                      <h4 className="font-medium mb-4">Niveles de colesterol</h4>
-                      <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                        <div className="text-center">
-                          <BarChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                          <p className="text-muted-foreground">Gráfico de tendencias</p>
-                          <p className="text-xs text-muted-foreground mt-1">Próximamente</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-medium mb-4">Niveles de glucosa</h4>
-                      <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                        <div className="text-center">
-                          <BarChart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                          <p className="text-muted-foreground">Gráfico de tendencias</p>
-                          <p className="text-xs text-muted-foreground mt-1">Próximamente</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <StatsCharts analyses={allAnalyses} />
                 </CardContent>
               </Card>
             </TabsContent>

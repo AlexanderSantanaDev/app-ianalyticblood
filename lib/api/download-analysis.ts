@@ -1,61 +1,67 @@
 import type { AnalysisDoc } from "./types";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 /***********************************************************************************************************************/
-/** Genera HTML limpio del análisis para descarga/impresión. */
-function generateAnalysisHTML(data: AnalysisDoc): string {
-  // Fecha del análisis
+/** Genera el HTML para el PDF/Impresión */
+function getTemplateHTML(data: AnalysisDoc): string {
   const date = new Date(data.date).toLocaleDateString("es-ES", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-  // Etiqueta del nivel de alerta
+
   const statusLabel =
     data.overview.alert_level === "normal"
       ? "Normal"
       : data.overview.alert_level === "attention"
         ? "Atención"
         : "Alerta";
-  // Color del badge según el nivel de alerta
+
   const statusColor =
     data.overview.alert_level === "normal"
       ? "#22c55e"
       : data.overview.alert_level === "attention"
         ? "#eab308"
         : "#ef4444";
-  // Genera el HTML de los parámetros
+
   const paramsHTML = Object.entries(data.parameters)
     .map(
       ([name, param]) => `
       <tr>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 500;">${name}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">
-        ${param.value !== null ? param.value : "—"} ${param.unit || ""}</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; color: ${
+        <td style="padding: 12px; border-bottom: 1px solid #f3f4f6; font-weight: 500; font-size: 13px;">${name}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #f3f4f6; text-align: center; font-size: 13px;">
+          ${param.value !== null ? param.value : "—"} ${param.unit || ""}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #f3f4f6; text-align: center; color: ${
           param.status === "normal"
-            ? "#22c55e"
+            ? "#16a34a"
             : param.status === "bajo"
-              ? "#eab308"
+              ? "#ca8a04"
               : param.status === "alto"
-                ? "#f97316"
+                ? "#ea580c"
                 : param.status === "muy_alto"
-                  ? "#ef4444"
+                  ? "#dc2626"
                   : "#6b7280"
-        }; font-weight: 600;">${
-          param.status === "normal"
-            ? "Normal"
-            : param.status === "bajo"
-              ? "Bajo"
-              : param.status === "alto"
-                ? "Alto"
-                : param.status === "muy_alto"
-                  ? "Muy alto"
-                  : "—"
-        }</td>
-        <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 13px;">${
-          param.reference_range
-            ? `${param.reference_range[0]} — ${param.reference_range[1]} ${param.unit || ""}`
-            : "—"
-        }</td>
+        }; font-weight: 600; font-size: 13px;">
+          ${
+            param.status === "normal"
+              ? "Normal"
+              : param.status === "bajo"
+                ? "Bajo"
+                : param.status === "alto"
+                  ? "Alto"
+                  : param.status === "muy_alto"
+                    ? "Muy alto"
+                    : "—"
+          }
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #f3f4f6; text-align: center; color: #9ca3af; font-size: 11px;">
+          ${
+            param.reference_range
+              ? `${param.reference_range[0]} — ${param.reference_range[1]} ${param.unit || ""}`
+              : "—"
+          }
+        </td>
       </tr>
     `,
     )
@@ -63,148 +69,173 @@ function generateAnalysisHTML(data: AnalysisDoc): string {
 
   const analysisHTML = data.analysis
     .map(
-      (item) =>
-        `<li style="margin-bottom: 8px; padding-left: 12px; border-left: 3px solid #7c3aed; color: #374151; 
-      line-height: 1.6;">${item}</li>`,
+      (item) => `
+      <li style="margin-bottom: 10px; padding-left: 15px; border-left: 3px solid #8b5cf6; color: #4b5563; font-size: 13px; line-height: 1.6;">
+        ${item}
+      </li>`,
     )
     .join("");
 
   const recsHTML = data.recommendations
     .map(
-      (rec) =>
-        `<li style="margin-bottom: 8px; padding-left: 12px; border-left: 3px solid #eab308; color: #374151; 
-      line-height: 1.6;">${rec}</li>`,
+      (rec) => `
+      <li style="margin-bottom: 10px; padding-left: 15px; border-left: 3px solid #f59e0b; color: #4b5563; font-size: 13px; 
+      line-height: 1.6;">
+        ${rec}
+      </li>`,
     )
     .join("");
 
   return `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Informe de Análisis - IAnalyticBlood</title>
-  <style>
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .no-print { display: none !important; }
-    }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 40px; 
-    color: #1f2937; background: #fff; }
-    .header { text-align: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 2px solid #7c3aed; }
-    .header h1 { font-size: 24px; color: #7c3aed; margin: 0 0 4px; }
-    .header p { color: #6b7280; margin: 4px 0; font-size: 14px; }
-    .section { margin-bottom: 28px; }
-    .section-title { font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 12px; display: flex; align-items: center;
-     gap: 8px; }
-    .summary-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
-    .summary-box p { margin: 4px 0; line-height: 1.6; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    thead th { padding: 10px 12px; background: #7c3aed; color: #fff; text-align: left; font-weight: 600; }
-    thead th:not(:first-child) { text-align: center; }
-    ul { list-style: none; padding: 0; }
-    .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #9ca3af; 
-    font-size: 12px; }
-    .print-btn { display: block; margin: 0 auto 32px; background: #7c3aed; color: #fff; border: none; padding: 10px 24px; 
-    border-radius: 8px; font-size: 14px; cursor: pointer; }
-    .print-btn:hover { background: #6d28d9; }
-  </style>
-</head>
-<body>
-  <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+    <div id="pdf-content" style="width: 794px; padding: 60px; background: white; color: #111827; font-family: 'Inter', sans-serif;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; 
+      padding-bottom: 20px; border-bottom: 2px solid #8b5cf6;">
+        <div>
+          <h1 style="margin: 0; font-size: 28px; color: #8b5cf6; font-weight: 800; letter-spacing: -0.025em;">IAnalyticBlood</h1>
+          <p style="margin: 5px 0 0; color: #6b7280; font-size: 14px; font-weight: 500;">Informe Inteligente de Salud</p>
+        </div>
+        <div style="text-align: right;">
+          <p style="margin: 0; font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em;">
+          Fecha de Análisis
+          </p>
+          <p style="margin: 2px 0 0; font-size: 14px; font-weight: 600; color: #374151;">${date}</p>
+        </div>
+      </div>
 
-  <div class="header">
-    <h1>🩸 IAnalyticBlood</h1>
-    <p>Informe de análisis de sangre</p>
-    <p><strong>Fecha:</strong> ${date} &nbsp; | &nbsp; <strong>Estado:</strong> <span style="color: ${statusColor}; 
-    font-weight: 700;">${statusLabel}</span></p>
-  </div>
+      <div style="margin-bottom: 35px; padding: 20px; background: #f9fafb; border-radius: 12px; border: 1px solid #f3f4f6;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #111827;">Resumen Ejecutivo</h2>
+          <span style="background: ${statusColor}15; color: ${statusColor}; padding: 4px 10px; border-radius: 99px; 
+          font-size: 11px; font-weight: 700; text-transform: uppercase;">
+            Estado: ${statusLabel}
+          </span>
+        </div>
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.6; color: #4b5563;">${data.overview.summary}</p>
+        <p style="margin: 12px 0 0; font-size: 12px; color: #6b7280;">
+          Estado general: <strong style="color: #374151;">${data.overview.general_state}</strong>
+        </p>
+      </div>
 
-  <div class="section">
-    <div class="section-title">📋 Resumen general</div>
-    <div class="summary-box">
-      <p>${data.overview.summary}</p>
-      <p style="color: #6b7280; font-size: 13px; margin-top: 8px;">Estado general: 
-      <strong>${data.overview.general_state}</strong></p>
+      <div style="margin-bottom: 35px;">
+        <h3 style="margin: 0 0 15px; font-size: 15px; font-weight: 700; color: #111827; display: flex; align-items: center; 
+        gap: 8px;">
+          <span style="color: #8b5cf6;">📊</span> Parámetros Analizados
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #f3f4f6; border-radius: 8px; overflow: hidden;">
+          <thead style="background: #f9fafb;">
+            <tr>
+              <th style="padding: 12px; text-align: left; font-size: 11px; font-weight: 600; color: #6b7280; 
+              text-transform: uppercase;">Parámetro</th>
+              <th style="padding: 12px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; 
+              text-transform: uppercase;">Valor</th>
+              <th style="padding: 12px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; 
+              text-transform: uppercase;">Estado</th>
+              <th style="padding: 12px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; 
+              text-transform: uppercase;">Rango Ref.</th>
+            </tr>
+          </thead>
+          <tbody>${paramsHTML}</tbody>
+        </table>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div>
+          <h3 style="margin: 0 0 15px; font-size: 15px; font-weight: 700; color: #111827;">
+            <span style="color: #8b5cf6;">🔬</span> Interpretación
+          </h3>
+          <ul style="margin: 0; padding: 0; list-style: none;">${analysisHTML}</ul>
+        </div>
+        <div>
+          <h3 style="margin: 0 0 15px; font-size: 15px; font-weight: 700; color: #111827;">
+            <span style="color: #f59e0b;">💡</span> Recomendaciones
+          </h3>
+          <ul style="margin: 0; padding: 0; list-style: none;">${recsHTML}</ul>
+        </div>
+      </div>
+
+      <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #f3f4f6; text-align: center; color: #9ca3af;
+       font-size: 11px;">
+        <p style="margin: 0;">Este informe ha sido generado automáticamente por iAnalyticBlood mediante IA.</p>
+        <p style="margin: 4px 0 0;">Consulte siempre con un profesional médico calificado para la interpretación definitiva.</p>
+        <p style="margin: 15px 0 0; color: #374151; font-weight: 600;">v1.0.0 — ianalyticblood.com</p>
+      </div>
     </div>
-  </div>
-
-  ${
-    Object.keys(data.parameters).length > 0
-      ? `
-  <div class="section">
-    <div class="section-title">📊 Parámetros analizados</div>
-    <table>
-      <thead>
-        <tr>
-          <th>Parámetro</th>
-          <th>Valor</th>
-          <th>Estado</th>
-          <th>Referencia</th>
-        </tr>
-      </thead>
-      <tbody>${paramsHTML}</tbody>
-    </table>
-  </div>
-  `
-      : ""
-  }
-
-  ${
-    data.analysis.length > 0
-      ? `
-  <div class="section">
-    <div class="section-title">🔬 Interpretación</div>
-    <ul>${analysisHTML}</ul>
-  </div>
-  `
-      : ""
-  }
-
-  ${
-    data.recommendations.length > 0
-      ? `
-  <div class="section">
-    <div class="section-title">💡 Recomendaciones</div>
-    <ul>${recsHTML}</ul>
-  </div>
-  `
-      : ""
-  }
-
-  <div class="footer">
-    <p>Informe generado por IAnalyticBlood — Análisis de sangre asistido por inteligencia artificial</p>
-    <p>Este informe tiene carácter informativo. Consulte siempre con un profesional médico.</p>
-  </div>
-</body>
-</html>`;
+  `;
 }
 
-/** Descarga el análisis como HTML (se puede imprimir como PDF desde el navegador). */
-export function downloadAnalysisAsHTML(data: AnalysisDoc) {
-  const html = generateAnalysisHTML(data);
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+/** Descarga el análisis como PDF real */
+export async function downloadAnalysisAsPDF(data: AnalysisDoc) {
+  //  Generación de PDF real usando jspdf + html2canvas
+  const container = document.createElement("div");
+  container.style.position = "absolute";
+  container.style.left = "-9999px";
+  container.style.top = "0";
+  container.innerHTML = getTemplateHTML(data);
+  document.body.appendChild(container);
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `analisis-${new Date(data.date)
-    .toLocaleDateString("es-ES")
-    .replace(/\//g, "-")}.html`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  try {
+    const content = container.querySelector("#pdf-content") as HTMLElement;
+    if (!content) return;
+
+    // Escala 2 para mejor resolución de texto
+    const canvas = await html2canvas(content, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: [canvas.width / 2, canvas.height / 2],
+    });
+
+    pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+    // Nombre de archivo más limpio
+    pdf.save(`Analisis_Blood_${data.date.split("T")[0]}.pdf`);
+  } catch (err) {
+    console.error("Error generating PDF:", err);
+    throw err;
+  } finally {
+    document.body.removeChild(container);
+  }
 }
 
-/** Abre el informe en nueva pestaña para impresión directa. */
+/** Imprime el informe (usando el mismo diseño) */
 export function printAnalysis(data: AnalysisDoc) {
-  const html = generateAnalysisHTML(data);
+  // Reutilización del mismo template premium para imprimir
+  const html = getTemplateHTML(data);
   const win = window.open("", "_blank");
-  if (win) {
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-    setTimeout(() => win.print(), 500);
-  }
+  if (!win) return;
+  win.document.write(`
+    <html>
+      <head>
+        <title>Imprimir Análisis - IAnalyticBlood</title>
+        <style>
+          body { margin: 0; padding: 0; background: #f3f4f6; display: flex; justify-content: center; }
+          #pdf-content { width: 794px !important; margin: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+          border-radius: 8px; }
+          @media print {
+            body { background: white; }
+            #pdf-content { margin: 0; box-shadow: none; width: 100% !important; }
+            .no-print { display: none; }
+          }
+        </style>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+      </head>
+      <body>
+        ${html}
+        <script>
+          window.onload = () => {
+            setTimeout(() => {
+              window.print();
+            }, 500);
+          };
+        </script>
+      </body>
+    </html>
+  `);
+  win.document.close();
 }
