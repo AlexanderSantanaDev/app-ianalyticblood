@@ -71,7 +71,7 @@ export default function DashboardSidebar() {
       title: "Estadísticas",
       icon: BarChart3,
       href: "/dashboard/stats",
-      disabled: true,
+      disabled: false,
     },
     {
       title: "Calendario",
@@ -165,7 +165,6 @@ export default function DashboardSidebar() {
           })}
         </SidebarMenu>
       </SidebarContent>
-
       {/* Separador visual antes del footer */}
       <SidebarSeparator />
 

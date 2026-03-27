@@ -5,8 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, CheckCircle, Clock, Calendar, Download, Inbox, Eye } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Calendar,
+  Download,
+  Inbox,
+  Eye,
+  BarChart3,
+} from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   DashboardStats,
   getAnalysesSummary,
@@ -562,6 +572,28 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  <div
+                    className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-2xl p-5 
+                  sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+                  >
+                    <div>
+                      <h3 className="text-lg font-bold flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-primary" />
+                        Vista Rápida de Tendencias
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1 max-w-xl">
+                        Aquí puedes ver la evolución básica de tus biomarcadores. Para un desglose
+                        completo, cálculo de tu Índice Vital y estado clínico, visita la sección
+                        dedicada.
+                      </p>
+                    </div>
+                    <Button
+                      asChild
+                      className="shrink-0 gradient-bg border-none shadow-md shadow-primary/20 hover:opacity-90"
+                    >
+                      <Link href="/dashboard/stats">Ver todas las estadísticas</Link>
+                    </Button>
+                  </div>
                   <StatsCharts analyses={allAnalyses} />
                 </CardContent>
               </Card>
