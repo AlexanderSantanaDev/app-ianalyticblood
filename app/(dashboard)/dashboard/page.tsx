@@ -316,10 +316,28 @@ export default function DashboardPage() {
 
           {/* Tabs con contenido mejorado */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-8">
-            <TabsList className="grid grid-cols-3 mb-8">
-              <TabsTrigger value="upload">Subir análisis</TabsTrigger>
-              <TabsTrigger value="history">Historial</TabsTrigger>
-              <TabsTrigger value="insights">Estadísticas</TabsTrigger>
+            <TabsList
+              className="flex w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] 
+            [scrollbar-width:none] justify-start sm:grid sm:grid-cols-3 h-auto p-1 bg-muted rounded-xl mb-8"
+            >
+              <TabsTrigger
+                value="upload"
+                className="whitespace-nowrap px-4 py-2 text-sm sm:text-base"
+              >
+                Subir análisis
+              </TabsTrigger>
+              <TabsTrigger
+                value="history"
+                className="whitespace-nowrap px-4 py-2 text-sm sm:text-base"
+              >
+                Historial
+              </TabsTrigger>
+              <TabsTrigger
+                value="insights"
+                className="whitespace-nowrap px-4 py-2 text-sm sm:text-base"
+              >
+                Estadísticas
+              </TabsTrigger>
             </TabsList>
 
             {/* TAB: Subir análisis */}
@@ -389,24 +407,26 @@ export default function DashboardPage() {
                               {analysis.summary}
                             </p>
                             {/* Botones funcionales */}
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 mt-2 sm:mt-0">
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="flex-1 hover:border-primary/50 hover:text-primary transition-colors"
+                                className="flex-1 hover:border-primary/50 hover:text-primary transition-colors h-9 sm:h-10"
                                 onClick={() => handleViewDetails(analysis.id)}
                               >
-                                <Eye className="h-4 w-4 mr-1.5" />
-                                Ver detalles
+                                <Eye className="h-4 w-4 sm:mr-1.5" />
+                                <span className="sm:hidden ml-1">Ver</span>
+                                <span className="hidden sm:inline">Ver detalles</span>
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="flex-1 hover:border-primary/50 hover:text-primary transition-colors"
+                                className="flex-1 hover:border-primary/50 hover:text-primary transition-colors h-9 sm:h-10"
                                 onClick={() => handleDownload(analysis.id)}
                               >
-                                <Download className="h-4 w-4 mr-1.5" />
-                                Descargar
+                                <Download className="h-4 w-4 sm:mr-1.5" />
+                                <span className="sm:hidden ml-1">PDF</span>
+                                <span className="hidden sm:inline">Descargar</span>
                               </Button>
                             </div>
                           </CardContent>
@@ -443,27 +463,38 @@ export default function DashboardPage() {
                         return (
                           <div
                             key={analysis.id}
-                            className="flex flex-col sm:flex-row items-start border-b border-border pb-6 last:border-0 last:pb-0 gap-4 group"
+                            className="flex items-start border-b border-border pb-6 last:border-0 last:pb-0 gap-3 sm:gap-4 group"
                           >
-                            {/* Icono según nivel de alerta real */}
+                            {/* Icono izquierdo (solo desktop, en móvil lo movemos a la derecha del título) */}
                             <div
-                              className={`rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center
+                              className={`hidden sm:flex rounded-full w-10 h-10 flex-shrink-0 items-center justify-center mt-1 
                                  ${getAlertBadgeClasses(analysis.alert_level)}`}
                             >
                               <Icon className="h-5 w-5" />
                             </div>
-                            <div className="flex-grow min-w-0 w-full">
+
+                            <div className="flex-grow min-w-0 w-full mt-1.5 sm:mt-0">
                               <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
-                                <div className="min-w-0">
-                                  <h4 className="font-bold text-base group-hover:text-primary transition-colors">
-                                    Análisis{" "}
-                                    {new Date(analysis.date).toLocaleDateString("es-ES", {
-                                      day: "numeric",
-                                      month: "long",
-                                      year: "numeric",
-                                    })}
-                                  </h4>
-                                  <p className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
+                                <div className="min-w-0 w-full sm:w-auto">
+                                  <div className="flex justify-between sm:justify-start items-center gap-3">
+                                    <h4 className="font-bold text-base sm:text-lg group-hover:text-primary transition-colors">
+                                      Análisis{" "}
+                                      {new Date(analysis.date).toLocaleDateString("es-ES", {
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                      })}
+                                    </h4>
+                                    {/* Icono de alerta en móvil (a la derecha del título) */}
+                                    <div
+                                      className={`sm:hidden rounded-full w-7 h-7 flex-shrink-0 flex items-center justify-center 
+                                         ${getAlertBadgeClasses(analysis.alert_level)}`}
+                                    >
+                                      <Icon className="h-4 w-4" />
+                                    </div>
+                                  </div>
+
+                                  <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1 sm:mt-0.5">
                                     <Clock className="h-3 w-3" />
                                     {new Date(analysis.date).toLocaleTimeString("es-ES", {
                                       hour: "2-digit",
@@ -471,32 +502,38 @@ export default function DashboardPage() {
                                     })}
                                   </p>
                                 </div>
+
                                 {/* Botones funcionales del historial - stack en móvil */}
-                                <div className="flex gap-2 w-full sm:w-auto">
+                                <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleViewDetails(analysis.id)}
-                                    className="flex-1 sm:flex-none h-9 px-4 hover:border-primary/50 hover:text-primary transition-all"
+                                    className="flex-1 sm:flex-none h-10 sm:h-9 px-4 hover:border-primary/50 hover:text-primary transition-all"
                                   >
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    Ver
+                                    <Eye className="h-4 w-4 sm:mr-2" />
+                                    <span className="sm:hidden ml-1">Ver</span>
+                                    <span className="hidden sm:inline">Ver detalle</span>
                                   </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleDownload(analysis.id)}
-                                    className="flex-1 sm:flex-none h-9 px-4 hover:border-primary/50 hover:text-primary transition-all"
+                                    className="flex-1 sm:flex-none h-10 sm:h-9 px-4 hover:border-primary/50 hover:text-primary transition-all"
                                   >
-                                    <Download className="h-4 w-4 mr-2" />
-                                    PDF
+                                    <Download className="h-4 w-4 sm:mr-2" />
+                                    <span className="sm:hidden ml-1">PDF</span>
+                                    <span className="hidden sm:inline">Descargar</span>
                                   </Button>
                                 </div>
                               </div>
-                              {/* Summary truncado */}
-                              <p className="text-sm mt-3 text-muted-foreground line-clamp-2 leading-relaxed bg-muted/30 p-3 rounded-lg border border-border/50">
-                                {analysis.summary}
-                              </p>
+
+                              {/* Summary padding ajustado para que no recorte la base de las letras */}
+                              <div className="mt-4 sm:mt-3 bg-muted/30 p-3.5 sm:p-4 rounded-xl border border-border/50">
+                                <p className="text-sm text-muted-foreground line-clamp-4 sm:line-clamp-2 leading-loose sm:leading-relaxed">
+                                  {analysis.summary}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         );

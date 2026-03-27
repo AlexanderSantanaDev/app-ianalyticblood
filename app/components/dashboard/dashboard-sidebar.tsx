@@ -39,6 +39,11 @@ export default function DashboardSidebar() {
   const pathname = usePathname();
   /** Verifica si la ruta está activa */
   const isActive = (path: string) => {
+    // Si la ruta a comprobar es la raíz (Panel), solo debe estar activa si el pathname es exactamente igual
+    if (path === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+    // Para el resto de rutas (Subir análisis, Historial, etc), comprobamos si es igual o si empieza por ella
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 
@@ -54,13 +59,13 @@ export default function DashboardSidebar() {
       title: "Subir análisis",
       icon: Upload,
       href: "/dashboard/upload",
-      disabled: true,
+      disabled: false,
     },
     {
       title: "Historial",
       icon: FileText,
       href: "/dashboard/history",
-      disabled: true,
+      disabled: false,
     },
     {
       title: "Estadísticas",

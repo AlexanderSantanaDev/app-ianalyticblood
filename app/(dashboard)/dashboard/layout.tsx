@@ -11,9 +11,9 @@ import { ReactNode } from "react";
 /** Contenido del dashboard. */
 const DashboardContent = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen w-full bg-background">
       <DashboardSidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <DashboardNavbar />
         <main className="flex-1 pt-16 px-4 md:px-6 lg:px-8 pb-8">{children}</main>
         <DashboardFooter />
