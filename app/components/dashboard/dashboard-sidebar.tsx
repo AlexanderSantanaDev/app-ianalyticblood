@@ -83,7 +83,7 @@ export default function DashboardSidebar() {
       title: "Perfil",
       icon: User,
       href: "/dashboard/profile",
-      disabled: true,
+      disabled: false,
     },
     {
       title: "Suscripción",
