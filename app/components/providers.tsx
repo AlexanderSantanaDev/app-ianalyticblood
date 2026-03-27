@@ -2,9 +2,10 @@
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "./theme-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "sonner";
 import { AuthProvider } from "./AuthContext";
-
+/****************************************************************************************************************************/
+/** Componente que envuelve la aplicación con los proveedores necesarios. */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
@@ -16,7 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           disableTransitionOnChange
         >
           {children}
-          <Toaster />
+          <Toaster position="top-right" richColors closeButton expand={false} theme="system" />
         </ThemeProvider>
       </AuthProvider>
     </SessionProvider>

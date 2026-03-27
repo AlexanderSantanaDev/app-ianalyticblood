@@ -23,7 +23,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -36,13 +35,7 @@ interface MenuItem {
   disabled?: boolean;
 }
 /****************************************************************************************************************************/
-export default function DashboardSidebar({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
+export default function DashboardSidebar() {
   const pathname = usePathname();
   /** Verifica si la ruta está activa */
   const isActive = (path: string) => {
@@ -106,85 +99,83 @@ export default function DashboardSidebar({
       disabled: true,
     },
   ];
-  /****************************************************************************************************************************/
+
   //JSX
   return (
-    <SidebarProvider open={open} onOpenChange={onOpenChange}>
-      <Sidebar>
-        <SidebarHeader className="flex items-center justify-center py-4">
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <span className="text-xl font-bold gradient-text">IAnalyticBlood</span>
-          </Link>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {menuItems.map((item) => {
-              const active = isActive(item.href);
+    <Sidebar>
+      <SidebarHeader className="flex items-center justify-center py-4">
+        <Link href="/dashboard" className="flex items-center space-x-2">
+          <span className="text-xl font-bold gradient-text">IAnalyticBlood</span>
+        </Link>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarMenu>
+          {menuItems.map((item) => {
+            const active = isActive(item.href);
 
-              // Items desactivados con tooltip "Próximamente"
-              if (item.disabled) {
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className="flex w-full items-center gap-2 rounded-md p-2 text-sm text-muted-foreground/50 
-                          cursor-not-allowed select-none"
-                          aria-disabled="true"
-                        >
-                          <item.icon className="h-5 w-5" />
-                          <span>{item.title}</span>
-                          <Lock className="h-3 w-3 ml-auto opacity-40" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <p className="text-xs">Próximamente</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-                );
-              }
-
-              // Item activo con gradiente premium del proyecto
+            // Items desactivados con tooltip "Próximamente"
+            if (item.disabled) {
               return (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
-                    <Link
-                      href={item.href}
-                      className={
-                        active
-                          ? "!bg-gradient-to-r !from-primary/20 !to-secondary/10 !text-primary !font-semibold !border-l-2 !border-primary"
-                          : ""
-                      }
-                    >
-                      <item.icon className={`h-5 w-5 ${active ? "text-primary" : ""}`} />
-                      <span className={active ? "gradient-text font-semibold" : ""}>
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        className="flex w-full items-center gap-2 rounded-md p-2 text-sm text-muted-foreground/50 
+                        cursor-not-allowed select-none"
+                        aria-disabled="true"
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.title}</span>
+                        <Lock className="h-3 w-3 ml-auto opacity-40" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p className="text-xs">Próximamente</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </SidebarMenuItem>
               );
-            })}
-          </SidebarMenu>
-        </SidebarContent>
+            }
 
-        {/* Separador visual antes del footer */}
-        <SidebarSeparator />
+            // Item activo con gradiente premium del proyecto
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
+                  <Link
+                    href={item.href}
+                    className={
+                      active
+                        ? "!bg-gradient-to-r !from-primary/20 !to-secondary/10 !text-primary !font-semibold !border-l-2 !border-primary"
+                        : ""
+                    }
+                  >
+                    <item.icon className={`h-5 w-5 ${active ? "text-primary" : ""}`} />
+                    <span className={active ? "gradient-text font-semibold" : ""}>
+                      {item.title}
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarContent>
 
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Ayuda">
-                <Link href="/dashboard/help">
-                  <HelpCircle className="h-5 w-5" />
-                  <span>Ayuda</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-    </SidebarProvider>
+      {/* Separador visual antes del footer */}
+      <SidebarSeparator />
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Ayuda">
+              <Link href="/dashboard/help">
+                <HelpCircle className="h-5 w-5" />
+                <span>Ayuda</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 }

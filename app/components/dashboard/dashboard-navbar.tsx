@@ -25,22 +25,19 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
-
-interface DashboardNavbarProps {
-  onToggleSidebar: () => void;
-}
-
-export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProps) {
+import { useSidebar } from "@/components/ui/sidebar";
+/****************************************************************************************************************************/
+// Estados
+export default function DashboardNavbar() {
   // Todos los Hooks se llaman al inicio, antes de cualquier condicional
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const isMobile = useMobile(); // --> Esta es la modificación: mover useMobile aquí para que se llame siempre
-
+  const { isMobile, toggleSidebar } = useSidebar(); // Obtener toggleSidebar del contexto
+  /****************************************************************************************************************************/
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -48,14 +45,16 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Función para obtener el título de la página actual basado en la ruta
+  /****************************************************************************************************************************/
+  // Métodos
+  /** Obtiene el título de la página actual. */
   const getPageTitle = () => {
     const path = pathname.split("/").pop();
     if (!path || path === "dashboard") return "Panel de Control";
     return path.charAt(0).toUpperCase() + path.slice(1);
   };
 
+  /** Obtiene las iniciales del nombre del usuario. */
   const getInitials = (str = "") =>
     str
       .split(/\s+/)
@@ -76,7 +75,8 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
   const user = session?.user;
   const avatar = user?.image ?? undefined;
   const name = user?.name ?? user?.email ?? "Usuario";
-
+  /****************************************************************************************************************************/
+  //JSX
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
@@ -86,7 +86,7 @@ export default function DashboardNavbar({ onToggleSidebar }: DashboardNavbarProp
       <div className="flex items-center justify-between px-4 h-16 border-b">
         <div className="flex items-center">
           {isMobile && (
-            <Button variant="ghost" size="icon" onClick={onToggleSidebar} className="mr-2">
+            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Abrir menú</span>
             </Button>

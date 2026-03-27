@@ -1,15 +1,15 @@
 import { useSession, signOut } from "next-auth/react";
 import { toast } from "sonner";
-
+/****************************************************************************************************************************/
 const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
-
-// Función para rutas públicas (sin autenticación)
+/****************************************************************************************************************************/
+/** Función para rutas públicas (sin autenticación). */
 export async function publicApiFetch<T = unknown>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const headers: Record<string, string> = {
-    ...(options.headers as Record<string, string> || {}),
+    ...((options.headers as Record<string, string>) || {}),
     ...(options.body instanceof FormData || options.body instanceof URLSearchParams
       ? {}
       : { "Content-Type": "application/json" }),
@@ -25,7 +25,7 @@ export async function publicApiFetch<T = unknown>(
   return data as T;
 }
 
-// Hook para obtener apiFetch con autenticación
+/** Hook para obtener apiFetch con autenticación. */
 export function useApiFetch() {
   const { data: session, status } = useSession();
 
@@ -43,8 +43,8 @@ export function useApiFetch() {
     }
 
     const accessToken = session?.accessToken;
-    console.log("Estado de la sesión:", status);
-    console.log("Access Token usado:", accessToken);
+    // console.log("Estado de la sesión:", status);
+    // console.log("Access Token usado:", accessToken);
 
     if (!accessToken && status === "authenticated") {
       console.error("No access token available despite authenticated session");
@@ -54,7 +54,7 @@ export function useApiFetch() {
     }
 
     const headers: Record<string, string> = {
-      ...(options.headers as Record<string, string> || {}),
+      ...((options.headers as Record<string, string>) || {}),
       ...(options.body instanceof FormData || options.body instanceof URLSearchParams
         ? {}
         : { "Content-Type": "application/json" }),
@@ -62,7 +62,7 @@ export function useApiFetch() {
     };
 
     let res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-    console.log("Respuesta inicial:", res.status, res.statusText);
+    //console.log("Respuesta inicial:", res.status, res.statusText);
 
     if (res.status === 401 && session?.refreshToken) {
       console.log("Intentando refrescar el token...");
@@ -77,7 +77,7 @@ export function useApiFetch() {
       if (refreshRes.ok) {
         const data = await refreshRes.json();
         console.log("Nuevo access token obtenido:", data.access_token);
-        // ➡️ Actualizamos la sesión con los nuevos tokens
+        // Actualizamos la sesión con los nuevos tokens
         session.accessToken = data.access_token;
         session.refreshToken = data.refresh_token;
         headers.Authorization = `Bearer ${data.access_token}`;
@@ -103,12 +103,13 @@ export function useApiFetch() {
   return apiFetch;
 }
 
-// Utilidades para get y post
+/** Utilidad get. */
 export const get = <T>(p: string) => {
   const apiFetch = useApiFetch();
   return apiFetch<T>(p);
 };
 
+/** Utilidad post. */
 export const post = <T>(p: string, body: any, isForm = false) =>
   publicApiFetch<T>(p, {
     method: "POST",
