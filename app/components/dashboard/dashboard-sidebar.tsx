@@ -77,7 +77,7 @@ export default function DashboardSidebar() {
       title: "Calendario",
       icon: Calendar,
       href: "/dashboard/calendar",
-      disabled: true,
+      disabled: false,
     },
     {
       title: "Perfil",
