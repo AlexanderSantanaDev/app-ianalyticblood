@@ -35,6 +35,8 @@ export interface User {
     medical_data?: MedicalData;
     terms_accepted: boolean;
     terms_accepted_at?: string;
+    plan?: "free" | "premium" | "enterprise";
+    subscription_status?: "active" | "inactive" | "pending" | "canceled";
 }
 
 export interface Overview {

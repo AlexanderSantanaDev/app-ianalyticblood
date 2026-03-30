@@ -89,7 +89,7 @@ export default function DashboardSidebar() {
       title: "Suscripción",
       icon: CreditCard,
       href: "/dashboard/subscription",
-      disabled: true,
+      disabled: false,
     },
     {
       title: "Notificaciones",
