@@ -190,7 +190,7 @@ export default function NotificationsPage() {
             <Tabs value={filter} onValueChange={setFilter} className="w-full">
               <TabsList
                 className="bg-muted/50 border border-border/50 p-1 rounded-2xl h-12 w-full justify-start overflow-x-auto 
-              scrollbar-hide flex-nowrap"
+              scrollbar-hide flex-nowrap min-w-max sm:min-w-full"
               >
                 <TabsTrigger value="all" className="rounded-xl px-4 sm:px-6 text-sm flex-shrink-0">
                   Todas

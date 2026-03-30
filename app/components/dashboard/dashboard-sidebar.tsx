@@ -15,6 +15,7 @@ import {
   HelpCircle,
   Lock,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 /****************************************************************************************************************************/
@@ -37,6 +39,8 @@ interface MenuItem {
 /****************************************************************************************************************************/
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar(); // Acceso al estado del sidebar para móviles
+
   /** Verifica si la ruta está activa */
   const isActive = (path: string) => {
     // Si la ruta a comprobar es la raíz (Panel), solo debe estar activa si el pathname es exactamente igual
@@ -108,13 +112,18 @@ export default function DashboardSidebar() {
   //JSX
   return (
     <Sidebar>
-      <SidebarHeader className="flex items-center justify-center py-4">
-        <Link href="/dashboard" className="flex items-center space-x-2">
-          <span className="text-xl font-bold gradient-text">IAnalyticBlood</span>
+      <SidebarHeader className="flex flex-col items-start px-6 py-8 border-b border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm">
+        <Link href="/dashboard" className="flex items-center space-x-2 group">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform duration-300">
+            <span className="text-xs font-black">AB</span>
+          </div>
+          <span className="text-xl font-bold tracking-tight text-sidebar-foreground">
+            IAnalytic<span className="text-primary">Blood</span>
+          </span>
         </Link>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarMenu>
+      <SidebarContent className="px-3 pt-6">
+        <SidebarMenu className="gap-1.5">
           {menuItems.map((item) => {
             const active = isActive(item.href);
 
@@ -125,39 +134,54 @@ export default function DashboardSidebar() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div
-                        className="flex w-full items-center gap-2 rounded-md p-2 text-sm text-muted-foreground/50 
-                        cursor-not-allowed select-none"
+                        className="flex w-full items-center gap-3 rounded-xl p-2.5 text-sm text-sidebar-foreground/30 
+                        cursor-not-allowed select-none transition-all"
                         aria-disabled="true"
                       >
-                        <item.icon className="h-5 w-5" />
-                        <span>{item.title}</span>
-                        <Lock className="h-3 w-3 ml-auto opacity-40" />
+                        <item.icon className="h-5 w-5 opacity-40" />
+                        <span className="font-medium">{item.title}</span>
+                        <Lock className="h-3.5 w-3.5 ml-auto opacity-20" />
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <p className="text-xs">Próximamente</p>
+                    <TooltipContent
+                      side="right"
+                      className="bg-sidebar-foreground text-sidebar-background rounded-lg border-0 shadow-xl"
+                    >
+                      <p className="text-xs font-bold">Próximamente</p>
                     </TooltipContent>
                   </Tooltip>
                 </SidebarMenuItem>
               );
             }
 
-            // Item activo con gradiente premium del proyecto
+            // Item activo con estilo premium refinado
             return (
               <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={active}
+                  tooltip={item.title}
+                  className="h-11 rounded-xl transition-all duration-200"
+                >
                   <Link
                     href={item.href}
-                    className={
+                    onClick={() => {
+                      if (isMobile) setOpenMobile(false); // Cerrar sidebar tras click en móvil
+                    }}
+                    className={cn(
+                      "flex items-center gap-3 px-3 transition-all duration-300 group",
                       active
-                        ? "!bg-gradient-to-r !from-primary/20 !to-secondary/10 !text-primary !font-semibold !border-l-2 !border-primary"
-                        : ""
-                    }
+                        ? "bg-primary/10 text-primary font-bold shadow-[0_0_20px_rgba(var(--primary),0.05)] border-l-2 border-primary"
+                        : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+                    )}
                   >
-                    <item.icon className={`h-5 w-5 ${active ? "text-primary" : ""}`} />
-                    <span className={active ? "gradient-text font-semibold" : ""}>
-                      {item.title}
-                    </span>
+                    <item.icon
+                      className={cn(
+                        "h-5 w-5 transition-transform duration-300 group-hover:scale-110",
+                        active ? "text-primary" : "text-sidebar-foreground/40",
+                      )}
+                    />
+                    <span className="tracking-tight">{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -172,7 +196,12 @@ export default function DashboardSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Ayuda">
-              <Link href="/dashboard/help">
+              <Link
+                href="/dashboard/help"
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false);
+                }}
+              >
                 <HelpCircle className="h-5 w-5" />
                 <span>Ayuda</span>
               </Link>
