@@ -14,7 +14,27 @@ export interface RegisterBody {
 export interface LoginResponse {
     status: "success";
     access_token: string;
+    refresh_token?: string; 
     token_type: "bearer";
+}
+
+export interface MedicalData {
+    bloodType?: string;
+    height?: string;
+    weight?: string;
+    allergies?: string;
+    conditions?: string;
+}
+
+export interface User {
+    id: string;
+    email: string;
+    name: string;
+    lastName?: string;
+    phone?: string;
+    medical_data?: MedicalData;
+    terms_accepted: boolean;
+    terms_accepted_at?: string;
 }
 
 export interface Overview {

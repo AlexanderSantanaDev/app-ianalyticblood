@@ -22,6 +22,9 @@ import {
   AlertCircle,
   Info,
 } from "lucide-react";
+import { useEffect } from "react";
+import { useUserApi } from "@/lib/api/user";
+import { User as UserType } from "@/lib/api/types";
 
 import {
   Card,
@@ -86,22 +89,45 @@ type TabValue = "account" | "health" | "security";
 
 /***********************************************************************************************************************/
 export default function ProfilePage() {
-  // Estados
+  // Restaurada la sesión y useUserApi para integración real
   const { data: session, status } = useSession();
+  const { getMe } = useUserApi();
+  const [profile, setProfile] = useState<UserType | null>(null);
   const [activeTab, setActiveTab] = useState<TabValue>("account");
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getMe();
+        setProfile(data);
+      } catch (error) {
+        console.error("Error al cargar perfil:", error);
+        toast.error("No se pudo cargar la información del perfil.");
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   // Skeleton de carga
-  if (status === "loading") {
+  if (status === "loading" || isLoadingProfile) {
     return <ProfileSkeleton />;
   }
-  // Datos del usuario
-  const userName = session?.user?.name || "Usuario";
-  const userEmail = session?.user?.email || "correo@ejemplo.com";
+
+  // Datos del usuario (Priorizar los de la API sobre los de la sesión)
+  const userName = profile?.name || session?.user?.name || "Usuario";
+  const userLastName = profile?.lastName || "";
+  const userEmail = profile?.email || session?.user?.email || "correo@ejemplo.com";
+
   const initials = userName
     .split(" ")
     .map((n) => n[0])
     .join("")
     .substring(0, 2)
     .toUpperCase();
+
   // Tabs
   const tabs = [
     { id: "account", label: "Cuenta General", icon: User },
@@ -195,12 +221,18 @@ export default function ProfilePage() {
               {activeTab === "account" && (
                 <AccountTab
                   key="account"
-                  userName={userName}
-                  userEmail={userEmail}
+                  user={profile!}
+                  onUpdate={(newProfile) => setProfile(newProfile)}
                   initials={initials}
                 />
               )}
-              {activeTab === "health" && <HealthTab key="health" />}
+              {activeTab === "health" && (
+                <HealthTab
+                  key="health"
+                  user={profile!}
+                  onUpdate={(newProfile) => setProfile(newProfile)}
+                />
+              )}
               {activeTab === "security" && <SecurityTab key="security" />}
             </AnimatePresence>
           </motion.div>
@@ -213,38 +245,44 @@ export default function ProfilePage() {
 /***********************************************************************************************************************/
 /** Tab: Cuenta General. */
 function AccountTab({
-  userName,
-  userEmail,
+  user,
+  onUpdate,
   initials,
 }: {
-  userName: string;
-  userEmail: string;
+  user: UserType;
+  onUpdate: (u: UserType) => void;
   initials: string;
 }) {
-  // Estados
+  // Restaurado isSubmitting
   const [isSubmitting, setIsSubmitting] = useState(false);
-  /***********************************************************************************************************************/
-  // Hooks
+  const { updateMe } = useUserApi();
+
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
     defaultValues: {
-      name: userName,
-      lastName: "",
-      email: userEmail,
-      phone: "",
+      name: user.name,
+      lastName: user.lastName || "",
+      email: user.email,
+      phone: user.phone || "",
     },
   });
+
   /***********************************************************************************************************************/
   //Métodos
   /** Método que se ejecuta al enviar el formulario. */
   const onSubmit = async (data: AccountFormValues) => {
     setIsSubmitting(true);
-    // Simular API Call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast.success("Perfil actualizado con éxito", {
-      description: "Tus datos personales han sido guardados.",
-    });
-    setIsSubmitting(false);
+    try {
+      await updateMe(data);
+      onUpdate({ ...user, ...data });
+      toast.success("Perfil actualizado con éxito", {
+        description: "Tus datos personales han sido guardados en el servidor.",
+      });
+    } catch (error) {
+      toast.error("Error al actualizar el perfil.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   /***********************************************************************************************************************/
   //JSX
@@ -340,8 +378,8 @@ function AccountTab({
           <Button
             type="submit"
             form="account-form"
-            disabled={isSubmitting}
-            className="min-w-[120px] gradient-bg border-none shadow-md shadow-primary/20"
+            disabled={isSubmitting || !form.formState.isDirty}
+            className="min-w-[120px] gradient-bg border-none shadow-md shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               "Guardando..."
@@ -359,31 +397,41 @@ function AccountTab({
 
 /***********************************************************************************************************************/
 /** Tab: Salud / Medical. */
-function HealthTab() {
+function HealthTab({ user, onUpdate }: { user: UserType; onUpdate: (u: UserType) => void }) {
   // Estados
   const [isSubmitting, setIsSubmitting] = useState(false);
   /***********************************************************************************************************************/
-  // Hooks
+  // useUserApi
+  const { updateMe } = useUserApi();
+
   const form = useForm<HealthFormValues>({
     resolver: zodResolver(healthSchema),
     defaultValues: {
-      bloodType: "",
-      height: "",
-      weight: "",
-      allergies: "",
-      conditions: "",
+      bloodType: user.medical_data?.bloodType || "",
+      height: user.medical_data?.height || "",
+      weight: user.medical_data?.weight || "",
+      allergies: user.medical_data?.allergies || "",
+      conditions: user.medical_data?.conditions || "",
     },
   });
+
   /***********************************************************************************************************************/
   //Métodos
   /** Método que se ejecuta al enviar el formulario. */
   const onSubmit = async (data: HealthFormValues) => {
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast.success("Expediente base actualizado", {
-      description: "Esta información ayudará a la IA a personalizar tus lecturas.",
-    });
-    setIsSubmitting(false);
+    try {
+      // Llamada real al back enviando medical_data
+      await updateMe({ medical_data: data });
+      onUpdate({ ...user, medical_data: data });
+      toast.success("Expediente base actualizado", {
+        description: "Esta información ayudará a la IA a personalizar tus lecturas.",
+      });
+    } catch (error) {
+      toast.error("Error al guardar los datos médicos.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   /***********************************************************************************************************************/
   //JSX
@@ -422,7 +470,10 @@ function HealthTab() {
                 <Label htmlFor="bloodType">Grupo Sanguíneo</Label>
                 <div className="relative">
                   <Droplet className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500/70 z-10" />
-                  <Select onValueChange={(val) => form.setValue("bloodType", val)}>
+                  <Select
+                    value={form.watch("bloodType")}
+                    onValueChange={(val) => form.setValue("bloodType", val, { shouldDirty: true })}
+                  >
                     <SelectTrigger className="pl-10 bg-background">
                       <SelectValue placeholder="Seleccionar..." />
                     </SelectTrigger>
@@ -481,8 +532,8 @@ function HealthTab() {
           <Button
             type="submit"
             form="health-form"
-            disabled={isSubmitting}
-            className="min-w-[120px] bg-red-500 hover:bg-red-600 text-white border-none shadow-md shadow-red-500/20"
+            disabled={isSubmitting || !form.formState.isDirty}
+            className="min-w-[120px] bg-red-500 hover:bg-red-600 text-white border-none shadow-md shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               "Guardando..."
@@ -592,8 +643,8 @@ function SecurityTab() {
           <Button
             type="submit"
             form="security-form"
-            disabled={isSubmitting}
-            className="min-w-[120px]"
+            disabled={isSubmitting || !form.formState.isDirty}
+            className="min-w-[120px] disabled:opacity-50"
           >
             {isSubmitting ? "Autenticando..." : "Actualizar Contraseña"}
           </Button>
