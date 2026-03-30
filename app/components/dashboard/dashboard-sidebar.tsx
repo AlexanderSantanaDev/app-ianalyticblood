@@ -95,7 +95,7 @@ export default function DashboardSidebar() {
       title: "Notificaciones",
       icon: Bell,
       href: "/dashboard/notifications",
-      disabled: true,
+      disabled: false,
     },
     {
       title: "Configuración",
