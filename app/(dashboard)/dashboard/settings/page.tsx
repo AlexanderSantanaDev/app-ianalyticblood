@@ -1,0 +1,540 @@
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Settings,
+  Lock,
+  Bell,
+  User,
+  Shield,
+  Globe,
+  Moon,
+  Sun,
+  ChevronRight,
+  Mail,
+  Smartphone,
+  Eye,
+  EyeOff,
+  LogOut,
+  Save,
+  CheckCircle2,
+  Trash2,
+  AlertTriangle,
+  BarChart3,
+  Info,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { useTheme } from "next-themes";
+/***********************************************************************************************************************/
+export default function SettingsPage() {
+  // Estados
+  const { theme, setTheme } = useTheme();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Estados de configuración
+  const [configs, setConfigs] = useState({
+    notifications: {
+      emailAnalysis: true,
+      emailWeekly: false,
+      pushDesktop: true,
+      pushSecurity: true,
+    },
+    security: {
+      twoFactor: false,
+      loginAlerts: true,
+    },
+    preferences: {
+      language: "es",
+      units: "metric",
+    },
+  });
+  /***********************************************************************************************************************/
+  // Métodos
+  /** Alternar el estado de una configuración. */
+  const handleToggle = (category: keyof typeof configs, key: string) => {
+    setConfigs((prev) => ({
+      ...prev,
+      [category]: {
+        ...(prev[category] as any),
+        [key]: !(prev[category] as any)[key],
+      },
+    }));
+  };
+
+  /** Guardar configuración. */
+  const handleSave = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      toast.success("Configuración guardada correctamente ✨", {
+        description: "Tus cambios se han sincronizado en todos tus dispositivos.",
+      });
+    }, 1200);
+  };
+
+  /***********************************************************************************************************************/
+  //JSX
+  return (
+    <div className="pt-8 pb-20 min-h-[calc(100dvh-4rem)]">
+      <div className="container mx-auto px-4 max-w-5xl w-full">
+        {/* Header Premium */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-2 mb-10"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-primary/10 rounded-xl text-primary border border-primary/20 shadow-sm">
+              <Settings className="w-6 h-6" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Configuración</h1>
+          </div>
+          <p className="text-muted-foreground text-lg ml-[3.5rem] max-w-2xl">
+            Gestiona la seguridad de tu cuenta, preferencias de la UI y canales de comunicación.
+          </p>
+        </motion.div>
+
+        <Tabs defaultValue="security" className="space-y-8">
+          {/* Navegación de Pestañas con scroll horizontal en móvil */}
+          <div className="overflow-x-auto scrollbar-hide pb-2">
+            <TabsList
+              className="bg-muted/50 border border-border/50 p-1 rounded-2xl h-14 flex w-fit md:w-full justify-start
+             md:justify-center md:gap-2"
+            >
+              <TabsTrigger
+                value="security"
+                className="rounded-xl px-8 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-lg"
+              >
+                <Shield className="w-4 h-4 mr-2" /> Seguridad
+              </TabsTrigger>
+              <TabsTrigger
+                value="notifications"
+                className="rounded-xl px-8 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-lg"
+              >
+                <Bell className="w-4 h-4 mr-2" /> Notificaciones
+              </TabsTrigger>
+              <TabsTrigger
+                value="preferences"
+                className="rounded-xl px-8 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-lg"
+              >
+                <Globe className="w-4 h-4 mr-2" /> Preferencias
+              </TabsTrigger>
+              <TabsTrigger
+                value="account"
+                className="rounded-xl px-8 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-lg"
+              >
+                <User className="w-4 h-4 mr-2" /> Cuenta
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/***********************************************************************************************************************/}
+          {/* CONTENIDO: SEGURIDAD */}
+          <TabsContent value="security" className="space-y-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Cambio de Contraseña */}
+                <Card className="border-border/60 shadow-xl rounded-3xl backdrop-blur-sm bg-card/80">
+                  <CardHeader>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Lock className="w-4 h-4 text-primary" />
+                      <CardTitle className="text-xl">Seguridad de Acceso</CardTitle>
+                    </div>
+                    <CardDescription>
+                      Actualiza tu contraseña para mantener tu cuenta segura.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="current-password">Contraseña actual</Label>
+                      <div className="relative">
+                        <Input
+                          id="current-password"
+                          type={showPassword ? "text" : "password"}
+                          className="rounded-xl pr-10"
+                          placeholder="••••••••"
+                        />
+                        <button
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password">Nueva contraseña</Label>
+                      <Input
+                        id="new-password"
+                        type="password"
+                        className="rounded-xl"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                    <div className="pt-2">
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-xl gap-2 font-bold bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary"
+                      >
+                        Actualizar Contraseña
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Doble Factor (2FA) */}
+                <Card className="border-border/60 shadow-xl rounded-3xl backdrop-blur-sm bg-card/80">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-primary" />
+                        <CardTitle className="text-xl">Doble Factor (2FA)</CardTitle>
+                      </div>
+                      <Badge
+                        variant={configs.security.twoFactor ? "default" : "secondary"}
+                        className="rounded-lg"
+                      >
+                        {configs.security.twoFactor ? "Activado" : "Recomendado"}
+                      </Badge>
+                    </div>
+                    <CardDescription>
+                      Añade una capa extra de protección a tu cuenta móvil.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6 pt-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-0.5">
+                        <Label className="text-base font-bold">Autenticación en dos pasos</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Usa una app de autenticación (Google/Authy) para confirmar accesos.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={configs.security.twoFactor}
+                        onCheckedChange={() => handleToggle("security", "twoFactor")}
+                      />
+                    </div>
+
+                    <div className="p-4 bg-muted/40 rounded-2xl border border-dashed text-xs text-muted-foreground leading-relaxed">
+                      Al activar la verificación en dos pasos, necesitaremos un código generado por
+                      tu móvil cada vez que inicies sesión en un dispositivo nuevo.
+                    </div>
+
+                    <div className="flex items-start justify-between gap-4 pt-2">
+                      <div className="space-y-0.5">
+                        <Label className="text-base font-bold">Alertas de Inicio de Sesión</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Te avisaremos por email cuando se acceda desde un lugar desconocido.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={configs.security.loginAlerts}
+                        onCheckedChange={() => handleToggle("security", "loginAlerts")}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </motion.div>
+          </TabsContent>
+
+          {/***********************************************************************************************************************/}
+          {/* CONTENIDO: NOTIFICACIONES */}
+          <TabsContent value="notifications" className="space-y-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="border-border/60 shadow-xl rounded-3xl backdrop-blur-sm bg-card/80 max-w-3xl mx-auto">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-2xl font-bold">Protocolos de Alerta</CardTitle>
+                  <CardDescription>
+                    Escoge qué información es prioritaria para tu salud y bienestar.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8 pt-4">
+                  {/* Grupo Email */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-bold uppercase tracking-widest text-primary/80 flex items-center gap-2">
+                      <Mail className="w-4 h-4" /> Correo Electrónico
+                    </h4>
+                    <div className="space-y-4 divide-y divide-border/40">
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="space-y-0.5">
+                          <Label className="text-base">Resultados de Análisis</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Recibir una copia en PDF del análisis cuando se procese.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={configs.notifications.emailAnalysis}
+                          onCheckedChange={() => handleToggle("notifications", "emailAnalysis")}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between pt-4">
+                        <div className="space-y-0.5">
+                          <Label className="text-base">Resumen Biométrico Mensual</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Reporte detallado de tus tendencias y salud cada mes.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={configs.notifications.emailWeekly}
+                          onCheckedChange={() => handleToggle("notifications", "emailWeekly")}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Grupo Push */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-bold uppercase tracking-widest text-primary/80 flex items-center gap-2">
+                      <Smartphone className="w-4 h-4" /> Notificaciones Push
+                    </h4>
+                    <div className="space-y-4 divide-y divide-border/40">
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="space-y-0.5">
+                          <Label className="text-base">Alertas en Tiempo Real</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Notificaciones instantáneas al completar un escaneado.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={configs.notifications.pushDesktop}
+                          onCheckedChange={() => handleToggle("notifications", "pushDesktop")}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between pt-4">
+                        <div className="space-y-0.5">
+                          <Label className="text-base">Avisos de Seguridad</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Cambios de contraseña o accesos nuevos.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={configs.notifications.pushSecurity}
+                          onCheckedChange={() => handleToggle("notifications", "pushSecurity")}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="bg-muted/30 border-t mt-4 p-6 justify-between flex flex-col sm:flex-row gap-4">
+                  <p className="text-xs text-muted-foreground max-w-sm">
+                    No compartiremos tu correo con terceros por motivos publicitarios bajo ninguna
+                    circunstancia.
+                  </p>
+                  <Button
+                    onClick={handleSave}
+                    className="rounded-xl px-8 font-bold gap-2"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      "Guardando..."
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" /> Guardar Cambios
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          {/***********************************************************************************************************************/}
+          {/* CONTENIDO: PREFERENCIAS */}
+          <TabsContent value="preferences" className="space-y-6">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {/* Personalización Visual */}
+                <Card className="border-border/60 shadow-xl rounded-3xl backdrop-blur-sm bg-card/80">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Moon className="w-5 h-5 text-primary" /> Apariencia
+                    </CardTitle>
+                    <CardDescription>Ajusta el entorno visual de iAnalytic Blood.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => setTheme("light")}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
+                          theme === "light"
+                            ? "border-primary bg-primary/5"
+                            : "border-border/40 hover:border-primary/20"
+                        }`}
+                      >
+                        <Sun className="w-6 h-6 text-orange-500" />
+                        <span className="text-sm font-bold text-foreground">Claro</span>
+                      </button>
+                      <button
+                        onClick={() => setTheme("dark")}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
+                          theme === "dark"
+                            ? "border-primary bg-primary/10"
+                            : "border-border/40 hover:border-primary/20"
+                        }`}
+                      >
+                        <Moon className="w-6 h-6 text-blue-400" />
+                        <span className="text-sm font-bold text-foreground">Oscuro</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Idioma de la Interfaz</Label>
+                      <Select
+                        defaultValue={configs.preferences.language}
+                        onValueChange={(val) =>
+                          setConfigs((p) => ({
+                            ...p,
+                            preferences: { ...p.preferences, language: val },
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="rounded-xl h-12">
+                          <SelectValue placeholder="Selecciona idioma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="es">Español (Recomendado)</SelectItem>
+                          <SelectItem value="en">English (Coming Soon)</SelectItem>
+                          <SelectItem value="fr">Français</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Datos y Metodología */}
+                <Card className="border-border/60 shadow-xl rounded-3xl backdrop-blur-sm bg-card/80">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-primary" /> Unidades y Análisis
+                    </CardTitle>
+                    <CardDescription>
+                      Configura cómo interpretamos tus biomarcadores.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label>Sistema de Unidades</Label>
+                      <Select defaultValue={configs.preferences.units}>
+                        <SelectTrigger className="rounded-xl h-12">
+                          <SelectValue placeholder="Selecciona sistema" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="metric">Sistema Métrico (kg, cm, mg/dL)</SelectItem>
+                          <SelectItem value="imperial">Imperial (lb, ft/in, mmol/L)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="p-4 bg-muted/40 rounded-2xl border flex items-start gap-3">
+                      <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        El sistema de análisis detectará automáticamente si tu informe utiliza
+                        unidades distintas a tu preferencia y las convertirá para la comparativa
+                        histórica.
+                      </p>
+                    </div>
+
+                    <Button
+                      onClick={handleSave}
+                      className="w-full rounded-xl h-12 font-bold"
+                      variant="default"
+                    >
+                      Aplicar Preferencias
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </motion.div>
+          </TabsContent>
+
+          {/***********************************************************************************************************************/}
+          {/* CONTENIDO: CUENTA */}
+          <TabsContent value="account" className="space-y-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="border-red-500/20 shadow-xl rounded-3xl bg-card/80 overflow-hidden border-2">
+                <CardHeader className="bg-red-500/5 p-8 border-b border-red-500/10">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-8 h-8 text-red-500" />
+                    <div>
+                      <CardTitle className="text-2xl text-red-600">Zona de Riesgo</CardTitle>
+                      <CardDescription className="text-red-600/60 font-medium">
+                        Gestiona tu privacidad y presencia en la plataforma.
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-8 space-y-8">
+                  <div
+                    className="flex flex-col sm:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-muted/30 border 
+                  border-border/50"
+                  >
+                    <div className="space-y-1 text-center sm:text-left">
+                      <h4 className="font-bold text-lg">Descargar mis datos</h4>
+                      <p className="text-sm text-muted-foreground max-w-sm">
+                        Genera un paquete .ZIP con todo tu historial de salud, análisis e imágenes
+                        en formato estructurado.
+                      </p>
+                    </div>
+                    <Button variant="outline" className="rounded-xl px-6 h-12 font-bold shrink-0">
+                      Solicitar Exportación
+                    </Button>
+                  </div>
+
+                  <div
+                    className="flex flex-col sm:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-red-500/5 
+                  border border-red-500/20"
+                  >
+                    <div className="space-y-1 text-center sm:text-left">
+                      <h4 className="font-bold text-lg text-red-600">
+                        Eliminar cuenta permanentemente
+                      </h4>
+                      <p className="text-sm text-red-600/70 max-w-sm">
+                        Esta acción es irreversible. Se borrarán todos tus datos biométricos e
+                        imágenes procesadas de nuestros servidores.
+                      </p>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      className="rounded-xl px-6 h-12 font-bold shrink-0 shadow-lg shadow-red-500/20"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" /> Eliminar Cuenta
+                    </Button>
+                  </div>
+                </CardContent>
+                <CardFooter className="bg-muted/10 p-6 flex justify-center border-t">
+                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                    <LogOut className="w-4 h-4 mr-2" /> Cerrar sesión en otros dispositivos
+                  </Button>
+                </CardFooter>
+              </Card>
+            </motion.div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}

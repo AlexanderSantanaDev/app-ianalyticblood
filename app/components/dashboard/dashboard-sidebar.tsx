@@ -101,7 +101,7 @@ export default function DashboardSidebar() {
       title: "Configuración",
       icon: Settings,
       href: "/dashboard/settings",
-      disabled: true,
+      disabled: false,
     },
   ];
 
