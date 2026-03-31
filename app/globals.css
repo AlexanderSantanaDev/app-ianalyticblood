@@ -171,3 +171,41 @@
 }
 
 /* END: Loader CSS - From Uiverse.io by Nawsome */
+
+/* Personalización global de la barra de desplazamiento (Premium Scrollbar) */
+/* Diseño minimalista y moderno que se adapta a iAnalyticBlood */
+@layer base {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/10 rounded-full transition-colors;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/20;
+  }
+
+  /* Para Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.1) transparent;
+  }
+
+  /* Barra desplazadora premium para el dashboard/contenedores internos */
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-white/5;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/30;
+  }
+}

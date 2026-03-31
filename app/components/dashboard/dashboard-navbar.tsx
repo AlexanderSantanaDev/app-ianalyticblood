@@ -34,19 +34,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
 import { useSidebar } from "@/components/ui/sidebar";
+import DashboardSearch from "@/components/dashboard/dashboard-search";
 /****************************************************************************************************************************/
 // Estados
 export default function DashboardNavbar() {
@@ -54,6 +46,8 @@ export default function DashboardNavbar() {
   // Todos los Hooks se llaman al inicio, antes de cualquier condicional
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  //  Detectar plataforma para mostrar atajo correcto en el hint del buscador
+  const [isMac, setIsMac] = useState(true);
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const { isMobile, toggleSidebar } = useSidebar(); // Obtener toggleSidebar del contexto
@@ -64,6 +58,11 @@ export default function DashboardNavbar() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Detectar Mac vs Windows/Linux una sola vez al montar
+  useEffect(() => {
+    setIsMac(/Mac|iPhone|iPod|iPad/.test(navigator.userAgent));
   }, []);
   /****************************************************************************************************************************/
   /** Mapa de rutas con nombre propio en español e icono por sección. */
@@ -163,54 +162,45 @@ export default function DashboardNavbar() {
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Barra de búsqueda */}
+          {/* Buscador desktop — abre el command palette premium al hacer click */}
           {!isMobile && (
-            <div className="relative mr-2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                type="search"
-                placeholder="Buscar..."
-                className="pl-10 w-[200px] lg:w-[300px] h-9"
-                onClick={() => setIsSearchOpen(true)}
-              />
-            </div>
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="relative mr-2 flex items-center gap-2 h-9 pl-3 pr-4 rounded-xl bg-muted/50 hover:bg-muted/80 border 
+              border-border/50 hover:border-primary/20 transition-all duration-200 w-[200px] lg:w-[280px] group"
+            >
+              <Search className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary/60 transition-colors shrink-0" />
+              <span
+                className="text-xs text-muted-foreground/50 group-hover:text-muted-foreground/70 flex-1 text-left transition-colors 
+              tracking-tight"
+              >
+                Buscar...
+              </span>
+              {/* Hint dinámico según plataforma: ⌘K en Mac, Ctrl K en Windows/Linux (Estilo Unificado) */}
+              <kbd
+                className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/80 text-muted-foreground/70 
+              text-[10px] font-mono border border-border/50 shadow-sm transition-colors group-hover:border-primary/30"
+              >
+                {isMac ? "\u2318K" : "Ctrl K"}
+              </kbd>
+            </button>
           )}
 
-          {/* Diálogo de búsqueda para móviles */}
+          {/* Botón de búsqueda en móvil — mismo command palette */}
           {isMobile && (
-            <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Search className="h-5 w-5" />
-                  <span className="sr-only">Buscar</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Buscar</DialogTitle>
-                  <DialogDescription>Busca análisis, funciones o configuraciones</DialogDescription>
-                </DialogHeader>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input type="search" placeholder="Buscar..." className="pl-10" autoFocus />
-                </div>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Búsquedas recientes</h4>
-                  <div className="space-y-1">
-                    <Button variant="ghost" className="w-full justify-start text-sm">
-                      Análisis de sangre completo
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start text-sm">
-                      Configuración de perfil
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start text-sm">
-                      Historial de análisis
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSearchOpen(true)}
+              className="hover:bg-primary/10 hover:text-primary transition-colors rounded-xl"
+            >
+              <Search className="h-4.5 w-4.5" />
+              <span className="sr-only">Buscar</span>
+            </Button>
           )}
+
+          {/* Command Palette premium — unificado para desktop y móvil */}
+          <DashboardSearch open={isSearchOpen} onOpenChange={setIsSearchOpen} />
 
           {/* Notificaciones */}
           <DropdownMenu>
