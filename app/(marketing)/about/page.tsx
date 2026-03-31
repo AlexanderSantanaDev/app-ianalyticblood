@@ -6,20 +6,23 @@ import { AnimateOnScroll } from "@/components/marketing/animated-sections";
 import { TeamMemberCard } from "@/components/marketing/team-member-card";
 import { TechnologyCard } from "@/components/marketing/technology-card";
 import { Card, CardContent } from "@/components/ui/card";
-
+/***********************************************************************************************************************/
 export const metadata = {
   title: "Sobre nosotros | IAnalyticBlood",
   description: "Conoce nuestra misión, el equipo y la tecnología que impulsa IAnalyticBlood.",
 };
-
+/***********************************************************************************************************************/
 export default function AboutPage() {
+  /** Equipo de desarrollo. */
   const team = [
-    { name: "Ana Martínez", role: "CEO & Fundadora", img: "/placeholder.svg" },
-    { name: "Carlos Rodríguez", role: "CTO & Dev", img: "/placeholder.svg" },
-    { name: "Elena Gómez", role: "Científica de datos", img: "/placeholder.svg" },
-    { name: "Javier López", role: "Asesor médico", img: "/placeholder.svg" },
+    { 
+      name: "Alexander J. Santana", 
+      role: "Fundador & Desarrollador Fullstack", 
+      img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander&top=shortCurly&hairColor=2c1b18&accessories=sunglasses&accessoriesColor=000000&clothes=graphicShirt&clothesColor=ffffff&skinColor=edb98a&eyes=default&mouth=smile&eyebrows=default" 
+    },
   ];
 
+  /** Tecnologías utilizadas. */
   const tech = [
     {
       icon: "brain",
@@ -57,6 +60,8 @@ export default function AboutPage() {
     desc: string;
   }>;
 
+  /***********************************************************************************************************************/
+  //JSX
   return (
     <div className="pt-32 pb-20">
       <div className="container mx-auto px-4">
@@ -107,7 +112,7 @@ export default function AboutPage() {
                 <div className="bg-card rounded-3xl shadow-xl overflow-hidden border border-border p-6">
                   <div className="aspect-video relative">
                     <Image
-                      src="/placeholder.svg?height=400&width=600"
+                      src="https://api.dicebear.com/7.x/shapes/svg?seed=mission&backgroundColor=020617"
                       alt="Nuestra misión"
                       fill
                       className="object-cover rounded-xl"
@@ -120,22 +125,24 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Nuestro Equipo */}
+        {/* Nuestro Equipo - Reestructurado para Fundador Único */}
         <section className="mb-20">
           <AnimateOnScroll>
             <div className="text-center max-w-3xl mx-auto mb-12">
-              <h2 className="text-3xl font-bold mb-4">Nuestro Equipo</h2>
+              <h2 className="text-3xl font-bold mb-4">El Fundador</h2>
               <p className="text-lg text-muted-foreground">
-                Somos un equipo multidisciplinario de profesionales apasionados por la tecnología y
-                la salud.
+                La visión y el desarrollo detrás de IAnalyticBlood, impulsados por la necesidad de
+                democratizar la salud.
               </p>
             </div>
           </AnimateOnScroll>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((m, i) => (
-              <TeamMemberCard key={m.name} {...m} delay={0.1 * (i + 1)} />
-            ))}
+          <div className="flex justify-center">
+            <div className="max-w-[320px] w-full">
+              {team.map((m, i) => (
+                <TeamMemberCard key={m.name} {...m} delay={0.2} />
+              ))}
+            </div>
           </div>
         </section>
 
@@ -148,7 +155,7 @@ export default function AboutPage() {
                 <div className="bg-card rounded-3xl shadow-xl overflow-hidden border border-border p-6">
                   <div className="aspect-video relative">
                     <Image
-                      src="/placeholder.svg?height=400&width=600"
+                      src="https://api.dicebear.com/7.x/shapes/svg?seed=history&backgroundColor=020617"
                       alt="Nuestra historia"
                       fill
                       className="object-cover rounded-xl"
@@ -160,23 +167,26 @@ export default function AboutPage() {
             </AnimateOnScroll>
 
             <AnimateOnScroll className="order-1 lg:order-2">
-              <div>
+              <div className="space-y-6">
                 <h2 className="text-3xl font-bold mb-6">Nuestra Historia</h2>
-                <p className="text-lg text-muted-foreground mb-4">
-                  IAnalyticBlood nació en 2023 como respuesta a una necesidad personal de nuestra
-                  fundadora, Ana Martínez, quien tras recibir unos análisis de sangre complejos, se
-                  dio cuenta de lo difícil que era para una persona sin formación médica entender
-                  los resultados.
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  IAnalyticBlood no nació en una oficina, sino de una frustración real. El fundador,
+                  **Alexander J. Santana**, tras recibir los resultados de un análisis de sangre
+                  habitual, se encontró con un documento lleno de términos crípticos y cifras
+                  imposibles de interpretar sin conocimientos médicos avanzados.
                 </p>
-                <p className="text-lg text-muted-foreground mb-4">
-                  Junto con Carlos Rodríguez, desarrollador con experiencia en inteligencia
-                  artificial, comenzaron a trabajar en un prototipo que pudiera "traducir" los
-                  análisis médicos a un lenguaje comprensible para todos.
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Al buscar explicaciones, se dio cuenta de que incluso los profesionales médicos a
+                  menudo utilizaban una jerga técnica que, en lugar de aclarar, generaba más
+                  incertidumbre. "Sentí que mi propia salud era un idioma que yo no podía hablar",
+                  explica Alexander.
                 </p>
-                <p className="text-lg text-muted-foreground">
-                  Tras meses de desarrollo y pruebas, y con la incorporación de Elena Gómez y el Dr.
-                  Javier López al equipo, IAnalyticBlood se lanzó oficialmente, con la misión de
-                  hacer la información médica accesible para todos.
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  Ese fue el punto de inflexión. Sin asesores externos ni grandes equipos, Alexander
+                  decidió tomar la idea y convertirla en realidad. Como único creador del proyecto
+                  —desde la arquitectura hasta el último detalle del diseño—, desarrolló iAnalytic
+                  Blood con una misión clara: que cualquier persona, incluido él mismo, pudiera
+                  entender qué dice su sangre en un lenguaje natural, claro y directo.
                 </p>
               </div>
             </AnimateOnScroll>
