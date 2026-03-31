@@ -112,18 +112,29 @@ export default function DashboardSidebar() {
   //JSX
   return (
     <Sidebar>
-      <SidebarHeader className="flex flex-col items-start px-6 py-8 border-b border-sidebar-border/50 bg-sidebar/50 backdrop-blur-sm">
-        <Link href="/dashboard" className="flex items-center space-x-2 group">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform duration-300">
-            <span className="text-xs font-black">AB</span>
+      {/* Header del sidebar SOLO visible en móvil (md:hidden)
+          En desktop el navbar ya muestra la marca */}
+      <SidebarHeader className="md:hidden flex flex-col items-start px-6 py-7 border-b border-sidebar-border/50 bg-sidebar">
+        <Link
+          href="/dashboard"
+          onClick={() => setOpenMobile(false)}
+          className="flex items-center space-x-3 group"
+        >
+          <div
+            className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center
+           text-white shadow-lg shadow-primary/30 group-hover:scale-105 group-hover:shadow-primary/50 transition-all duration-300"
+          >
+            <span className="text-sm font-black tracking-tighter">AB</span>
           </div>
           <span className="text-xl font-bold tracking-tight text-sidebar-foreground">
             IAnalytic<span className="text-primary">Blood</span>
           </span>
         </Link>
       </SidebarHeader>
-      <SidebarContent className="px-3 pt-6">
-        <SidebarMenu className="gap-1.5">
+
+      {/* Contenido principal del menú sin padding top extra en desktop */}
+      <SidebarContent className="px-3 pt-20">
+        <SidebarMenu className="gap-1">
           {menuItems.map((item) => {
             const active = isActive(item.href);
 
@@ -154,7 +165,7 @@ export default function DashboardSidebar() {
               );
             }
 
-            // Item activo con estilo premium refinado
+            // Item activo refinado + ripple ring sutil
             return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
@@ -166,22 +177,30 @@ export default function DashboardSidebar() {
                   <Link
                     href={item.href}
                     onClick={() => {
-                      if (isMobile) setOpenMobile(false); // Cerrar sidebar tras click en móvil
+                      if (isMobile) setOpenMobile(false);
                     }}
                     className={cn(
                       "flex items-center gap-3 px-3 transition-all duration-300 group",
                       active
-                        ? "bg-primary/10 text-primary font-bold shadow-[0_0_20px_rgba(var(--primary),0.05)] border-l-2 border-primary"
+                        ? "bg-primary/10 text-primary font-bold border-l-2 border-primary"
                         : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
                     )}
                   >
                     <item.icon
                       className={cn(
-                        "h-5 w-5 transition-transform duration-300 group-hover:scale-110",
-                        active ? "text-primary" : "text-sidebar-foreground/40",
+                        "h-4.5 w-4.5 shrink-0 transition-all duration-300",
+                        active
+                          ? "text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.7)]"
+                          : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70 group-hover:scale-110",
                       )}
                     />
-                    <span className="tracking-tight">{item.title}</span>
+                    <span className={cn("tracking-tight text-sm", active && "font-semibold")}>
+                      {item.title}
+                    </span>
+                    {/* Dot indicador de notificaciones pendientes (solo Notificaciones) */}
+                    {item.href === "/dashboard/notifications" && (
+                      <span className="ml-auto flex h-2 w-2 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary))] animate-pulse" />
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -189,25 +208,41 @@ export default function DashboardSidebar() {
           })}
         </SidebarMenu>
       </SidebarContent>
-      {/* Separador visual antes del footer */}
-      <SidebarSeparator />
 
-      <SidebarFooter>
+      {/* Separador con glow sutil de marca */}
+      <SidebarSeparator className="bg-gradient-to-r from-transparent via-primary/20 to-transparent border-0 h-px" />
+
+      {/* Footer mejorado con ayuda + badge de versión */}
+      <SidebarFooter className="px-3 pb-4 pt-3 gap-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Ayuda">
+            <SidebarMenuButton
+              asChild
+              tooltip="Centro de ayuda"
+              className="h-10 rounded-xl text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 
+              transition-all duration-200"
+            >
               <Link
                 href="/dashboard/help"
                 onClick={() => {
                   if (isMobile) setOpenMobile(false);
                 }}
+                className="flex items-center gap-3 px-3"
               >
-                <HelpCircle className="h-5 w-5" />
-                <span>Ayuda</span>
+                <HelpCircle className="h-4.5 w-4.5 shrink-0" />
+                <span className="text-sm tracking-tight">Ayuda</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+
+        {/* Badge de versión premium al fondo del sidebar */}
+        <div className="mx-2 px-3 py-2 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between">
+          <span className="text-[10px] font-semibold text-sidebar-foreground/40 tracking-widest uppercase">
+            iAnalytic Blood
+          </span>
+          <span className="text-[10px] font-bold text-primary/60 tracking-tight">v1.0</span>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

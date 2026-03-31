@@ -12,6 +12,16 @@ import {
   Activity,
   ShieldCheck,
   ArrowRight,
+  LayoutDashboard,
+  Upload,
+  History,
+  BarChart3,
+  CalendarDays,
+  UserCircle,
+  CreditCard,
+  BellRing,
+  Settings2,
+  HelpCircle,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -56,12 +66,24 @@ export default function DashboardNavbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   /****************************************************************************************************************************/
-  // Métodos
-  /** Obtiene el título de la página actual. */
-  const getPageTitle = () => {
-    const path = pathname.split("/").pop();
-    if (!path || path === "dashboard") return "Panel de Control";
-    return path.charAt(0).toUpperCase() + path.slice(1);
+  /** Mapa de rutas con nombre propio en español e icono por sección. */
+  const PAGE_MAP: Record<string, { label: string; Icon: React.ElementType }> = {
+    dashboard: { label: "Panel de Control", Icon: LayoutDashboard },
+    upload: { label: "Subir análisis", Icon: Upload },
+    history: { label: "Historial", Icon: History },
+    stats: { label: "Estadísticas", Icon: BarChart3 },
+    calendar: { label: "Calendario", Icon: CalendarDays },
+    profile: { label: "Mi Perfil", Icon: UserCircle },
+    subscription: { label: "Suscripción", Icon: CreditCard },
+    notifications: { label: "Notificaciones", Icon: BellRing },
+    settings: { label: "Configuración", Icon: Settings2 },
+    help: { label: "Centro de ayuda", Icon: HelpCircle },
+  };
+
+  /** Obtiene el meta de la página actual */
+  const getPageMeta = () => {
+    const segment = pathname.split("/").pop() ?? "dashboard";
+    return PAGE_MAP[segment] ?? PAGE_MAP["dashboard"];
   };
 
   /** Obtiene las iniciales del nombre del usuario. */
@@ -73,18 +95,41 @@ export default function DashboardNavbar() {
       .toUpperCase()
       .slice(0, 2);
 
-  // Renderizado condicional después de todos los Hooks
+  // Mientras carga.. mostramos skeleton
   if (status === "loading") {
     return (
-      <div className="fixed top-0 left-0 right-0 h-16 bg-background border-b flex items-center justify-center">
-        Cargando...
-      </div>
+      <header className="fixed top-0 left-0 right-0 z-40 bg-background border-b">
+        <div className="flex items-center justify-between px-4 h-16">
+          {/* Logo skeleton */}
+          <div className="flex items-center gap-3">
+            <div className="w-24 h-5 bg-muted rounded-lg animate-pulse" />
+            <span className="hidden md:inline-block text-muted/30">|</span>
+            <div className="hidden md:block w-32 h-4 bg-muted rounded-md animate-pulse" />
+          </div>
+          {/* Actions skeleton */}
+          <div className="flex items-center gap-2">
+            <div className="hidden md:block w-[200px] lg:w-[280px] h-9 bg-muted rounded-lg animate-pulse" />
+            <div className="w-9 h-9 bg-muted rounded-lg animate-pulse" />
+            <div className="w-9 h-9 bg-muted rounded-lg animate-pulse" />
+            <div className="w-8 h-8 bg-muted rounded-full animate-pulse" />
+          </div>
+        </div>
+        {/* Barra de carga inferior sutil */}
+        <div className="h-[2px] w-full bg-muted overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-primary/60 via-secondary/60 to-primary/60 rounded-full animate-pulse"
+            style={{ width: "60%" }}
+          />
+        </div>
+      </header>
     );
   }
 
   const user = session?.user;
   const avatar = user?.image ?? undefined;
   const name = user?.name ?? user?.email ?? "Usuario";
+  // Obtiene meta (label + Icon) de la página actual
+  const { label: pageLabel, Icon: PageIcon } = getPageMeta();
   /****************************************************************************************************************************/
   //JSX
   return (
@@ -107,8 +152,14 @@ export default function DashboardNavbar() {
             </span>
             <span className="text-xl font-bold gradient-text md:hidden">AB</span>
           </Link>
-          <span className="hidden md:inline-block mx-4 text-muted-foreground">|</span>
-          <span className="hidden md:inline-block text-lg font-medium">{getPageTitle()}</span>
+          {/* Separador + título con icono de la sección activa */}
+          <span className="hidden md:inline-block mx-4 text-muted-foreground/30">|</span>
+          <div className="hidden md:flex items-center gap-2">
+            <PageIcon className="h-4 w-4 text-primary/70" />
+            <span className="text-sm font-semibold text-foreground/80 tracking-tight">
+              {pageLabel}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center space-x-2">
