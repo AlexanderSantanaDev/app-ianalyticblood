@@ -39,6 +39,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
 import { useSidebar } from "@/components/ui/sidebar";
 import DashboardSearch from "@/components/dashboard/dashboard-search";
+import GlobalAnalysisIndicator from "@/components/dashboard/global-analysis-indicator";
 /****************************************************************************************************************************/
 // Estados
 export default function DashboardNavbar() {
@@ -201,6 +202,9 @@ export default function DashboardNavbar() {
 
           {/* Command Palette premium — unificado para desktop y móvil */}
           <DashboardSearch open={isSearchOpen} onOpenChange={setIsSearchOpen} />
+
+          {/* Indicador Global de Análisis (IA) */}
+          <GlobalAnalysisIndicator />
 
           {/* Notificaciones */}
           <DropdownMenu>

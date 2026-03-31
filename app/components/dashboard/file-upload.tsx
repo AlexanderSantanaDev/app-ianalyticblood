@@ -5,11 +5,10 @@ import { FileUploadProps } from "@/types/dashboard";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useApiFetch } from "@/lib/api/client";
-import { uploadFile } from "@/lib/api/analysis";
-import { useLoading } from "@/hooks/loading-context";
-import { Loader } from "@/components/ui/loader";
-import { toast } from "sonner";
+import { useAnalysis } from "@/hooks/analysis-context";
+import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
+import { ShieldCheck, Database, Sparkles, CheckCircle2 } from "lucide-react";
 /****************************************************************************************************************************/
 export const FileUpload = ({ onUpload }: FileUploadProps) => {
   // Estados
@@ -17,7 +16,7 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const apiFetch = useApiFetch();
-  const { isLoading, setIsLoading } = useLoading();
+  const { startAnalysis, isAnalyzing, progress, currentStep } = useAnalysis();
   /****************************************************************************************************************************/
   // Métodos
   /** Maneja el cambio de archivo */
@@ -33,21 +32,12 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
   /** Maneja el procesamiento del archivo */
   const handleProcess = async () => {
     if (!file) return;
-    setIsLoading(true);
     try {
-      await uploadFile(file, apiFetch);
-      // Toast de éxito
-      toast.success("Análisis completado", {
-        description: "Tu informe ha sido procesado correctamente con IA.",
-      });
+      await startAnalysis(file, apiFetch);
       onUpload(file);
     } catch (err: any) {
-      // Toast de error
-      toast.error("Error al procesar", {
-        description: err.message || "No se pudo analizar el informe. Reintenta.",
-      });
+      // El error ya se maneja en el context, pero podemos limpiar estado local aquí si hace falta
     } finally {
-      setIsLoading(false);
       setFile(null);
       setPreviewUrl(null);
     }
@@ -105,27 +95,72 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* Loader overlay más premium con AnimatePresence */}
+      {/* Loader overlay más premium con BARRA DE PROGRESO */}
       <AnimatePresence>
-        {isLoading && (
+        {isAnalyzing && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-md rounded-xl z-50 p-4"
+            className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-xl rounded-xl z-50 p-6"
           >
-            <div className="flex flex-col gap-4 items-center text-center">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-                <Loader size="lg" />
+            <div className="flex flex-col gap-8 items-center text-center w-full max-w-md">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full group-hover:bg-primary/30 transition-all duration-500" />
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                  className="relative w-24 h-24 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center"
+                >
+                  <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    {progress < 30 ? (
+                      <Database className="text-primary animate-pulse" size={28} />
+                    ) : progress < 70 ? (
+                      <Sparkles className="text-primary animate-pulse" size={28} />
+                    ) : progress < 95 ? (
+                      <ShieldCheck className="text-primary animate-pulse" size={28} />
+                    ) : (
+                      <CheckCircle2 className="text-primary" size={28} />
+                    )}
+                  </div>
+                </motion.div>
               </div>
-              <div className="space-y-1">
-                <p className="text-foreground font-bold text-base tracking-tight">
-                  Analizando informe...
-                </p>
-                <p className="text-muted-foreground text-xs font-medium animate-pulse">
-                  Nuestra IA está extrayendo tus datos clínicos
-                </p>
+
+              <div className="w-full space-y-4">
+                <div className="space-y-1">
+                  <motion.h4
+                    key={currentStep}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-foreground font-bold text-lg tracking-tight"
+                  >
+                    {currentStep}
+                  </motion.h4>
+                  <p className="text-muted-foreground text-sm font-medium">
+                    {Math.round(progress)}% completado
+                  </p>
+                </div>
+
+                <div className="relative pt-2">
+                  <Progress
+                    value={progress}
+                    className="h-2 bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.2)]"
+                  />
+                  {/* Destello sutil que sigue al progreso */}
+                  <motion.div
+                    className="absolute top-2 left-0 h-2 bg-white/40 blur-sm rounded-full pointer-events-none"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 gap-2 pt-2">
+                  {[20, 50, 85, 100].map((step, idx) => (
+                    <div
+                      key={idx}
+                      className={`h-1.5 rounded-full transition-all duration-500 ${progress >= step ? "bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" : "bg-muted"}`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -157,7 +192,7 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
             document.getElementById("file-upload")?.click();
           }}
           className={file ? "" : "gradient-bg"}
-          disabled={isLoading}
+          disabled={isAnalyzing}
         >
           {file ? "Cambiar archivo" : "Seleccionar archivo"}
         </Button>
@@ -172,7 +207,7 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
         </div>
       )}
       {file && (
-        <Button className="ml-2 gradient-bg" onClick={handleProcess} disabled={isLoading}>
+        <Button className="ml-2 gradient-bg" onClick={handleProcess} disabled={isAnalyzing}>
           Procesar archivo
         </Button>
       )}
