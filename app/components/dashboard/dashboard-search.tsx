@@ -22,6 +22,7 @@ import {
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useNotifications } from "@/hooks/notification-context";
 /****************************************************************************************************************************/
 /** Interfaz para el componente DashboardSearch. */
 interface SearchItem {
@@ -109,8 +110,6 @@ const NAV_ITEMS: SearchItem[] = [
     href: "/dashboard/notifications",
     icon: BellRing,
     category: "navigation",
-    badge: "3",
-    badgeVariant: "default",
   },
   {
     id: "nav-settings",
@@ -206,11 +205,25 @@ const RECENT_ITEMS: SearchItem[] = [
 /****************************************************************************************************************************/
 export default function DashboardSearch({ open, onOpenChange }: DashboardSearchProps) {
   const router = useRouter();
+  const { unreadCount } = useNotifications();
   const [query, setQuery] = useState("");
   // Indice de ítem actualmente enfocado con flechas (-1 = sin selección)
   const [focusedIndex, setFocusedIndex] = useState(-1);
   // Detección de plataforma para mostrar el atajo correcto (Mac vs Win/Linux)
   const [isMac, setIsMac] = useState(true);
+
+  // Re-mapear NAV_ITEMS para que el contador de notificaciones sea real
+  const dynamicNavItems = useMemo(() => {
+    return NAV_ITEMS.map((item) => {
+      if (item.id === "nav-notifications") {
+        return {
+          ...item,
+          badge: unreadCount > 0 ? unreadCount.toString() : undefined,
+        };
+      }
+      return item;
+    });
+  }, [unreadCount]);
   /****************************************************************************************************************************/
   // Hooks
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -254,8 +267,8 @@ export default function DashboardSearch({ open, onOpenChange }: DashboardSearchP
         (item.description?.toLowerCase().includes(lower) ?? false),
     );
   }, []);
-  // Filtra los items por query.
-  const filteredNav = filterItems(NAV_ITEMS, query);
+  // Filtra usando los items dinámicos.
+  const filteredNav = filterItems(dynamicNavItems, query);
   const filteredActions = filterItems(ACTION_ITEMS, query);
   const showRecent = !query.trim();
   const hasResults = filteredNav.length > 0 || filteredActions.length > 0;

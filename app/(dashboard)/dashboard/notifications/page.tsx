@@ -15,7 +15,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -24,107 +24,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-
-/***********************************************************************************************************************/
-/** Tipos. */
-type NotificationType = "analysis" | "health" | "system" | "security";
-
-/** Interfaz de notificaciones. */
-interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  description: string;
-  time: string;
-  read: boolean;
-  priority: "low" | "medium" | "high";
-}
-
-/** Notificaciones iniciales. Mock */
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    type: "analysis",
-    title: "Análisis completado",
-    description:
-      "Tu informe del 28 de marzo ha sido procesado. La IA ha detectado mejoras en tus niveles de hierro.",
-    time: "Hace 15 min",
-    read: false,
-    priority: "low",
-  },
-  {
-    id: "2",
-    type: "health",
-    title: "Atención Requerida",
-    description:
-      "Niveles de Vitamina D por debajo del rango recomendado. Revisa las sugerencias nutritivas.",
-    time: "Hace 2 horas",
-    read: false,
-    priority: "high",
-  },
-  {
-    id: "3",
-    type: "security",
-    title: "Nuevo inicio de sesión",
-    description: "Se detectó un acceso desde un dispositivo Mac OS en Madrid, España.",
-    time: "Hace 5 horas",
-    read: true,
-    priority: "medium",
-  },
-  {
-    id: "4",
-    type: "system",
-    title: "Actualización de la plataforma",
-    description:
-      "Hemos integrado soporte para nuevos biomarcadores de tiroides en el motor DeepSeek.",
-    time: "Ayer",
-    read: true,
-    priority: "low",
-  },
-  {
-    id: "5",
-    type: "analysis",
-    title: "Análisis programado",
-    description:
-      "Recuerda que mañana tienes tu chequeo trimestral. Ayunas de 8 horas recomendadas.",
-    time: "Hace 2 días",
-    read: true,
-    priority: "low",
-  },
-];
+import { formatTimeAgo } from "@/lib/utils";
+import { useNotifications, NotificationType } from "@/hooks/notification-context";
 /***********************************************************************************************************************/
 export default function NotificationsPage() {
-  // Estados
-  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
+  // Consumir el estado global de notificaciones
+  const { notifications, unreadCount, toggleRead, deleteNotification, markAllAsRead, clearAll } =
+    useNotifications();
   const [filter, setFilter] = useState<string>("all");
 
-  // Filtros
+  // Filtros aplicados al estado global
   const filteredNotifications = notifications.filter((n) =>
     filter === "all" ? true : n.type === filter,
   );
-
-  // Contador de notificaciones no leídas
-  const unreadCount = notifications.filter((n) => !n.read).length;
   /***********************************************************************************************************************/
   // Métodos
-  /** Marcar todas las notificaciones como leídas. */
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
-    toast.success("Todas las notificaciones marcadas como leídas");
-  };
-
-  /** Elimina una notificación. */
-  const deleteNotification = (id: string) => {
-    setNotifications(notifications.filter((n) => n.id !== id));
-    toast.info("Notificación eliminada");
-  };
-
-  /** Alterna el estado de lectura de una notificación. */
-  const toggleRead = (id: string) => {
-    setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: !n.read } : n)));
-  };
-
   /** Obtiene el icono correspondiente al tipo de notificación. */
   const getIcon = (type: NotificationType) => {
     switch (type) {
@@ -173,13 +99,39 @@ export default function NotificationsPage() {
                 Marcar todo como leído
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-xl hover:bg-red-500/10 hover:text-red-500"
-            >
-              <Trash2 className="w-5 h-5" />
-            </Button>
+            {notifications.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-xl hover:bg-red-500/10 hover:text-red-500"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-3xl border-border/60">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-2xl font-bold">
+                      ¿Vaciar notificaciones?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-base text-muted-foreground">
+                      Esta acción eliminará permanentemente todo tu historial de alertas y análisis
+                      recientes. No se puede deshacer.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="gap-3">
+                    <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={clearAll}
+                      className="rounded-xl bg-red-500 hover:bg-red-600 font-bold"
+                    >
+                      Sí, vaciar todo
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </motion.div>
 
@@ -308,9 +260,7 @@ export default function NotificationsPage() {
                             >
                               {notif.title}
                             </h4>
-                            <span className="text-[10px] sm:text-[11px] text-muted-foreground whitespace-nowrap">
-                              {notif.time}
-                            </span>
+                            {formatTimeAgo(notif.timestamp)}
                           </div>
                           <p
                             className={`text-xs sm:text-sm leading-relaxed max-w-2xl transition-all line-clamp-3 sm:line-clamp-none ${
@@ -339,7 +289,7 @@ export default function NotificationsPage() {
                           </div>
                         </div>
 
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="lg:opacity-0 lg:group-hover:opacity-100 opacity-100 transition-opacity">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
@@ -365,26 +315,35 @@ export default function NotificationsPage() {
                     ))
                   ) : (
                     <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="py-20 text-center space-y-4"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="py-24 text-center space-y-6"
                     >
-                      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                        <ShieldCheck className="w-8 h-8 text-muted-foreground opacity-20" />
+                      <div className="relative mx-auto w-24 h-24 mb-2">
+                        <div className="absolute inset-0 bg-primary/10 rounded-full animate-ping opacity-20" />
+                        <div
+                          className="relative w-full h-full bg-muted/50 rounded-full flex items-center justify-center border 
+                        border-dashed border-border/80"
+                        >
+                          <Bell className="w-10 h-10 text-muted-foreground opacity-30" />
+                        </div>
                       </div>
-                      <h3 className="text-xl font-bold text-muted-foreground">
-                        No hay notificaciones
-                      </h3>
-                      <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-                        Por ahora estás al día. Las alertas importantes aparecerán aquí.
-                      </p>
-                      <Button
-                        variant="outline"
-                        onClick={() => setFilter("all")}
-                        className="mt-4 rounded-xl"
-                      >
-                        Ver historial completo
-                      </Button>
+                      <div className="space-y-2">
+                        <h3 className="text-2xl font-bold text-foreground">Todo en orden ✅</h3>
+                        <p className="text-muted-foreground text-base max-w-sm mx-auto leading-relaxed">
+                          Has gestionado todas tus notificaciones. Por ahora estás al día con tu
+                          salud y seguridad.
+                        </p>
+                      </div>
+                      <div className="pt-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setFilter("all")}
+                          className="rounded-xl px-8 font-bold border-primary/20 hover:bg-primary/5 text-primary"
+                        >
+                          Ver historial completo
+                        </Button>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

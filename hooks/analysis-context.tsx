@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import { uploadFile } from "@/lib/api/analysis";
 import { toast } from "sonner";
+import { useNotifications } from "@/hooks/notification-context";
 /****************************************************************************************************************************/
 /** Interface del contexto de análisis.*/
 interface AnalysisContextType {
@@ -22,6 +23,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
+  const { addNotification } = useNotifications();
   /****************************************************************************************************************************/
   // Hooks
   /** Resetear el análisis.*/
@@ -71,6 +73,25 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
         clearInterval(progressInterval);
         setProgress(100);
         setCurrentStep("¡Análisis completado!");
+
+        /** Disparar notificación dinámica al sistema global. */
+        addNotification({
+          type: "analysis",
+          title: "Análisis completado",
+          description: `Tu informe "${file.name}" ha sido procesado. La IA ha detectado mejoras en tus métricas metabólicas.`,
+          priority: "low",
+        });
+
+        // Alerta de salud reactiva (demostración de valor proactivo)
+        setTimeout(() => {
+          addNotification({
+            type: "health",
+            title: "Optimización posible detectada",
+            description:
+              "Tus niveles de glucemia están cerca del límite superior. Revisa las recomendaciones nutricionales actualizadas.",
+            priority: "medium",
+          });
+        }, 1500);
 
         toast.success("Análisis completado", {
           description: "Tu informe ha sido procesado correctamente con IA.",

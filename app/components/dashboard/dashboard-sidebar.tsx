@@ -28,6 +28,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useNotifications } from "@/hooks/notification-context";
 /****************************************************************************************************************************/
 /** Interfaz para items del menú con soporte para disabled */
 interface MenuItem {
@@ -39,7 +40,8 @@ interface MenuItem {
 /****************************************************************************************************************************/
 export default function DashboardSidebar() {
   const pathname = usePathname();
-  const { isMobile, setOpenMobile } = useSidebar(); // Acceso al estado del sidebar para móviles
+  const { isMobile, setOpenMobile } = useSidebar();
+  const { unreadCount } = useNotifications();
 
   /** Verifica si la ruta está activa */
   const isActive = (path: string) => {
@@ -195,9 +197,9 @@ export default function DashboardSidebar() {
                     <span className={cn("tracking-tight text-sm", active && "font-semibold")}>
                       {item.title}
                     </span>
-                    {/* Dot indicador de notificaciones pendientes (solo Notificaciones) */}
-                    {item.href === "/dashboard/notifications" && (
-                      <span className="ml-auto flex h-2 w-2 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary))] animate-pulse" />
+                    {/* Indicador dinámico vinculado al estado real */}
+                    {item.href === "/dashboard/notifications" && unreadCount > 0 && (
+                      <span className="ml-auto flex h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary))] animate-pulse" />
                     )}
                   </Link>
                 </SidebarMenuButton>

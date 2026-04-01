@@ -22,9 +22,11 @@ import {
   BellRing,
   Settings2,
   HelpCircle,
+  Info,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
 import { ModeToggle } from "@/components/mode-toggle";
+import { formatTimeAgo } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -40,6 +42,7 @@ import { useSession } from "next-auth/react";
 import { useSidebar } from "@/components/ui/sidebar";
 import DashboardSearch from "@/components/dashboard/dashboard-search";
 import GlobalAnalysisIndicator from "@/components/dashboard/global-analysis-indicator";
+import { useNotifications } from "@/hooks/notification-context";
 /****************************************************************************************************************************/
 // Estados
 export default function DashboardNavbar() {
@@ -51,7 +54,8 @@ export default function DashboardNavbar() {
   const [isMac, setIsMac] = useState(true);
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const { isMobile, toggleSidebar } = useSidebar(); // Obtener toggleSidebar del contexto
+  const { isMobile, toggleSidebar } = useSidebar();
+  const { notifications, unreadCount, markAsRead } = useNotifications();
   /****************************************************************************************************************************/
   useEffect(() => {
     const handleScroll = () => {
@@ -215,12 +219,14 @@ export default function DashboardNavbar() {
                 className="relative hover:bg-primary/10 hover:text-primary transition-colors"
               >
                 <Bell className="h-5 w-5" />
-                <Badge
-                  className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px] bg-primary
-                 text-white border-2 border-background"
-                >
-                  3
-                </Badge>
+                {unreadCount > 0 && (
+                  <Badge
+                    className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px] bg-primary
+                   text-white border-2 border-background animate-in zoom-in duration-300"
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
                 <span className="sr-only">Notificaciones</span>
               </Button>
             </DropdownMenuTrigger>
@@ -232,71 +238,78 @@ export default function DashboardNavbar() {
                 <DropdownMenuLabel className="p-0 font-bold text-base">
                   Notificaciones
                 </DropdownMenuLabel>
-                <Badge
-                  variant="outline"
-                  className="bg-primary/5 text-primary border-primary/20 text-[10px] px-2 py-0"
-                >
-                  3 Nuevas
-                </Badge>
+                {unreadCount > 0 && (
+                  <Badge
+                    variant="outline"
+                    className="bg-primary/5 text-primary border-primary/20 text-[10px] px-2 py-0"
+                  >
+                    {unreadCount} Nuevas
+                  </Badge>
+                )}
               </div>
 
               <div className="max-h-[400px] overflow-y-auto divide-y divide-border/40">
-                {[
-                  {
-                    title: "Análisis completado",
-                    description: "Tu informe de sangre ha sido procesado correctamente por la IA.",
-                    time: "Hace 5 min",
-                    isNew: true,
-                    icon: <FileText className="h-4 w-4 text-blue-500" />,
-                    bg: "bg-blue-500/10",
-                  },
-                  {
-                    title: "Atención Requerida",
-                    description: "Se han detectado biomarcadores fuera del rango normal.",
-                    time: "Hace 3 horas",
-                    isNew: true,
-                    icon: <Activity className="h-4 w-4 text-red-500" />,
-                    bg: "bg-red-500/10",
-                  },
-                  {
-                    title: "Nueva actualización",
-                    description: "Añadido soporte para exportación de PDF avanzado.",
-                    time: "Hace 1 día",
-                    isNew: false,
-                    icon: <ShieldCheck className="h-4 w-4 text-purple-500" />,
-                    bg: "bg-purple-500/10",
-                  },
-                ].map((notification, index) => (
-                  <div
-                    key={index}
-                    className="p-4 hover:bg-muted/50 cursor-pointer transition-colors group flex gap-3"
-                  >
-                    <div
-                      className={`h-10 w-10 shrink-0 rounded-xl flex items-center justify-center ${notification.bg}`}
-                    >
-                      {notification.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-0.5">
-                        <p className="font-bold text-sm truncate pr-4">{notification.title}</p>
-                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                          {notification.time}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {notification.description}
-                      </p>
-                      {notification.isNew && (
-                        <div className="mt-2 flex items-center gap-1">
-                          <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                          <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">
-                            Nuevo
-                          </span>
+                {notifications.length > 0 ? (
+                  notifications.slice(0, 4).map((notification) => {
+                    const getIconMeta = (type: string) => {
+                      switch (type) {
+                        case "analysis":
+                          return { icon: <FileText className="h-4 w-4 text-blue-500" />, bg: "bg-blue-500/10" };
+                        case "health":
+                          return { icon: <Activity className="h-4 w-4 text-red-500" />, bg: "bg-red-500/10" };
+                        case "security":
+                          return { icon: <ShieldCheck className="h-4 w-4 text-purple-500" />, bg: "bg-purple-500/10" };
+                        default:
+                          return { icon: <Info className="h-4 w-4 text-amber-500" />, bg: "bg-amber-500/10" };
+                      }
+                    };
+                    const meta = getIconMeta(notification.type);
+                    return (
+                      <Link
+                        key={notification.id}
+                        href="/dashboard/notifications"
+                        className={`p-4 hover:bg-muted/50 cursor-pointer transition-colors group flex gap-3 ${
+                          !notification.read ? "bg-primary/5" : ""
+                        }`}
+                        onClick={() => !notification.read && markAsRead(notification.id)}
+                      >
+                        <div
+                          className={`h-10 w-10 shrink-0 rounded-xl flex items-center justify-center ${meta.bg}`}
+                        >
+                          {meta.icon}
                         </div>
-                      )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start mb-0.5">
+                            <p className={`font-bold text-sm truncate pr-4 ${!notification.read ? "text-foreground" : "text-muted-foreground"}`}>
+                              {notification.title}
+                            </p>
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                              {formatTimeAgo(notification.timestamp)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            {notification.description}
+                          </p>
+                          {!notification.read && (
+                            <div className="mt-2 flex items-center gap-1">
+                              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                              <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">
+                                Nuevo
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })
+                ) : (
+                  <div className="py-12 p-6 text-center space-y-3">
+                    <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto opacity-20">
+                      <Bell className="w-6 h-6 text-muted-foreground" />
                     </div>
+                    <p className="text-sm text-muted-foreground">No tienes notificaciones pendientes.</p>
                   </div>
-                ))}
+                )}
               </div>
 
               <div className="p-3 bg-muted/20 border-t">
