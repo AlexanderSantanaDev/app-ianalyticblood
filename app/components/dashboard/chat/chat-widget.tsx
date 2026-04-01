@@ -391,16 +391,15 @@ export default function ChatWidget() {
           isOpen && "rounded-full rotate-90",
         )}
       >
-        {/* Efecto de Vidrio Líquido (Glow interno) */}
         <div
           className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 
-        transition-opacity duration-500"
+          rounded-full transition-opacity duration-500"
         />
 
         {/* Anillo de energía pulsátil perimetral */}
         <div
           className="absolute -inset-[1.5px] bg-gradient-to-r from-primary/60 via-secondary/60 to-primary/60 rounded-[inherit] 
-        opacity-20 group-hover:opacity-60 blur-sm animate-pulse-slow"
+          opacity-20 group-hover:opacity-60 blur-sm animate-pulse-slow"
         />
 
         <AnimatePresence mode="wait">
