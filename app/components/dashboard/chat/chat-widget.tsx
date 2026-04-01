@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, User, Sparkles, Trash2, Maximize2, Minimize2 } from "lucide-react";
+import { X, Send, User, Sparkles, Trash2, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChat } from "@/hooks/use-chat";
@@ -16,17 +16,92 @@ const RobotIcon = ({ size = 24, className = "" }: { size?: number; className?: s
     height={size}
     viewBox="0 0 24 24"
     fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={cn("text-white", className)}
+    className={cn("text-white shrink-0", className)}
   >
-    <rect x="3" y="11" width="18" height="10" rx="2" />
-    <circle cx="12" cy="5" r="2" />
-    <path d="M12 7v4" />
-    <line x1="8" y1="16" x2="8" y2="16" />
-    <line x1="16" y1="16" x2="16" y2="16" />
+    {/* Antenas Cibernéticas desplazadas hacia abajo para centrado perfecto */}
+    <motion.path
+      d="M8 8L6 4M16 8L18 4"
+      stroke="currentColor"
+      strokeWidth="1"
+      strokeLinecap="round"
+      strokeOpacity="0.6"
+      animate={{ opacity: [0.4, 1, 0.4] }}
+      transition={{ duration: 3, repeat: Infinity }}
+    />
+    <motion.circle
+      cx="6"
+      cy="4"
+      r="0.8"
+      fill="white"
+      animate={{ scale: [1, 1.5, 1] }}
+      transition={{ duration: 1, repeat: Infinity }}
+    />
+    <motion.circle
+      cx="18"
+      cy="4"
+      r="0.8"
+      fill="white"
+      animate={{ scale: [1, 1.5, 1] }}
+      transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
+    />
+
+    {/* Cabeza de Robot Centrada Verticalmente (Shifted down +2) */}
+    <motion.path
+      d="M12 6C7.5 6 4 8.5 4 12.5V16.5C4 18.5 5.5 20 7.5 20H16.5C18.5 20 20 18.5 20 16.5V12.5C20 8.5 16.5 6 12 6Z"
+      fill="currentColor"
+      fillOpacity="0.12"
+      stroke="currentColor"
+      strokeWidth="0.8"
+      strokeOpacity="0.4"
+      animate={{ y: [0, -0.5, 0] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+    />
+
+    {/* Visor de alta definición desplazado */}
+    <rect x="5" y="11" width="14" height="4" rx="2" fill="currentColor" fillOpacity="0.2" />
+    <motion.rect
+      x="6"
+      y="12"
+      width="12"
+      height="2"
+      rx="1"
+      fill="currentColor"
+      fillOpacity="0.3"
+      animate={{ opacity: [0.5, 1, 0.5] }}
+      transition={{ duration: 2, repeat: Infinity }}
+    />
+
+    {/* Línea de escaneo dinámica desplazada */}
+    <motion.rect
+      x="7"
+      y="12.5"
+      width="3"
+      height="1"
+      rx="0.5"
+      fill="white"
+      animate={{ x: [0, 7, 0] }}
+      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+    />
+
+    {/* Núcleo Central de Datos desplazado */}
+    <motion.circle
+      cx="12"
+      cy="17.5"
+      r="1.2"
+      fill="white"
+      className="shadow-[0_0_12px_rgba(255,255,255,1)]"
+      animate={{ scale: [1, 1.4, 1] }}
+      transition={{ duration: 1.2, repeat: Infinity }}
+    />
+
+    {/* Reflejo de Lente Superior desplazado */}
+    <path
+      d="M9 7C11 6.5 13 6.5 15 7"
+      stroke="white"
+      strokeWidth="0.8"
+      strokeLinecap="round"
+      strokeOpacity="0.2"
+    />
   </svg>
 );
 /****************************************************************************************************************************/
@@ -72,7 +147,7 @@ export default function ChatWidget() {
   return (
     <div
       className={cn(
-        "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-4 pointer-events-none w-[calc(100%-2rem)] sm:w-auto",
+        "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-3 sm:gap-4 pointer-events-none w-[calc(100%-2rem)] sm:w-auto",
         isOpen && "pointer-events-auto",
       )}
     >
@@ -95,54 +170,49 @@ export default function ChatWidget() {
             )}
           >
             {/* Header del Chat */}
-            <div className="p-6 bg-primary/5 border-b border-white/5 flex items-center justify-between">
+            <div className="pl-5 pr-3 py-4 bg-primary/5 border-b border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div
-                  className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary via-secondary to-primary flex items-center 
-                justify-center shadow-lg shadow-primary/30 animate-pulse-slow"
+                  className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary via-secondary to-primary flex items-center 
+                justify-center shadow-lg shadow-primary/20 animate-pulse-slow shrink-0"
                 >
-                  <RobotIcon size={24} />
+                  <RobotIcon size={20} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3
                     className="text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground 
-                  to-foreground/70"
+                  to-foreground/70 truncate"
                   >
                     IAnalytic Assistant
                   </h3>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <p className="text-[10px] text-primary/80 font-bold uppercase tracking-widest">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
+                    <p
+                      className="text-[10px] text-primary/80 font-bold uppercase tracking-widest whitespace-nowrap overflow-hidden 
+                    text-ellipsis"
+                    >
                       IA Especializada • Online
                     </p>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
+
+              <div className="flex items-center gap-0.5">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="h-9 w-9 rounded-xl hover:bg-white/5"
+                  className="h-8 w-8 rounded-lg hover:bg-white/5 transition-colors"
                 >
-                  {isMinimized ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={clearChat}
-                  title="Limpiar historial"
-                  className="h-9 w-9 rounded-xl hover:bg-red-500/10 text-red-500/80"
-                >
-                  <Trash2 size={16} />
+                  {isMinimized ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsOpen(false)}
-                  className="h-9 w-9 rounded-xl hover:bg-white/5"
+                  className="h-8 w-8 rounded-lg hover:bg-white/5 transition-colors"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </Button>
               </div>
             </div>
@@ -185,7 +255,6 @@ export default function ChatWidget() {
                         msg.role === "user" ? "flex-row-reverse" : "flex-row",
                       )}
                     >
-                      {/* Avatar */}
                       <div
                         className={cn(
                           "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-white/10",
@@ -199,7 +268,6 @@ export default function ChatWidget() {
                         )}
                       </div>
 
-                      {/* Burbuja */}
                       <div
                         className={cn(
                           "max-w-[80%] p-4 text-sm leading-relaxed shadow-sm",
@@ -243,10 +311,9 @@ export default function ChatWidget() {
                   )}
                 </div>
 
-                {/* Footer del Chat - Input / Limit UI */}
-                <div className="p-6 border-t border-white/5 bg-background/40 backdrop-blur-md">
+                {/* Footer del Chat */}
+                <div className="py-6 pl-1 pr-[10px] border-t border-white/5 bg-background/40 backdrop-blur-md">
                   {isLimitReached ? (
-                    // Interfaz de límite alcanzado
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -270,14 +337,28 @@ export default function ChatWidget() {
                       </Button>
                     </motion.div>
                   ) : (
-                    <form onSubmit={handleSend} className="flex gap-3">
-                      <Input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder={isTyping ? "Razonando clínica..." : "Escribe tu consulta..."}
-                        disabled={isTyping}
-                        className="h-12 rounded-2xl bg-white/5 border-white/10 focus:border-primary/50 transition-all text-sm px-5"
-                      />
+                    <form onSubmit={handleSend} className="flex gap-2 items-center">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={clearChat}
+                        title="Limpiar conversación"
+                        className="h-10 w-10 shrink-0 rounded-xl hover:bg-red-500/10 text-red-500/40 hover:text-red-500 transition-all"
+                      >
+                        <Trash2 size={18} />
+                      </Button>
+
+                      <div className="relative flex-1">
+                        <Input
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          placeholder={isTyping ? "Razonando clínica..." : "Escribe tu consulta..."}
+                          disabled={isTyping}
+                          className="h-12 rounded-2xl bg-white/5 border-white/10 focus:border-primary/50 transition-all text-sm px-5"
+                        />
+                      </div>
+
                       <Button
                         type="submit"
                         size="icon"
@@ -298,27 +379,39 @@ export default function ChatWidget() {
         )}
       </AnimatePresence>
 
-      {/* Botón Lanzador Premium */}
+      {/* Lanzador con Tecnología "Liquid Glass" y Núcleo Neural Vivo */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ scale: 1.05 }}
+        whileHover={{ scale: 1.05, y: -2 }}
         whileTap={{ scale: 0.95 }}
         className={cn(
-          "pointer-events-auto h-14 w-14 sm:h-16 sm:w-16 rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-primary via-secondary to-primary flex items-center justify-center text-white shadow-[0_20px_40px_-10px_rgba(0,0,0,0.4)] shadow-primary/40 group relative overflow-hidden border border-white/10",
-          isOpen && "sm:rounded-[2.5rem]",
+          "pointer-events-auto h-14 w-14 sm:h-16 sm:w-16 rounded-[2rem] flex items-center justify-center text-white relative group",
+          "bg-gradient-to-br from-primary/40 to-secondary/30 backdrop-blur-2xl border border-white/20",
+          "shadow-[0_20px_50px_-12px_rgba(var(--primary-rgb),0.5)] transition-all duration-500",
+          isOpen && "rounded-full rotate-90",
         )}
       >
-        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+        {/* Efecto de Vidrio Líquido (Glow interno) */}
+        <div
+          className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 
+        transition-opacity duration-500"
+        />
+
+        {/* Anillo de energía pulsátil perimetral */}
+        <div
+          className="absolute -inset-[1.5px] bg-gradient-to-r from-primary/60 via-secondary/60 to-primary/60 rounded-[inherit] 
+        opacity-20 group-hover:opacity-60 blur-sm animate-pulse-slow"
+        />
 
         <AnimatePresence mode="wait">
           {isOpen ? (
             <motion.div
               key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
+              initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+              animate={{ rotate: 0, opacity: 1, scale: 1 }}
+              exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
             >
-              <X size={isMobile ? 20 : 28} />
+              <X size={28} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
             </motion.div>
           ) : (
             <motion.div
@@ -326,16 +419,18 @@ export default function ChatWidget() {
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.5, opacity: 0 }}
+              className="relative z-10"
             >
-              <RobotIcon size={isMobile ? 26 : 32} />
+              <RobotIcon size={isMobile ? 46 : 56} />
             </motion.div>
           )}
         </AnimatePresence>
 
+        {/* Indicador de Actividad "Neural" */}
         {!isOpen && (
-          <div
-            className="absolute top-0 right-0 h-3 w-3 sm:h-4 sm:w-4 bg-primary border-2 border-background rounded-full 
-          translate-x-1/4 -translate-y-1/4 animate-pulse"
+          <span
+            className="absolute top-4 right-4 h-2.5 w-2.5 bg-primary rounded-full shadow-[0_0_15px_4px_rgba(var(--primary-rgb),1)] 
+          animate-ping"
           />
         )}
       </motion.button>
