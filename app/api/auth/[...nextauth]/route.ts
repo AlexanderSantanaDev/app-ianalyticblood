@@ -1,8 +1,4 @@
-import NextAuth, {
-  type NextAuthOptions,
-  type DefaultSession,
-  type User,
-} from "next-auth";
+import NextAuth, { type NextAuthOptions, type DefaultSession, type User } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { publicApiFetch } from "@/lib/api/client";
@@ -28,10 +24,9 @@ async function fetchGoogleAvatar(accessToken: string | undefined) {
   }
 
   try {
-    const res = await fetch(
-      "https://www.googleapis.com/oauth2/v3/userinfo",
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
+    const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     if (!res.ok) {
       console.log("Failed to fetch userinfo:", res.status, res.statusText);
       return null;
@@ -55,9 +50,10 @@ export const authOptions: NextAuthOptions = {
       authorization: {
         params: {
           scope: "openid email profile",
-          redirect_uri: process.env.NODE_ENV === "production"
-            ? "https://app-ianalyticblood.vercel.app/api/auth/callback/google"
-            : "http://localhost:3000/api/auth/callback/google",
+          redirect_uri:
+            process.env.NODE_ENV === "production"
+              ? "https://app-ianalyticblood.vercel.app/api/auth/callback/google"
+              : "http://localhost:3000/api/auth/callback/google",
         },
       },
     }),
@@ -72,16 +68,13 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials) return null;
 
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-          {
-            method: "POST",
-            body: new URLSearchParams({
-              username: credentials.email,
-              password: credentials.password,
-            }),
-          }
-        );
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          method: "POST",
+          body: new URLSearchParams({
+            username: credentials.email,
+            password: credentials.password,
+          }),
+        });
         if (!res.ok) return null;
 
         const data = await res.json();
@@ -99,7 +92,7 @@ export const authOptions: NextAuthOptions = {
   ],
 
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET, // 🛡️ Cambio: Se añade secret explícito para producción
+  secret: process.env.NEXTAUTH_SECRET, // Se añade secret explícito para producción
   useSecureCookies: process.env.NODE_ENV === "production",
 
   /* Callbacks */
@@ -107,11 +100,23 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-          // ✨ Cambio: Log ultra-detallado para depurar en Vercel
+          const envUrl = process.env.NEXT_PUBLIC_API_URL;
+          let apiUrl = envUrl || "http://localhost:8000/api";
+
+          if (!envUrl) {
+            console.warn(
+              "[AUTH DEBUG] ⚠️  AVISO: NEXT_PUBLIC_API_URL no está definido en el .env. Usando default: http://localhost:8000/api",
+            );
+          }
+
+          // Resiliencia para el bug de DNS de Node.js 18+ en macOS
+          // Si estamos en entorno servidor y la URL es localhost, la forzamos a 127.0.0.1
+          if (typeof window === "undefined" && apiUrl.includes("localhost")) {
+            apiUrl = apiUrl.replace("localhost", "127.0.0.1");
+          }
+
           console.log(`[AUTH DEBUG] Intentando registro/login Google`);
-          console.log(`[AUTH DEBUG] Backend URL base: ${apiUrl}`);
-          console.log(`[AUTH DEBUG] Endpoint final: ${apiUrl}/auth/google`);
+          console.log(`[AUTH DEBUG] Backend URL configurada: ${apiUrl}`);
           console.log(`[AUTH DEBUG] Email: ${user.email}`);
 
           const res = await publicApiFetch<{ access_token: string; refresh_token: string }>(
@@ -124,7 +129,9 @@ export const authOptions: NextAuthOptions = {
                 picture: user.image,
                 provider: "google",
               }),
-            }
+              // Inyectamos la URL corregida para evitar el error de fetch failed
+              headers: { "x-api-url-override": apiUrl },
+            },
           );
 
           if (res && res.access_token) {
@@ -134,12 +141,25 @@ export const authOptions: NextAuthOptions = {
             user.provider = "google";
             return true;
           }
-          
+
           console.error("[AUTH DEBUG] ❌ No se recibió access_token del backend");
-          return false; 
+          return false;
         } catch (error: any) {
           console.error("[AUTH DEBUG] ❌ Error crítico en el backend:", error.message);
-          // 🩸 Nota: Si ves "Not Found" aquí, es que falta el sufijo /api en NEXT_PUBLIC_API_URL
+
+          // Log PROFUNDO de la causa del fallo (Causa raíz: ECONNREFUSED, etc.)
+          if (error.cause) {
+            console.error("[AUTH DEBUG] 👉 Causa Técnica Detallada:", error.cause);
+          }
+
+          // Debug si el api no esta corriendo..
+          if (error.message.includes("fetch failed")) {
+            console.error("[AUTH DEBUG] 🚨 EL SERVIDOR DE PYTHON NO RESPONDE.");
+            console.error(
+              "[AUTH DEBUG] 👉 Asegúrate de haber ejecutado 'docker-compose up' y que puerto 8000 esté UP.",
+            );
+          }
+
           return false;
         }
       }
@@ -157,20 +177,23 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (account?.provider === "google" && account.access_token) {
-        console.log("Google account access_token:", account.access_token); // ➡️ Log para depurar
+        console.log("Google account access_token:", account.access_token); // Log para depurar
         token.googleAccessToken = account.access_token as string;
       }
 
-      // ➡️ Intentamos obtener la imagen si no está presente
+      // Intentamos obtener la imagen si no está presente
       if (!token.picture && token.googleAccessToken) {
-        console.log("Attempting to fetch Google avatar with access_token:", token.googleAccessToken);
+        console.log(
+          "Attempting to fetch Google avatar with access_token:",
+          token.googleAccessToken,
+        );
         const fetchedPicture = await fetchGoogleAvatar(token.googleAccessToken as string);
         if (fetchedPicture) {
           token.picture = fetchedPicture;
         }
       }
 
-      // ➡️ Log para verificar el estado de token.picture
+      // Log para verificar el estado de token.picture
       console.log("Token picture after fetch attempt:", token.picture);
 
       return token;
@@ -181,12 +204,12 @@ export const authOptions: NextAuthOptions = {
         ...session.user,
         name: token.name,
         email: token.email,
-        image: token.picture ?? null, // ➡️ Aseguramos que session.user.image sea token.picture
+        image: token.picture ?? null, // Aseguramos que session.user.image sea token.picture
       };
       session.accessToken = token.accessToken as string | undefined;
       session.refreshToken = token.refreshToken as string | undefined;
 
-      // ➡️ Log para depurar session.user.image
+      // Log para depurar session.user.image
       console.log("Session user image:", session.user.image);
 
       return session as DefaultSession & { accessToken?: string; refreshToken?: string };

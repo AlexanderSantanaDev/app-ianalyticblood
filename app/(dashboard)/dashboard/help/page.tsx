@@ -8,8 +8,11 @@ import HelpCategories from "@/components/dashboard/help-categories";
 import HelpFAQ from "@/components/dashboard/help-faq";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useChat } from "@/hooks/use-chat";
 /***********************************************************************************************************************/
 export default function HelpPage() {
+  const { setIsOpen } = useChat();
+
   return (
     <div className="flex-1 space-y-12 p-8 pt-6 max-w-7xl mx-auto min-h-[100dvh]">
       {/* Hero Section con buscador integrado */}
