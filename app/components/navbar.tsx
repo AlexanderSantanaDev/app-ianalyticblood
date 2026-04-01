@@ -60,32 +60,35 @@ export default function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
-          ? "bg-background/60 backdrop-blur-xl border-b border-white/5 shadow-[0_2px_20px_-10px_rgba(0,0,0,0.3)]"
+          ? "bg-background/80 backdrop-blur-xl border-b border-primary/10 shadow-lg shadow-primary/5"
           : "bg-transparent border-b border-transparent"
       }`}
     >
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-2 flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
           <Image
             src="/logo-ianalytic-blood.png"
             alt="AnalyticBlood Logo"
-            width={150}
-            height={40}
+            width={120}
+            height={32}
             draggable="false"
-            className="w-40"
+            className="w-32 md:w-36 transition-all duration-300"
             priority
           />
         </Link>
 
         {isMobile ? (
           <>
-            <button
-              onClick={toggleMenu}
-              className="relative z-[60] p-2 text-foreground/80 hover:text-primary transition-colors"
-              aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
-            >
-              {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
-            </button>
+            <div className="flex items-center gap-2 relative z-[60]">
+              <ModeToggle />
+              <button
+                onClick={toggleMenu}
+                className="p-2 text-foreground/80 hover:text-primary transition-colors bg-white/5 rounded-xl border border-white/5"
+                aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
 
             <AnimatePresence>
               {isMenuOpen && (

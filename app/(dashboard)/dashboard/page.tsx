@@ -74,12 +74,12 @@ function getAlertIcon(level: string) {
 /** Skeleton para el estado de carga del dashboard. */
 function DashboardSkeleton() {
   return (
-    <div className="pt-12 pb-2">
+    <div className="pt-8 md:pt-12 pb-2">
       <div className="container mx-auto px-4">
         {/* Header skeleton */}
-        <div className="mb-8">
-          <Skeleton className="h-9 w-64 mb-2" />
-          <Skeleton className="h-5 w-96" />
+        <div className="mb-6 md:mb-8 text-center sm:text-left">
+          <Skeleton className="h-9 w-64 mb-2 mx-auto sm:mx-0" />
+          <Skeleton className="h-5 w-96 max-w-full mx-auto sm:mx-0" />
         </div>
         {/* Stats cards skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -212,7 +212,7 @@ export default function DashboardPage() {
   /***********************************************************************************************************************/
   //JSX
   return (
-    <div className="pt-12 pb-2">
+    <div className="pt-8 md:pt-12 pb-2">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

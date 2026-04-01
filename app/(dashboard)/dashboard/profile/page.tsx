@@ -137,7 +137,7 @@ export default function ProfilePage() {
   /***********************************************************************************************************************/
   //JSX
   return (
-    <div className="pt-12 pb-12 min-h-[calc(100vh-4rem)]">
+    <div className="pt-8 md:pt-12 pb-12 min-h-[calc(100vh-4rem)]">
       <div className="container mx-auto px-4 max-w-6xl w-full">
         {/* Header Premium */}
         <motion.div
@@ -533,7 +533,8 @@ function HealthTab({ user, onUpdate }: { user: UserType; onUpdate: (u: UserType)
             type="submit"
             form="health-form"
             disabled={isSubmitting || !form.formState.isDirty}
-            className="min-w-[120px] bg-red-500 hover:bg-red-600 text-white border-none shadow-md shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="min-w-[120px] bg-red-500 hover:bg-red-600 text-white border-none shadow-md shadow-red-500/20 
+            disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               "Guardando..."
@@ -678,7 +679,7 @@ function SecurityTab() {
 /** Skeleton General. */
 function ProfileSkeleton() {
   return (
-    <div className="pt-12 pb-8 container mx-auto px-4 max-w-6xl">
+    <div className="pt-8 md:pt-12 pb-8 container mx-auto px-4 max-w-6xl">
       <Skeleton className="h-10 w-64 mb-4" />
       <Skeleton className="h-6 w-96 mb-8" />
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">

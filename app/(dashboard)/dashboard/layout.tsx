@@ -22,7 +22,7 @@ const DashboardContent = ({ children }: { children: ReactNode }) => {
         {/* PageTransition envuelve el contenido para fade + slide entre secciones */}
         <main className="flex-1 pt-16 flex flex-col">
           <PageTransition>
-            <div className="flex-1 px-4 md:px-6 lg:px-8 pb-8">{children}</div>
+            <div className="flex-1 px-0 md:px-6 lg:px-8 pb-8">{children}</div>
           </PageTransition>
         </main>
         <DashboardFooter />

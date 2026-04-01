@@ -39,7 +39,7 @@ function getHealthScoreGradient(score: number) {
 /** Skeleton para el estado de carga del dashboard. */
 function StatsSkeleton() {
   return (
-    <div className="pt-12 pb-8">
+    <div className="pt-8 md:pt-12 pb-8">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="mb-8">
           <Skeleton className="h-10 w-64 mb-4" />
@@ -175,7 +175,7 @@ export default function StatsPage() {
   /****************************************************************************************************************************/
   //JSX
   return (
-    <div className="pt-12 pb-12 min-h-screen">
+    <div className="pt-8 md:pt-12 pb-12 min-h-screen">
       <div className="container mx-auto px-4 max-w-7xl w-full">
         {/* Header Premium */}
         <motion.div

@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import HelpCategories from "@/components/dashboard/help-categories";
 import HelpFAQ from "@/components/dashboard/help-faq";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { useChat } from "@/hooks/use-chat";
 /***********************************************************************************************************************/
 export default function HelpPage() {
   const { setIsOpen } = useChat();
-
+  /***********************************************************************************************************************/
+  //JSX
   return (
-    <div className="flex-1 space-y-12 p-8 pt-6 max-w-7xl mx-auto min-h-[100dvh]">
+    <div className="flex-1 space-y-12 px-4 py-8 md:p-8 pt-6 max-w-7xl mx-auto min-h-[100dvh]">
       {/* Hero Section con buscador integrado */}
       <section className="relative overflow-hidden rounded-3xl bg-neutral-900/40 border border-border/40 p-8 md:p-12">
         {/* Fondo decorativo con gradiente */}
@@ -89,6 +89,7 @@ export default function HelpPage() {
           </CardHeader>
           <CardContent>
             <Button
+              onClick={() => setIsOpen(true)}
               className="rounded-xl px-6 font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] 
             transition-transform"
             >

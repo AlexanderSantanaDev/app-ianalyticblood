@@ -22,7 +22,7 @@ export default function MarketingHome() {
   return (
     <div className="overflow-hidden">
       {/* ───────── Hero ───────── */}
-      <section className="pt-32 pb-20 md:pt-40 md:pb-32 relative">
+      <section className="pt-24 pb-20 md:pt-32 md:pb-32 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-accent/10 to-transparent -z-10" />
 
         <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
