@@ -112,8 +112,7 @@ export default function DashboardSidebar() {
   //JSX
   return (
     <Sidebar>
-      {/* Header del sidebar SOLO visible en móvil (md:hidden)
-          En desktop el navbar ya muestra la marca */}
+      {/* Header del sidebar SOLO visible en móvil (md:hidden). En desktop el navbar ya muestra la marca */}
       <SidebarHeader className="md:hidden flex flex-col items-start px-6 py-7 border-b border-sidebar-border/50 bg-sidebar">
         <Link
           href="/dashboard"
@@ -132,8 +131,7 @@ export default function DashboardSidebar() {
         </Link>
       </SidebarHeader>
 
-      {/* Contenido principal del menú sin padding top extra en desktop */}
-      <SidebarContent className="px-3 pt-20">
+      <SidebarContent className="px-3 pt-6 md:pt-20">
         <SidebarMenu className="gap-1">
           {menuItems.map((item) => {
             const active = isActive(item.href);

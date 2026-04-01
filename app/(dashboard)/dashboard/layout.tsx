@@ -13,7 +13,7 @@ import { ReactNode } from "react";
 /** Contenido del dashboard. */
 const DashboardContent = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex min-h-[100dvh] w-full bg-background">
       {/* NavigationLoader: barra top + pill flotante en cada cambio de ruta */}
       <NavigationLoader />
       <DashboardSidebar />
