@@ -81,7 +81,7 @@ function HistorySkeleton() {
     <div className="pt-12 pb-8">
       <div className="container mx-auto px-4 max-w-6xl">
         <Skeleton className="h-10 w-64 mb-4" />
-        <Skeleton className="h-6 w-96 mb-8" />
+        <Skeleton className="h-6 w-full max-w-sm mb-8" />
 
         <div className="flex bg-card border rounded-lg p-2 mb-6 gap-2">
           <Skeleton className="h-10 w-full md:w-1/2" />
@@ -237,7 +237,7 @@ export default function HistoryPage() {
             </div>
             <h1 className="text-3xl font-bold tracking-tight">Historial de Análisis</h1>
           </div>
-          <p className="text-muted-foreground text-lg ml-[3.25rem]">
+          <p className="text-muted-foreground text-lg sm:ml-[3.25rem] ml-0">
             Explora tus resultados médicos pasados y filtra para encontrar exactamente lo que
             buscas.
           </p>
@@ -248,7 +248,7 @@ export default function HistoryPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex flex-col md:flex-row gap-4 mb-8 bg-card border border-border/50 shadow-sm p-3 rounded-2xl"
+          className="flex flex-col md:flex-row gap-3 sm:gap-4 mb-8 bg-card border border-border/50 shadow-sm p-2 sm:p-3 rounded-2xl"
         >
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

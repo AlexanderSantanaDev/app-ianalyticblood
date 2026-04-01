@@ -11,7 +11,6 @@ import {
   Globe,
   Moon,
   Sun,
-  ChevronRight,
   Mail,
   Smartphone,
   Eye,
@@ -112,42 +111,42 @@ export default function SettingsPage() {
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Configuración</h1>
           </div>
-          <p className="text-muted-foreground text-lg ml-[3.5rem] max-w-2xl">
+          <p className="text-muted-foreground text-lg sm:ml-[3.5rem] ml-0 max-w-2xl">
             Gestiona la seguridad de tu cuenta, preferencias de la UI y canales de comunicación.
           </p>
         </motion.div>
 
         <Tabs defaultValue="security" className="space-y-8">
-          {/* Navegación de Pestañas con scroll horizontal en móvil */}
-          <div className="overflow-x-auto scrollbar-hide pb-2">
-            <TabsList
-              className="bg-muted/50 border border-border/50 p-1 rounded-2xl h-14 flex w-fit md:w-full justify-start
-             md:justify-center md:gap-2"
-            >
-              <TabsTrigger
-                value="security"
-                className="rounded-xl px-8 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-lg"
-              >
-                <Shield className="w-4 h-4 mr-2" /> Seguridad
-              </TabsTrigger>
-              <TabsTrigger
-                value="notifications"
-                className="rounded-xl px-8 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-lg"
-              >
-                <Bell className="w-4 h-4 mr-2" /> Notificaciones
-              </TabsTrigger>
-              <TabsTrigger
-                value="preferences"
-                className="rounded-xl px-8 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-lg"
-              >
-                <Globe className="w-4 h-4 mr-2" /> Preferencias
-              </TabsTrigger>
-              <TabsTrigger
-                value="account"
-                className="rounded-xl px-8 py-2.5 text-sm font-semibold transition-all data-[state=active]:shadow-lg"
-              >
-                <User className="w-4 h-4 mr-2" /> Cuenta
-              </TabsTrigger>
+          {/* Navegación de Pestañas: Smart Grid para móviles sin desbordamientos */}
+          <div className="w-full">
+            <TabsList className="bg-transparent border-none p-0 h-auto w-full grid grid-cols-2 lg:flex lg:flex-row gap-2 sm:gap-3 mb-2">
+              {[
+                { id: "security", label: "Seguridad", icon: Shield, color: "text-primary" },
+                { id: "notifications", label: "Alertas", icon: Bell, color: "text-primary" },
+                { id: "preferences", label: "Preferencias", icon: Globe, color: "text-primary" },
+                { id: "account", label: "Cuenta", icon: User, color: "text-primary" },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className="relative group h-auto py-3 px-4 rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm 
+                    hover:bg-card/60 transition-all duration-300 data-[state=active]:bg-primary/5 data-[state=active]:border-primary/40 
+                    data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 flex items-center justify-center gap-2.5 flex-1"
+                  >
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-data-[state=active]:text-primary transition-colors shrink-0" />
+                    <span className="font-semibold text-sm">{tab.label}</span>
+                    <AnimatePresence>
+                      <motion.div
+                        layoutId="activeTabSettings"
+                        className="absolute inset-0 rounded-2xl border-2 border-primary/20 z-[-1] opacity-0 data-[state=active]:opacity-100"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    </AnimatePresence>
+                  </TabsTrigger>
+                );
+              })}
             </TabsList>
           </div>
 

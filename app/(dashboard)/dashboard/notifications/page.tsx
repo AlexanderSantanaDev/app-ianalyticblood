@@ -9,7 +9,6 @@ import {
   FileText,
   Activity,
   ShieldCheck,
-  AlertCircle,
   Clock,
   Info,
   MoreVertical,
@@ -157,7 +156,7 @@ export default function NotificationsPage() {
               </div>
               <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Notificaciones</h1>
             </div>
-            <p className="text-muted-foreground text-lg ml-[3.5rem] max-w-2xl">
+            <p className="text-muted-foreground text-lg sm:ml-[3.5rem] ml-0 max-w-2xl">
               Mantente al día con tus análisis, alertas de salud e inicios de sesión.
             </p>
           </div>
@@ -186,44 +185,69 @@ export default function NotificationsPage() {
 
         {/* Categories & Listing */}
         <div className="space-y-6">
-          <div className="w-full overflow-hidden">
+          <div className="w-full">
             <Tabs value={filter} onValueChange={setFilter} className="w-full">
               <TabsList
-                className="bg-muted/50 border border-border/50 p-1 rounded-2xl h-12 w-full justify-start overflow-x-auto 
-              scrollbar-hide flex-nowrap min-w-max sm:min-w-full"
+                className="bg-transparent border-none p-0 h-auto w-full grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-2 
+              sm:gap-3 mb-2"
               >
-                <TabsTrigger value="all" className="rounded-xl px-4 sm:px-6 text-sm flex-shrink-0">
-                  Todas
+                <TabsTrigger
+                  value="all"
+                  className="relative group h-auto py-3 px-4 rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm 
+                  hover:bg-card/60 transition-all duration-300 data-[state=active]:bg-primary/5 data-[state=active]:border-primary/40 
+                  data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 flex items-center justify-center gap-2.5 col-span-2 
+                  sm:col-span-1"
+                >
+                  <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-data-[state=active]:text-primary transition-colors" />
+                  <span className="font-semibold text-sm">Todas</span>
                   {unreadCount > 0 && (
-                    <span className="ml-2 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                    <Badge className="ml-0.5 bg-primary/20 text-primary border-primary/20 text-[10px] sm:text-xs h-4 px-1.5 min-w-4 flex-shrink-0">
                       {unreadCount}
-                    </span>
+                    </Badge>
+                  )}
+                  {filter === "all" && (
+                    <motion.div
+                      layoutId="activeTabNotification"
+                      className="absolute inset-0 rounded-2xl border-2 border-primary/20 z-[-1]"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
                   )}
                 </TabsTrigger>
-                <TabsTrigger
-                  value="analysis"
-                  className="rounded-xl px-4 sm:px-6 text-sm flex-shrink-0"
-                >
-                  Análisis
-                </TabsTrigger>
-                <TabsTrigger
-                  value="health"
-                  className="rounded-xl px-4 sm:px-6 text-sm flex-shrink-0"
-                >
-                  Salud
-                </TabsTrigger>
-                <TabsTrigger
-                  value="security"
-                  className="rounded-xl px-4 sm:px-6 text-sm flex-shrink-0"
-                >
-                  Seguridad
-                </TabsTrigger>
-                <TabsTrigger
-                  value="system"
-                  className="rounded-xl px-4 sm:px-6 text-sm flex-shrink-0"
-                >
-                  Sistema
-                </TabsTrigger>
+
+                {[
+                  { id: "analysis", label: "Análisis", icon: FileText, color: "text-blue-500" },
+                  { id: "health", label: "Salud", icon: Activity, color: "text-red-500" },
+                  {
+                    id: "security",
+                    label: "Seguridad",
+                    icon: ShieldCheck,
+                    color: "text-purple-500",
+                  },
+                  { id: "system", label: "Sistema", icon: Info, color: "text-amber-500" },
+                ].map((cat) => {
+                  const Icon = cat.icon;
+                  return (
+                    <TabsTrigger
+                      key={cat.id}
+                      value={cat.id}
+                      className="relative group h-auto py-3 px-4 rounded-2xl border border-border/40 bg-card/40 backdrop-blur-sm 
+                      hover:bg-card/60 transition-all duration-300 data-[state=active]:bg-primary/5 data-[state=active]:border-primary/40 
+                      data-[state=active]:shadow-lg data-[state=active]:shadow-primary/5 flex items-center justify-center gap-2.5 flex-1"
+                    >
+                      <Icon
+                        className={`w-4 h-4 sm:w-5 sm:h-5 group-data-[state=active]:${cat.color} text-muted-foreground transition-colors`}
+                      />
+                      <span className="font-semibold text-sm">{cat.label}</span>
+                      {filter === cat.id && (
+                        <motion.div
+                          layoutId="activeTabNotification"
+                          className="absolute inset-0 rounded-2xl border-2 border-primary/20 z-[-1]"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
             </Tabs>
           </div>

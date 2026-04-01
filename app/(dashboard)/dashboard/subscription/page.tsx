@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   CreditCard,
   CheckCircle2,
@@ -449,7 +449,7 @@ function SubscriptionSkeleton() {
   return (
     <div className="pt-8 pb-12 container mx-auto px-4 max-w-6xl w-full">
       <Skeleton className="h-10 w-64 mb-4" />
-      <Skeleton className="h-6 w-96 mb-12" />
+      <Skeleton className="h-6 w-full max-w-sm mb-12" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
           <Skeleton className="h-[400px] w-full rounded-2xl" />

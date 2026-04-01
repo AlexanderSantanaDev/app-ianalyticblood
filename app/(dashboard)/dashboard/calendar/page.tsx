@@ -52,7 +52,7 @@ function CalendarSkeleton() {
   return (
     <div className="pt-12 pb-8 container mx-auto px-4 max-w-7xl">
       <Skeleton className="h-10 w-64 mb-4" />
-      <Skeleton className="h-6 w-96 mb-8" />
+      <Skeleton className="h-6 w-full max-w-sm mb-8" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <Skeleton className="h-[500px] w-full rounded-2xl" />
@@ -364,7 +364,10 @@ export default function CalendarPage() {
                       exit={{ opacity: 0 }}
                       className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground"
                     >
-                      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 border border-dashed border-border/80">
+                      <div
+                        className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 border border-dashed 
+                      border-border/80"
+                      >
                         <CalendarIcon className="w-8 h-8 opacity-40" />
                       </div>
                       <h3 className="font-medium text-lg mb-1">Día sin actividad</h3>

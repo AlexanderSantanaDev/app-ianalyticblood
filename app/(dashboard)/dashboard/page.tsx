@@ -79,7 +79,7 @@ function DashboardSkeleton() {
         {/* Header skeleton */}
         <div className="mb-6 md:mb-8 text-center sm:text-left">
           <Skeleton className="h-9 w-64 mb-2 mx-auto sm:mx-0" />
-          <Skeleton className="h-5 w-96 max-w-full mx-auto sm:mx-0" />
+          <Skeleton className="h-5 w-full max-w-sm mx-auto sm:mx-0" />
         </div>
         {/* Stats cards skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

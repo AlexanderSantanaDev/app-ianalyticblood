@@ -208,4 +208,13 @@
   .dark ::-webkit-scrollbar-thumb:hover {
     @apply bg-primary/30;
   }
+
+  /* Utilidad para ocultar barras de scroll sin perder funcionalidad */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE y Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }

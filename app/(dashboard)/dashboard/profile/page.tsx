@@ -151,7 +151,7 @@ export default function ProfilePage() {
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Tu Perfil</h1>
           </div>
-          <p className="text-muted-foreground text-lg ml-[3.5rem] leading-relaxed max-w-2xl">
+          <p className="text-muted-foreground text-lg sm:ml-[3.5rem] ml-0 leading-relaxed max-w-2xl">
             Gestiona tu información personal, historial médico base y las preferencias de seguridad
             de tu cuenta.
           </p>
@@ -178,8 +178,8 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Menú Vertical */}
-            <div className="flex flex-col gap-1">
+            {/* Menú de Navegación: Smart Grid en móvil, Sidebar Vertical en Desktop */}
+            <div className="grid grid-cols-2 lg:flex lg:flex-col gap-2 sm:gap-3">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -187,14 +187,26 @@ export default function ProfilePage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as TabValue)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${
+                    className={`relative group flex items-center justify-center lg:justify-start gap-3 px-4 py-3.5 rounded-2xl 
+                    transition-all duration-300 border border-border/40 bg-card/40 backdrop-blur-sm hover:bg-card/60
+                    ${tab.id === "account" ? "col-span-2 lg:col-span-1" : ""}
+                    ${
                       isActive
-                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "text-primary border-primary/40 bg-primary/5 shadow-lg shadow-primary/5"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    {tab.label}
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 transition-colors shrink-0" />
+                    <span className="font-semibold text-sm">{tab.label}</span>
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeTabProfile"
+                          className="absolute inset-0 rounded-2xl border-2 border-primary/20 z-[-1]"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                    </AnimatePresence>
                   </button>
                 );
               })}
@@ -681,7 +693,7 @@ function ProfileSkeleton() {
   return (
     <div className="pt-8 md:pt-12 pb-8 container mx-auto px-4 max-w-6xl">
       <Skeleton className="h-10 w-64 mb-4" />
-      <Skeleton className="h-6 w-96 mb-8" />
+      <Skeleton className="h-6 w-full max-w-xs mb-8" />
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         <div className="md:col-span-4 lg:col-span-3 space-y-4">
           <Skeleton className="h-24 w-full rounded-2xl" />
