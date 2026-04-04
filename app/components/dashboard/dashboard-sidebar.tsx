@@ -145,13 +145,14 @@ export default function DashboardSidebar() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div
-                        className="flex w-full items-center gap-3 rounded-xl p-2.5 text-sm text-sidebar-foreground/30 
+                        className="flex w-full items-center gap-3 rounded-xl p-2.5 text-sm text-sidebar-foreground/60 
+                        dark:text-sidebar-foreground/40 
                         cursor-not-allowed select-none transition-all"
                         aria-disabled="true"
                       >
-                        <item.icon className="h-5 w-5 opacity-40" />
+                        <item.icon className="h-5 w-5 opacity-60 dark:opacity-50" />
                         <span className="font-medium">{item.title}</span>
-                        <Lock className="h-3.5 w-3.5 ml-auto opacity-20" />
+                        <Lock className="h-3.5 w-3.5 ml-auto opacity-40 dark:opacity-30" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent
@@ -183,7 +184,7 @@ export default function DashboardSidebar() {
                       "flex items-center gap-3 px-3 transition-all duration-300 group",
                       active
                         ? "bg-primary/10 text-primary font-bold border-l-2 border-primary"
-                        : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+                        : "text-sidebar-foreground/70 dark:text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
                     )}
                   >
                     <item.icon
@@ -191,7 +192,7 @@ export default function DashboardSidebar() {
                         "h-4.5 w-4.5 shrink-0 transition-all duration-300",
                         active
                           ? "text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.7)]"
-                          : "text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70 group-hover:scale-110",
+                          : "text-sidebar-foreground/60 dark:text-sidebar-foreground/40 group-hover:text-sidebar-foreground/90 dark:group-hover:text-sidebar-foreground/70 group-hover:scale-110",
                       )}
                     />
                     <span className={cn("tracking-tight text-sm", active && "font-semibold")}>
@@ -219,8 +220,8 @@ export default function DashboardSidebar() {
             <SidebarMenuButton
               asChild
               tooltip="Centro de ayuda"
-              className="h-10 rounded-xl text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/40 
-              transition-all duration-200"
+              className="h-10 rounded-xl text-sidebar-foreground/70 dark:text-sidebar-foreground/50 hover:text-sidebar-foreground 
+              hover:bg-sidebar-accent/40 transition-all duration-200"
             >
               <Link
                 href="/dashboard/help"

@@ -386,8 +386,8 @@ export default function ChatWidget() {
         whileTap={{ scale: 0.95 }}
         className={cn(
           "pointer-events-auto h-14 w-14 sm:h-16 sm:w-16 rounded-[2rem] flex items-center justify-center text-white relative group",
-          "bg-gradient-to-br from-primary/40 to-secondary/30 backdrop-blur-2xl border border-white/20",
-          "shadow-[0_20px_50px_-12px_rgba(var(--primary-rgb),0.5)] transition-all duration-500",
+          "bg-gradient-to-br from-primary to-secondary shadow-[0_20px_50px_-12px_rgba(var(--primary-rgb),0.6)]",
+          "border border-white/20 transition-all duration-500 hover:shadow-primary/50",
           isOpen && "rounded-full rotate-90",
         )}
       >
