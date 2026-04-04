@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 /***********************************************************************************************************************/
 /** Tipos. */
@@ -30,45 +31,16 @@ interface NotificationContextType {
   clearAll: () => void;
 }
 
-/** Notificaciones iniciales mejoradas. */
+/** Notificaciones iniciales (Bandeja limpia para usuario real). */
 const INITIAL_NOTIFICATIONS: Notification[] = [
   {
-    id: "1",
-    type: "analysis",
-    title: "Análisis completado",
-    description:
-      "Tu informe del 28 de marzo ha sido procesado. La IA ha detectado mejoras en tus niveles de hierro.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 15), // Hace 15 min
-    read: false,
-    priority: "low",
-  },
-  {
-    id: "2",
-    type: "health",
-    title: "Atención Requerida",
-    description:
-      "Niveles de Vitamina D por debajo del rango recomendado. Revisa las sugerencias nutritivas.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 120), // Hace 2 horas
-    read: false,
-    priority: "high",
-  },
-  {
-    id: "3",
-    type: "security",
-    title: "Nuevo inicio de sesión",
-    description: "Se detectó un acceso desde un dispositivo Mac OS en Madrid, España.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 300), // Hace 5 horas
-    read: true,
-    priority: "medium",
-  },
-  {
-    id: "4",
+    id: "system_welcome",
     type: "system",
-    title: "Actualización de la plataforma",
+    title: "Bienvenido a iAnalytic Blood",
     description:
-      "Hemos integrado soporte para nuevos biomarcadores de tiroides en el motor DeepSeek.",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // Ayer
-    read: true,
+      "Tu cuenta ha sido activada con éxito. Ya puedes subir tus primeros informes metabólicos para que la IA los procese.",
+    timestamp: new Date(),
+    read: false,
     priority: "low",
   },
 ];
@@ -79,6 +51,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { status } = useSession(); // 🛡️ Verificamos si realmente tiene sesión activa
 
   // Carga inicial de datos desde localStorage
   useEffect(() => {
@@ -106,24 +79,41 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   }, [notifications, isLoaded]);
 
-  // Simular alerta de seguridad (solo una vez por sesión para realismo)
+  // Sistema de seguridad dinámico (detecta OS real y ubicación, solo si hace login)
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && status === "authenticated") {
       const hasSessionAlert = sessionStorage.getItem("ianalytic_session_alert");
       if (!hasSessionAlert) {
+        // Detección dinámica del entorno en lugar de mocks
+        const ua = navigator.userAgent;
+        let os = "un dispositivo nuevo";
+        if (/Mac/i.test(ua)) os = "Mac OS";
+        else if (/Windows/i.test(ua)) os = "Windows";
+        else if (/Linux/i.test(ua)) os = "Linux";
+        else if (/Android/i.test(ua)) os = "Android";
+        else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
+
+        let loc = "tu ubicación";
+        try {
+          // Acercamiento elegante a la ciudad/espacio horario
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          if (tz && tz.includes("/")) {
+            loc = tz.split("/")[1].replace(/_/g, " ");
+          }
+        } catch (e) {}
+
         setTimeout(() => {
           addNotification({
             type: "security",
             title: "Nuevo inicio de sesión detectado",
-            description:
-              "Se ha detectado un acceso desde un dispositivo Mac OS en Madrid, España. Si no has sido tú, revisa tu seguridad.",
+            description: `Se ha detectado un acceso desde ${os} cerca de ${loc}. Si no has sido tú, revisa tu seguridad en las preferencias de cuenta.`,
             priority: "high",
           });
           sessionStorage.setItem("ianalytic_session_alert", "true");
-        }, 3000); // 3 segundos después de cargar
+        }, 3000); // 3 segundos después de entrar al dashboard
       }
     }
-  }, [isLoaded]);
+  }, [isLoaded, status]);
 
   // Contador automático de no leídas
   const unreadCount = notifications.filter((n) => !n.read).length;

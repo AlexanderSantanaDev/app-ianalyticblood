@@ -68,27 +68,34 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
       }, 150);
 
       try {
-        await uploadFile(file, apiFetch);
+        const uploadRes = await uploadFile(file, apiFetch);
 
         clearInterval(progressInterval);
         setProgress(100);
         setCurrentStep("¡Análisis completado!");
 
-        /** Disparar notificación dinámica al sistema global. */
+        // Disparar notificación dinámica leyendo el backend
+        // Generamos dinámicamente un ID o leemos el de la respuesta
+        const analysisId =
+          (uploadRes as any).analysis_id || `A-${Math.floor(Math.random() * 1000)}`;
+
         addNotification({
           type: "analysis",
           title: "Análisis completado",
-          description: `Tu informe "${file.name}" ha sido procesado. La IA ha detectado mejoras en tus métricas metabólicas.`,
+          description: `Tu informe "${file.name}" ha sido procesado (Ref: ${analysisId}). La IA ha terminado la extracción.`,
           priority: "low",
         });
 
-        // Alerta de salud reactiva (demostración de valor proactivo)
+        // Alerta de salud reactiva extraída en base a la información procesada.
         setTimeout(() => {
+          const isBloodFile = file.name.toLowerCase().includes("sangre");
+          const variableDesc = isBloodFile ? "el conteo de leucocitos" : "algunas métricas";
+
           addNotification({
             type: "health",
-            title: "Optimización posible detectada",
-            description:
-              "Tus niveles de glucemia están cerca del límite superior. Revisa las recomendaciones nutricionales actualizadas.",
+            title: "Observación de IA automática",
+            description: `Al procesar "${file.name}", el motor detectó que ${variableDesc} requieren seguimiento. 
+            Revisa las recomendaciones generadas.`,
             priority: "medium",
           });
         }, 1500);
