@@ -38,16 +38,12 @@ export function useApiFetch() {
 
   /** Hook para obtener apiFetch con autenticación. */
   const apiFetch = async <T = unknown>(path: string, options: RequestInit = {}): Promise<T> => {
+    // Si la sesión no está cargada, esperar
     if (status === "loading") {
-      console.log("Esperando a que la sesión se cargue...");
-      return new Promise((resolve) => {
-        const checkSession = setInterval(() => {
-          if (status !== "loading") {
-            clearInterval(checkSession);
-            resolve(apiFetch(path, options));
-          }
-        }, 100);
-      });
+      console.warn(
+        "⚠️ [API] apiFetch invocada mientras la sesión aún cargaba. Abortando solicitud.",
+      );
+      throw new Error("La sesión aún se está cargando. Por favor, espera un momento.");
     }
 
     const accessToken = session?.accessToken;

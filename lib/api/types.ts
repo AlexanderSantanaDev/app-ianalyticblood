@@ -1,64 +1,65 @@
 export interface ApiSuccess<T> {
-    status: "success";
-    data: T;
+  status: "success";
+  data: T;
 }
 
 export interface RegisterBody {
-    email: string;
-    name: string;
-    password: string;
-    terms_accepted: boolean;
-    terms_version?: string;   // opcional (por defecto "1.0")
+  email: string;
+  name: string;
+  password: string;
+  terms_accepted: boolean;
+  terms_version?: string; // opcional (por defecto "1.0")
 }
 
 export interface LoginResponse {
-    status: "success";
-    access_token: string;
-    refresh_token?: string; 
-    token_type: "bearer";
+  status: "success";
+  access_token: string;
+  refresh_token?: string;
+  token_type: "bearer";
 }
 
 export interface MedicalData {
-    bloodType?: string;
-    height?: string;
-    weight?: string;
-    allergies?: string;
-    conditions?: string;
+  bloodType?: string;
+  height?: string;
+  weight?: string;
+  allergies?: string;
+  conditions?: string;
 }
 
 export interface User {
-    id: string;
-    email: string;
-    name: string;
-    lastName?: string;
-    phone?: string;
-    medical_data?: MedicalData;
-    terms_accepted: boolean;
-    terms_accepted_at?: string;
-    plan?: "free" | "premium" | "enterprise";
-    subscription_status?: "active" | "inactive" | "pending" | "canceled";
+  id: string;
+  email: string;
+  name: string;
+  lastName?: string;
+  phone?: string;
+  medical_data?: MedicalData;
+  terms_accepted: boolean;
+  terms_accepted_at?: string;
+  plan?: "free" | "premium" | "enterprise";
+  subscription_status?: "active" | "inactive" | "pending" | "canceled";
+  analysis_count?: number;
 }
 
 export interface Overview {
-    alert_level: "normal" | "attention" | "alert";
-    general_state: string;
-    summary: string;
+  alert_level: "normal" | "attention" | "alert";
+  general_state: string;
+  summary: string;
 }
 
 export interface Parameter {
-    value: number | null;
-    unit: string | null;
-    status: "normal" | "bajo" | "alto" | "muy_alto" | null;
-    reference_range: [number, number] | null;
+  value: number | null;
+  unit: string | null;
+  status: "normal" | "bajo" | "alto" | "muy_alto" | null;
+  reference_range: [number, number] | null;
 }
 
 export interface AnalysisDoc {
-    _id: string;
-    user_id: string;
-    file_type: string;
-    overview: Overview;
-    parameters: Record<string, Parameter>;
-    analysis: string[];
-    recommendations: string[];
-    date: string;
+  _id: string;
+  user_id: string;
+  file_type: string;
+  overview: Overview;
+  parameters: Record<string, Parameter>;
+  analysis: string[];
+  recommendations: string[];
+  date: string;
 }

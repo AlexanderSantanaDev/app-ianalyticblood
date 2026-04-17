@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+
 import { motion } from "framer-motion";
 import {
   CreditCard,
@@ -14,8 +16,10 @@ import {
   Clock,
   Sparkles,
   AlertCircle,
+  Crown,
 } from "lucide-react";
 import { useUserApi } from "@/lib/api/user";
+import { useSubscriptionApi } from "@/lib/api/subscription";
 import { User as UserType } from "@/lib/api/types";
 import { toast } from "sonner";
 
@@ -40,79 +44,223 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-/***********************************************************************************************************************/
-export default function SubscriptionPage() {
-  // Estados
-  const { status: authStatus } = useSession();
-  const { getMe, updateMe } = useUserApi();
 
+/***********************************************************************************************************************/
+/** Componente de Contenido de Suscripción (Separado para poder usar Suspense) */
+function SubscriptionContent() {
+  // Estados
+  const { data: session, status: authStatus, update: updateSession } = useSession();
+  const { getMe } = useUserApi();
+  const { createCheckoutSession, createCustomerPortal, syncSubscription } = useSubscriptionApi();
   const [profile, setProfile] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const searchParams = useSearchParams();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   /***********************************************************************************************************************/
-  // Hooks
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const data = await getMe();
-        setProfile(data);
-      } catch (error) {
-        console.error("Error al cargar suscripción:", error);
-        toast.error("No se pudo obtener la información de suscripción.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProfile();
-  }, []);
+  // Métodos
+  /** Función maestra de sincronización con motor de reintentos inteligente */
+  const performSync = async (isManual = false) => {
+    if (isSyncing || authStatus !== "authenticated") return; // No sincronizar si no hay sesión lista
+    setIsSyncing(true);
 
-  // Carga
+    //  Motor de reintentos más potente (Stripe)
+    const MAX_RETRIES = isManual ? 1 : 5;
+    let currentRetry = 0;
+
+    const promise = new Promise(async (resolve, reject) => {
+      const attemptSync = async () => {
+        try {
+          // Si es automático, esperamos un poco más para que los webhooks terminen de dispararse
+          if (currentRetry === 0 && !isManual) {
+            await new Promise((r) => setTimeout(r, 1500));
+          }
+
+          console.log(`🛰️ Intento de sincronización ${currentRetry + 1}/${MAX_RETRIES}...`);
+          const data = await syncSubscription();
+          console.log("✅ Respuesta del backend:", data);
+
+          if (data.status === "success") {
+            // ¡Éxito total! Activamos visuales y forzamos recarga
+            setShowSuccess(true);
+
+            // Obtenemos el perfil fresco del backend para sincronizar datos reales
+            const freshProfile = await getMe();
+            setProfile(freshProfile);
+
+            // Forzamos la actualización atómica del JWT de NextAuth
+            // Pasamos el plan en múltiples niveles para asegurar que el callback jwt lo capture
+            await updateSession({
+              ...session,
+              plan: freshProfile.plan,
+              user: {
+                ...session?.user,
+                plan: freshProfile.plan,
+              },
+            });
+
+            console.log("💎 Sesión actualizada a:", freshProfile.plan);
+
+            // Delay controlado para que la rotación de cookies de NextAuth termine
+            setTimeout(() => {
+              window.location.href = "/dashboard/subscription";
+            }, 2500);
+
+            resolve(data);
+            return true;
+          } else if (data.status === "no_change" && currentRetry < MAX_RETRIES - 1) {
+            currentRetry++;
+            console.log("⏳ No detectado aún. Reintentando en 3s...");
+            await new Promise((r) => setTimeout(r, 3000));
+            return await attemptSync();
+          } else {
+            if (isManual || currentRetry >= MAX_RETRIES - 1) {
+              reject(
+                new Error("No se detectó el pago en Stripe aún. Prueba de nuevo en unos segundos."),
+              );
+            } else {
+              resolve(data);
+            }
+            return false;
+          }
+        } catch (err: any) {
+          console.error("❌ Error en sincronización:", err);
+          reject(err);
+          return false;
+        }
+      };
+
+      await attemptSync();
+    });
+
+    toast.promise(promise, {
+      loading: isManual ? "Sincronizando pago..." : "Verificando tu membresía Premium...",
+      success: "¡Membresía Premium activada! Refrescando... 💎",
+      error: (err) => `Sincronización: ${err.message || "Inténtalo de nuevo"}`,
+    });
+
+    try {
+      await promise;
+    } catch (e) {
+      // Manejado por toast
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  /***********************************************************************************************************************/
+  // Sincronización automática al volver de Stripe
+  useEffect(() => {
+    const success = searchParams.get("success");
+    // Solo disparamos si la sesión está cargada y validada
+    if (success === "true" && authStatus === "authenticated" && !isSyncing && !showSuccess) {
+      performSync(false);
+      // Limpiamos la URL para evitar re-fuegos al recargar manualmente
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [searchParams, authStatus]);
+
+  // Hooks para cargar datos iniciales
+  const fetchProfile = async () => {
+    if (authStatus !== "authenticated") return;
+    try {
+      const data = await getMe();
+      setProfile(data);
+    } catch (error) {
+      console.error("Error al cargar suscripción:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, [authStatus]); // Recargar si la sesión cambia
+
   if (isLoading || authStatus === "loading") {
     return <SubscriptionSkeleton />;
   }
 
-  // Datos
   const currentPlan = profile?.plan || "free";
   const usageLimit = currentPlan === "free" ? 5 : Infinity;
-  const currentUsage = 3; // Simulado para el demo
+  // Usar campo analysis_count ahora que está tipado en User
+  const currentUsage = profile?.analysis_count ?? 0;
   const progressValue = usageLimit === Infinity ? 100 : (currentUsage / usageLimit) * 100;
+
   /***********************************************************************************************************************/
-  // Métodos
-  /** Maneja la actualización del plan. */
+  // Métodos de Pago
   const handleUpgrade = (planId: string) => {
     setSelectedPlan(planId);
     setShowUpgradeDialog(true);
   };
 
-  /** Confirma la actualización del plan. */
+  /** Confirmar upgrade */
   const confirmUpgrade = async () => {
+    if (!selectedPlan) return;
     setIsUpgrading(true);
     try {
-      // Simulación de proceso de pago 💳
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      const newPlan = selectedPlan as "premium" | "enterprise";
-      await updateMe({ plan: newPlan });
-
-      setProfile((prev) => (prev ? { ...prev, plan: newPlan } : null));
-      toast.success(`¡Bienvenido al Plan ${selectedPlan?.toUpperCase()}!`, {
-        description: "Tu cuenta ha sido actualizada con éxito.",
-      });
-      setShowUpgradeDialog(false);
+      const res = await createCheckoutSession(selectedPlan);
+      if (res.url) {
+        window.location.href = res.url;
+      }
     } catch (error) {
-      toast.error("Hubo un problema al procesar la suscripción.");
+      toast.error("Hubo un problema al conectar con la pasarela de pagos.");
     } finally {
       setIsUpgrading(false);
+    }
+  };
+
+  /** Gestionar suscripción */
+  const handleManageSubscription = async () => {
+    try {
+      toast.loading("Accediendo al portal de pagos...", { duration: 1500 });
+      const res = await createCustomerPortal();
+      if (res.url) {
+        window.location.href = res.url;
+      }
+    } catch (error) {
+      toast.error("No se pudo acceder al portal de facturación.");
     }
   };
 
   /***********************************************************************************************************************/
   //JSX
   return (
-    <div className="pt-8 pb-12 min-h-[calc(100dvh-4rem)]">
+    <div className="pt-8 pb-12 min-h-[calc(100dvh-4rem)] relative">
+      {/* Overlay de éxito durante la sincronización final */}
+      {showSuccess && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-xl flex flex-col items-center justify-center 
+          p-6 text-center"
+        >
+          <motion.div
+            initial={{ scale: 0.5, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mb-6 border-2 border-primary/50 
+            shadow-[0_0_40px_rgba(var(--primary-rgb),0.3)]"
+          >
+            <Crown className="w-12 h-12 text-primary fill-primary animate-pulse" />
+          </motion.div>
+          <h2 className="text-4xl font-black gradient-text mb-4 uppercase tracking-tighter">
+            ¡Bienvenido a Premium!
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-md">
+            Tu cuenta ha sido elevada al siguiente nivel. Estamos preparando tu nuevo panel de
+            control...
+          </p>
+          <div className="mt-8 flex items-center gap-2 text-primary font-bold animate-pulse">
+            <Sparkles className="w-5 h-5" />
+            <span>Sincronizando privilegios...</span>
+          </div>
+        </motion.div>
+      )}
+
       <div className="container mx-auto px-4 max-w-6xl w-full">
         {/* Header Section */}
         <motion.div
@@ -139,7 +287,10 @@ export default function SubscriptionPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="border-primary/20 bg-gradient-to-br from-card to-primary/5 shadow-xl relative overflow-hidden group">
+              <Card
+                className="border-primary/20 bg-gradient-to-br from-card to-primary/5 shadow-xl relative overflow-hidden 
+              group"
+              >
                 <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                   <Sparkles className="w-32 h-32 text-primary" />
                 </div>
@@ -159,6 +310,24 @@ export default function SubscriptionPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-4">
+                  {/* Banner de ayuda si el usuario cree que pagó pero sigue en Básico */}
+                  {currentPlan === "free" && (
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl mb-2">
+                      <p className="text-[10px] text-amber-600 font-medium mb-2 leading-tight">
+                        ¿Has pagado pero sigues viendo el plan Básico?
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full h-8 text-[10px] border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
+                        onClick={() => performSync(true)}
+                        disabled={isSyncing}
+                      >
+                        {isSyncing ? "Sincronizando..." : "Sincronizar Pago Manualmente"}
+                      </Button>
+                    </div>
+                  )}
+
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm items-end">
                       <span className="font-medium text-foreground">Uso de análisis</span>
@@ -183,7 +352,17 @@ export default function SubscriptionPage() {
                     <ShieldCheck className="w-4 h-4 text-primary" />
                     Pagos seguros gestionados por Stripe
                   </div>
-                  {currentPlan !== "enterprise" && (
+                  {currentPlan !== "free" && (
+                    <Button
+                      variant="outline"
+                      className="w-full text-xs hover:bg-primary/10"
+                      onClick={handleManageSubscription}
+                    >
+                      Gestionar Facturación
+                      <ArrowRight className="w-3 h-3 ml-2" />
+                    </Button>
+                  )}
+                  {currentPlan === "free" && (
                     <Button
                       variant="ghost"
                       className="w-full text-xs hover:bg-primary/10"
@@ -325,7 +504,8 @@ export default function SubscriptionPage() {
               {/* Enterprise / Clínicas Plan Card */}
               <motion.div
                 whileHover={{ y: -5 }}
-                className="p-6 rounded-3xl border border-border/60 border-dashed bg-card hover:border-secondary/40 shadow-sm transition-all"
+                className="p-6 rounded-3xl border border-border/60 border-dashed bg-card hover:border-secondary/40 
+                shadow-sm transition-all"
               >
                 <div className="flex justify-between items-start mb-6">
                   <div className="p-3 bg-secondary/10 rounded-2xl text-secondary">
@@ -370,12 +550,15 @@ export default function SubscriptionPage() {
         </div>
       </div>
 
-      {/* Upgrade Simulation Dialog */}
+      {/* Upgrade Confirmation Dialog */}
       <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
         <DialogContent className="sm:max-w-[440px] rounded-3xl overflow-hidden border-none shadow-2xl">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-card -z-10" />
           <DialogHeader className="pt-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20">
+            <div
+              className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 
+            border border-primary/20"
+            >
               <Sparkles className="w-8 h-8 text-primary" />
             </div>
             <DialogTitle className="text-2xl font-bold text-center">
@@ -405,11 +588,13 @@ export default function SubscriptionPage() {
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-3 py-2 px-3 bg-amber-500/5 text-amber-500 rounded-xl border border-amber-500/10">
+            <div
+              className="flex items-center gap-3 py-2 px-3 bg-amber-500/5 text-amber-500 rounded-xl border 
+            border-amber-500/10"
+            >
               <AlertCircle className="w-5 h-5 shrink-0" />
-              <p className="text-[10px] leading-tight">
-                Al confirmar, aceptas los términos de servicio. Tu plan se actualizará
-                instantáneamente.
+              <p className="text-[10px] leading-tight text-amber-600 font-medium">
+                Al confirmar, serás redirigido a Stripe para completar el pago de forma segura.
               </p>
             </div>
           </div>
@@ -430,16 +615,25 @@ export default function SubscriptionPage() {
               {isUpgrading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Procesando...
+                  Conectando...
                 </div>
               ) : (
-                "Confirmar y Pagar"
+                "Ir a Pagar"
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+/** Exportación Principal con Límite de Suspense (OBLIGATORIO EN NEXT.JS 15 PARA USE-SEARCH-PARAMS) */
+export default function SubscriptionPage() {
+  return (
+    <Suspense fallback={<SubscriptionSkeleton />}>
+      <SubscriptionContent />
+    </Suspense>
   );
 }
 
@@ -451,8 +645,8 @@ function SubscriptionSkeleton() {
       <Skeleton className="h-10 w-64 mb-4" />
       <Skeleton className="h-6 w-full max-w-sm mb-12" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1">
-          <Skeleton className="h-[400px] w-full rounded-2xl" />
+        <div className="lg:col-span-1 border border-border/50 rounded-2xl p-6">
+          <Skeleton className="h-[400px] w-full rounded-xl" />
         </div>
         <div className="lg:col-span-2 space-y-8">
           <div className="flex justify-between items-end">

@@ -16,6 +16,7 @@ import {
   Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PlanStatusCard } from "./plan-status-card";
 import {
   Sidebar,
   SidebarContent,
@@ -123,7 +124,8 @@ export default function DashboardSidebar() {
         >
           <div
             className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center
-           text-white shadow-lg shadow-primary/30 group-hover:scale-105 group-hover:shadow-primary/50 transition-all duration-300"
+           text-white shadow-lg shadow-primary/30 group-hover:scale-105 group-hover:shadow-primary/50 transition-all 
+           duration-300"
           >
             <span className="text-sm font-black tracking-tighter">AB</span>
           </div>
@@ -215,6 +217,7 @@ export default function DashboardSidebar() {
 
       {/* Footer mejorado con ayuda + badge de versión */}
       <SidebarFooter className="px-3 pb-4 pt-3 gap-2">
+        <PlanStatusCard className="mb-2 px-0" />
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton

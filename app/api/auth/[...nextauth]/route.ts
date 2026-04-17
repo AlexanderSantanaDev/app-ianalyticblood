@@ -2,17 +2,21 @@ import NextAuth, { type NextAuthOptions, type DefaultSession, type User } from "
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { publicApiFetch } from "@/lib/api/client";
-
+/***********************************************************************************************************************/
 /* Extend User type to include accessToken, refreshToken, and provider */
 declare module "next-auth" {
   interface User {
     accessToken?: string;
     refreshToken?: string;
     provider?: string;
+    plan?: string;
   }
   interface Session {
     accessToken?: string;
     refreshToken?: string;
+    user: {
+      plan?: string;
+    } & DefaultSession["user"];
   }
 }
 
@@ -86,7 +90,8 @@ export const authOptions: NextAuthOptions = {
           accessToken: data.access_token,
           refreshToken: data.refresh_token,
           provider: "credentials",
-        } as User & { accessToken: string; refreshToken: string; provider: string };
+          plan: data.plan || "free",
+        } as User & { accessToken: string; refreshToken: string; provider: string; plan: string };
       },
     }),
   ],
@@ -119,26 +124,28 @@ export const authOptions: NextAuthOptions = {
           console.log(`[AUTH DEBUG] Backend URL configurada: ${apiUrl}`);
           console.log(`[AUTH DEBUG] Email: ${user.email}`);
 
-          const res = await publicApiFetch<{ access_token: string; refresh_token: string }>(
-            "/auth/google",
-            {
-              method: "POST",
-              body: JSON.stringify({
-                email: user.email,
-                name: user.name,
-                picture: user.image,
-                provider: "google",
-              }),
-              // Inyectamos la URL corregida para evitar el error de fetch failed
-              headers: { "x-api-url-override": apiUrl },
-            },
-          );
+          const res = await publicApiFetch<{
+            access_token: string;
+            refresh_token: string;
+            plan?: string; // Tipado del plan en la respuesta de Google Auth
+          }>("/auth/google", {
+            method: "POST",
+            body: JSON.stringify({
+              email: user.email,
+              name: user.name,
+              picture: user.image,
+              provider: "google",
+            }),
+            // Inyectamos la URL corregida para evitar el error de fetch failed
+            headers: { "x-api-url-override": apiUrl },
+          });
 
           if (res && res.access_token) {
             console.log(`[AUTH DEBUG] ✅ Autenticación exitosa con el backend`);
             user.accessToken = res.access_token;
             user.refreshToken = res.refresh_token;
             user.provider = "google";
+            user.plan = res.plan || "free";
             return true;
           }
 
@@ -166,7 +173,15 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session }) {
+      // Soporte robusto para actualización de sesión en tiempo real (Plan, Name, Image, etc)
+      if (trigger === "update" && session) {
+        if (session.plan) token.plan = session.plan;
+        if (session.name) token.name = session.name;
+        if (session.user?.plan) token.plan = session.user.plan; // Compatibilidad con diferentes formas de update()
+        console.log("[AUTH DEBUG] JWT actualizado vía trigger 'update'. Nuevo Plan:", token.plan);
+      }
+
       if (user) {
         token.name = user.name;
         token.email = user.email;
@@ -174,6 +189,7 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.provider = user.provider;
+        token.plan = user.plan;
       }
 
       if (account?.provider === "google" && account.access_token) {
@@ -204,7 +220,8 @@ export const authOptions: NextAuthOptions = {
         ...session.user,
         name: token.name,
         email: token.email,
-        image: token.picture ?? null, // Aseguramos que session.user.image sea token.picture
+        image: token.picture ?? null,
+        plan: token.plan as string | undefined,
       };
       session.accessToken = token.accessToken as string | undefined;
       session.refreshToken = token.refreshToken as string | undefined;

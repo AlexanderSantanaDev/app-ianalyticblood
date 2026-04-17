@@ -42,7 +42,9 @@ import { useSession } from "next-auth/react";
 import { useSidebar } from "@/components/ui/sidebar";
 import DashboardSearch from "@/components/dashboard/dashboard-search";
 import GlobalAnalysisIndicator from "@/components/dashboard/global-analysis-indicator";
+import SubscriptionBadge from "@/components/dashboard/subscription-badge";
 import { useNotifications } from "@/hooks/notification-context";
+import { useAnalysis } from "@/hooks/analysis-context";
 /****************************************************************************************************************************/
 // Estados
 export default function DashboardNavbar() {
@@ -56,6 +58,8 @@ export default function DashboardNavbar() {
   const { data: session, status } = useSession();
   const { isMobile, toggleSidebar } = useSidebar();
   const { notifications, unreadCount, markAsRead } = useNotifications();
+  const { isAnalyzing } = useAnalysis(); // Detectamos si hay un análisis activo
+
   /****************************************************************************************************************************/
   useEffect(() => {
     const handleScroll = () => {
@@ -176,8 +180,8 @@ export default function DashboardNavbar() {
             >
               <Search className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary/60 transition-colors shrink-0" />
               <span
-                className="text-xs text-muted-foreground/50 group-hover:text-muted-foreground/70 flex-1 text-left transition-colors 
-              tracking-tight"
+                className="text-xs text-muted-foreground/50 group-hover:text-muted-foreground/70 flex-1 text-left 
+                transition-colors tracking-tight"
               >
                 Buscar...
               </span>
@@ -209,6 +213,13 @@ export default function DashboardNavbar() {
 
           {/* Indicador Global de Análisis (IA) */}
           <GlobalAnalysisIndicator />
+
+          {/* El badge ahora desaparece en Desktop (lg:hidden) y durante análisis activo */}
+          {!isAnalyzing && (
+            <div className="flex items-center lg:hidden">
+              <SubscriptionBadge className={isMobile ? "mr-1 h-8" : "mr-2"} />
+            </div>
+          )}
 
           {/* Notificaciones */}
           <DropdownMenu>
@@ -254,13 +265,25 @@ export default function DashboardNavbar() {
                     const getIconMeta = (type: string) => {
                       switch (type) {
                         case "analysis":
-                          return { icon: <FileText className="h-4 w-4 text-blue-500" />, bg: "bg-blue-500/10" };
+                          return {
+                            icon: <FileText className="h-4 w-4 text-blue-500" />,
+                            bg: "bg-blue-500/10",
+                          };
                         case "health":
-                          return { icon: <Activity className="h-4 w-4 text-red-500" />, bg: "bg-red-500/10" };
+                          return {
+                            icon: <Activity className="h-4 w-4 text-red-500" />,
+                            bg: "bg-red-500/10",
+                          };
                         case "security":
-                          return { icon: <ShieldCheck className="h-4 w-4 text-purple-500" />, bg: "bg-purple-500/10" };
+                          return {
+                            icon: <ShieldCheck className="h-4 w-4 text-purple-500" />,
+                            bg: "bg-purple-500/10",
+                          };
                         default:
-                          return { icon: <Info className="h-4 w-4 text-amber-500" />, bg: "bg-amber-500/10" };
+                          return {
+                            icon: <Info className="h-4 w-4 text-amber-500" />,
+                            bg: "bg-amber-500/10",
+                          };
                       }
                     };
                     const meta = getIconMeta(notification.type);
@@ -280,7 +303,11 @@ export default function DashboardNavbar() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start mb-0.5">
-                            <p className={`font-bold text-sm truncate pr-4 ${!notification.read ? "text-foreground" : "text-muted-foreground"}`}>
+                            <p
+                              className={`font-bold text-sm truncate pr-4 ${
+                                !notification.read ? "text-foreground" : "text-muted-foreground"
+                              }`}
+                            >
                               {notification.title}
                             </p>
                             <span className="text-[10px] text-muted-foreground whitespace-nowrap">
@@ -307,7 +334,9 @@ export default function DashboardNavbar() {
                     <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto opacity-20">
                       <Bell className="w-6 h-6 text-muted-foreground" />
                     </div>
-                    <p className="text-sm text-muted-foreground">No tienes notificaciones pendientes.</p>
+                    <p className="text-sm text-muted-foreground">
+                      No tienes notificaciones pendientes.
+                    </p>
                   </div>
                 )}
               </div>
