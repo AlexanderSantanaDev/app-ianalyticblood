@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
 import { uploadFile, getDashboardStats } from "@/lib/api/analysis";
 import { toast } from "sonner";
 import { useNotifications } from "@/hooks/notification-context";
@@ -13,6 +13,7 @@ interface AnalysisContextType {
   progress: number;
   currentStep: string;
   fileName: string | null;
+  analysisCount: number;
   startAnalysis: (file: File, apiFetch: any) => Promise<void>;
   resetAnalysis: () => void;
 }
@@ -25,6 +26,8 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
+  // Estado local del contador para reactividad instantánea
+  const [analysisCount, setAnalysisCount] = useState<number>(0);
   const { addNotification } = useNotifications();
   const { data: session, update: updateSession } = useSession(); // Hook de sesión para actualizar contadores
   /****************************************************************************************************************************/
@@ -36,6 +39,13 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
     setCurrentStep("");
     setFileName(null);
   }, []);
+
+  // Sincronizar contador local cuando la sesión carga o cambia
+  useEffect(() => {
+    if (session?.user?.analysis_count !== undefined) {
+      setAnalysisCount(session.user.analysis_count);
+    }
+  }, [session?.user?.analysis_count]);
 
   /** Iniciar el análisis.*/
   const startAnalysis = useCallback(
@@ -115,6 +125,9 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
           const stats = await getDashboardStats(apiFetch);
           console.log("[ANALYSIS DEBUG] Sincronizando contador tras éxito:", stats.analyses_total);
 
+          // Actualización instantánea del estado local para reactividad total
+          setAnalysisCount(stats.analyses_total);
+
           // Forma simplificada de update para mayor compatibilidad
           await updateSession({
             analysis_count: stats.analyses_total,
@@ -173,6 +186,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
         progress,
         currentStep,
         fileName,
+        analysisCount,
         startAnalysis,
         resetAnalysis,
       }}

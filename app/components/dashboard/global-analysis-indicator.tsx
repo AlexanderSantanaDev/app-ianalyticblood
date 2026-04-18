@@ -2,7 +2,7 @@
 
 import { useAnalysis } from "@/hooks/analysis-context";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, Beaker } from "lucide-react";
+import { Beaker } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 /****************************************************************************************************************************/
 export default function GlobalAnalysisIndicator() {
@@ -17,12 +17,15 @@ export default function GlobalAnalysisIndicator() {
           initial={{ opacity: 0, y: -20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -10, scale: 0.95 }}
-          className="mr-2 md:mr-4 flex items-center gap-3 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/20 backdrop-blur-md 
-          shadow-lg shadow-primary/5 group transition-all hover:bg-primary/10"
+          className="mr-2 md:mr-4 flex items-center gap-3 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/20 
+          backdrop-blur-md shadow-lg shadow-primary/5 group transition-all hover:bg-primary/10"
         >
           <div className="relative flex items-center justify-center">
             <div className="absolute inset-0 bg-primary/20 blur-md rounded-full animate-pulse" />
-            <div className="relative w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <div
+              className="relative w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center 
+            justify-center"
+            >
               <Beaker size={14} className="text-primary animate-bounce shadow-glow" />
             </div>
           </div>
@@ -40,7 +43,7 @@ export default function GlobalAnalysisIndicator() {
             />
           </div>
 
-          <div className="flex sm:hidden flex-col items-center">
+          <div className="flex sm:hidden flex-col items-center w-[26px]">
             <span className="text-[10px] font-bold text-primary">{Math.round(progress)}%</span>
           </div>
         </motion.div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -23,10 +24,12 @@ import {
   Settings2,
   HelpCircle,
   Info,
+  Zap,
+  Crown,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
 import { ModeToggle } from "@/components/mode-toggle";
-import { formatTimeAgo } from "@/lib/utils";
+import { cn, formatTimeAgo } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -55,11 +58,10 @@ export default function DashboardNavbar() {
   //  Detectar plataforma para mostrar atajo correcto en el hint del buscador
   const [isMac, setIsMac] = useState(true);
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const { isMobile, toggleSidebar } = useSidebar();
   const { notifications, unreadCount, markAsRead } = useNotifications();
-  const { isAnalyzing } = useAnalysis(); // Detectamos si hay un análisis activo
-
+  const { isAnalyzing, analysisCount: reactiveAnalysisCount } = useAnalysis(); // Detectamos si hay un análisis activo y el contador reactivo
   /****************************************************************************************************************************/
   useEffect(() => {
     const handleScroll = () => {
@@ -69,7 +71,6 @@ export default function DashboardNavbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Detectar Mac vs Windows/Linux una sola vez al montar
   useEffect(() => {
     setIsMac(/Mac|iPhone|iPod|iPad/.test(navigator.userAgent));
   }, []);
@@ -136,6 +137,12 @@ export default function DashboardNavbar() {
   const user = session?.user;
   const avatar = user?.image ?? undefined;
   const name = user?.name ?? user?.email ?? "Usuario";
+  const plan = user?.plan || "free";
+  const isPremium = plan === "premium" || plan === "enterprise";
+  // Usamos el contador reactivo del contexto para respuesta instantánea
+  const analysisCount = reactiveAnalysisCount;
+  const percentage = Math.min((analysisCount / 5) * 100, 100);
+
   // Obtiene meta (label + Icon) de la página actual
   const { label: pageLabel, Icon: PageIcon } = getPageMeta();
   /****************************************************************************************************************************/
@@ -214,8 +221,8 @@ export default function DashboardNavbar() {
           {/* Indicador Global de Análisis (IA) */}
           <GlobalAnalysisIndicator />
 
-          {/* El badge ahora desaparece en Desktop (lg:hidden) y durante análisis activo */}
-          {!isAnalyzing && (
+          {/* El badge ahora desaparece en Desktop (lg:hidden) y durante análisis activo. Oculto en móvil por el nuevo diseño de avatar */}
+          {!isAnalyzing && !isMobile && (
             <div className="flex items-center lg:hidden">
               <SubscriptionBadge className={isMobile ? "mr-1 h-8" : "mr-2"} />
             </div>
@@ -362,11 +369,61 @@ export default function DashboardNavbar() {
           {/* Menú de usuario */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar className="h-8 w-8">
-                  {avatar && <AvatarImage src={avatar} alt={name} />}
-                  <AvatarFallback>{getInitials(name)}</AvatarFallback>
-                </Avatar>
+              <Button variant="ghost" size="icon" className="rounded-full relative">
+                <div className="relative">
+                  <Avatar className="h-8 w-8 border border-border/50">
+                    {avatar && <AvatarImage src={avatar} alt={name} />}
+                    <AvatarFallback className="bg-primary/5 text-primary font-bold">
+                      {getInitials(name)}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {/* Indicador de membresía sobre el avatar (Solo Móvil) */}
+                  {isMobile && (
+                    <div className="absolute -top-1 -right-1.5 z-10 flex items-center justify-center">
+                      {isPremium ? (
+                        <Crown
+                          className="h-3.5 w-3.5 text-amber-500 fill-amber-500 animate-pulse 
+                        drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                        />
+                      ) : (
+                        <div className="relative flex items-center justify-center w-3.5 h-3.5 overflow-hidden">
+                          {/* Capa de fondo (Silueta del rayo siempre visible) */}
+                          <Zap className="h-3.5 w-3.5 text-slate-300 dark:text-white/20 absolute" />
+
+                          {/* Capa de energía dinámica (Se llena según uso) */}
+                          <motion.div
+                            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                            initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
+                            animate={{
+                              clipPath:
+                                percentage >= 100
+                                  ? "inset(-10% -10% -10% -10%)" // Forzamos visibilidad total al 100%
+                                  : `inset(${100 - percentage}% 0% 0% 0%)`,
+                            }}
+                            transition={{ type: "spring", damping: 30, stiffness: 100 }}
+                          >
+                            <Zap
+                              className={cn(
+                                "h-3.5 w-3.5 text-orange-500 fill-orange-500 transition-all duration-700",
+                                percentage >= 100 && "drop-shadow-[0_0_5px_rgba(249,115,22,0.8)]",
+                              )}
+                            />
+                          </motion.div>
+
+                          {/* Sutil glow perimetral si hay energía */}
+                          {percentage > 0 && (
+                            <motion.div
+                              animate={{ opacity: [0.2, 0.4, 0.2] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                              className="absolute inset-0 bg-orange-500/10 blur-[2px] rounded-full -z-10"
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
