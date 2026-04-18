@@ -23,7 +23,10 @@ export interface Notification {
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: Omit<Notification, "id" | "read" | "timestamp">) => void;
+  addNotification: (
+    notification: Omit<Notification, "id" | "read" | "timestamp">,
+    options?: { skipToast?: boolean },
+  ) => void;
   markAsRead: (id: string) => void;
   toggleRead: (id: string) => void;
   deleteNotification: (id: string) => void;
@@ -119,7 +122,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   /** Añadir nueva notificación dinámica */
-  const addNotification = (n: Omit<Notification, "id" | "read" | "timestamp">) => {
+  const addNotification = (
+    n: Omit<Notification, "id" | "read" | "timestamp">,
+    options: { skipToast?: boolean } = {},
+  ) => {
     const newNotif: Notification = {
       ...n,
       id: Math.random().toString(36).substring(2, 9),
@@ -128,10 +134,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     };
     setNotifications((prev) => [newNotif, ...prev]);
 
-    // Solo mostramos toast si no es una carga inicial silenciosa
-    toast.info(newNotif.title, {
-      description: newNotif.description,
-    });
+    // Solo mostramos toast si no se pide silencio explícito
+    if (!options.skipToast) {
+      toast.info(newNotif.title, {
+        description: newNotif.description,
+      });
+    }
   };
 
   /** Marcar una como leída. */

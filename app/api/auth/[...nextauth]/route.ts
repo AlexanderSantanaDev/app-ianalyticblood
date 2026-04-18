@@ -72,23 +72,29 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials) return null;
+        const email = credentials?.email;
+        const password = credentials?.password;
+        if (!email || !password) return null;
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
           method: "POST",
           body: new URLSearchParams({
-            username: credentials.email,
-            password: credentials.password,
+            username: email,
+            password: password,
           }),
         });
+
         if (!res.ok) return null;
 
         const data = await res.json();
+        // Extraemos el alias de forma segura y capitalizamos
+        const rawName = data.name || data.full_name || email.split("@")[0] || "Usuario";
+        const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
         return {
-          id: credentials.email,
-          email: credentials.email,
-          name: credentials.email,
+          id: email,
+          email: email,
+          name: displayName,
           accessToken: data.access_token,
           refreshToken: data.refresh_token,
           provider: "credentials",

@@ -5,7 +5,7 @@ import { uploadFile, getDashboardStats } from "@/lib/api/analysis";
 import { toast } from "sonner";
 import { useNotifications } from "@/hooks/notification-context";
 import { useSession } from "next-auth/react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 /****************************************************************************************************************************/
 /** Interface del contexto de análisis.*/
 interface AnalysisContextType {
@@ -83,6 +83,12 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
       try {
         const uploadRes = await uploadFile(file, apiFetch);
 
+        // Toast inmediato de éxito tras la subida (antes de que termine la IA)
+        toast.success("Archivo subido con éxito", {
+          description: "Iniciando análisis detallado con IA...",
+          icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
+        });
+
         clearInterval(progressInterval);
         setProgress(100);
         setCurrentStep("¡Análisis completado!");
@@ -92,30 +98,40 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
         const analysisId =
           (uploadRes as any).analysis_id || `A-${Math.floor(Math.random() * 1000)}`;
 
-        addNotification({
-          type: "analysis",
-          title: "Análisis completado",
-          description: `Tu informe "${file.name}" ha sido procesado (Ref: ${analysisId}). La IA ha terminado la extracción.`,
-          priority: "low",
-        });
+        addNotification(
+          {
+            type: "analysis",
+            title: "Análisis completado",
+            description: `Tu informe "${file.name}" ha sido procesado (Ref: ${analysisId}). La IA ha terminado la extracción.`,
+            priority: "low",
+          },
+          { skipToast: true },
+        );
 
         // Alerta de salud reactiva extraída en base a la información procesada.
         setTimeout(() => {
           const isBloodFile = file.name.toLowerCase().includes("sangre");
           const variableDesc = isBloodFile ? "el conteo de leucocitos" : "algunas métricas";
 
-          addNotification({
-            type: "health",
-            title: "Observación de IA automática",
-            description: `Al procesar "${file.name}", el motor detectó que ${variableDesc} requieren seguimiento. 
-            Revisa las recomendaciones generadas.`,
-            priority: "medium",
-          });
-        }, 1500);
+          addNotification(
+            {
+              type: "health",
+              title: "Observación de IA automática",
+              description: `Al procesar "${file.name}", el motor detectó que ${variableDesc} requieren seguimiento. Revisa las recomendaciones generadas.`,
+              priority: "medium",
+            },
+            { skipToast: true },
+          );
 
-        toast.success("Análisis completado", {
-          description: "Tu informe ha sido procesado correctamente con IA.",
-        });
+          // Toast de advertencia para la observación de IA (fondo naranja sólido, máxima visibilidad)
+          toast.warning("Observación de IA automática", {
+            description: `El motor detectó que ${variableDesc} requieren seguimiento.`,
+            icon: <AlertTriangle className="h-5 w-5 text-white" />,
+            className:
+              "bg-orange-500 border-none text-white shadow-[0_10px_40px_rgba(249,115,22,0.3)] pointer-events-auto",
+            duration: 7000,
+          });
+        }, 3500); // Delay aumentado para que no se pise con otros avisos
 
         // Obtener estadísticas reales del backend para sincronizar
         try {
@@ -160,13 +176,13 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
 
         if (isLimitError) {
           toast.error("Límite de análisis", {
-            description: err.message || "Has alcanzado el límite de tu plan.",
-            icon: <AlertTriangle className="h-5 w-5 text-orange-500" />,
-            style: {
-              border: "1px solid rgba(249, 115, 22, 0.3)",
-              background: "rgba(249, 115, 22, 0.05)",
-            },
-            className: "border-orange-500/30 bg-orange-500/5 text-orange-200",
+            description:
+              err.message ||
+              "Has alcanzado el límite de tu plan básico (5/5). ¡Pásate a Premium para subidas ilimitadas! 🚀",
+            icon: <AlertTriangle className="h-5 w-5 text-white" />,
+            className:
+              "bg-orange-600 border-none text-white font-bold shadow-[0_10px_40px_rgba(249,115,22,0.4)]",
+            duration: 8000,
           });
         } else {
           toast.error("Error al procesar", {
