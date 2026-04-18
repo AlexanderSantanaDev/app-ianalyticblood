@@ -10,12 +10,14 @@ declare module "next-auth" {
     refreshToken?: string;
     provider?: string;
     plan?: string;
+    analysis_count?: number;
   }
   interface Session {
     accessToken?: string;
     refreshToken?: string;
     user: {
       plan?: string;
+      analysis_count?: number;
     } & DefaultSession["user"];
   }
 }
@@ -91,7 +93,14 @@ export const authOptions: NextAuthOptions = {
           refreshToken: data.refresh_token,
           provider: "credentials",
           plan: data.plan || "free",
-        } as User & { accessToken: string; refreshToken: string; provider: string; plan: string };
+          analysis_count: data.analysis_count || 0,
+        } as User & {
+          accessToken: string;
+          refreshToken: string;
+          provider: string;
+          plan: string;
+          analysis_count: number;
+        };
       },
     }),
   ],
@@ -102,7 +111,7 @@ export const authOptions: NextAuthOptions = {
 
   /* Callbacks */
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account }: { user: any; account: any }): Promise<boolean | string> {
       if (account?.provider === "google") {
         try {
           const envUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -127,7 +136,8 @@ export const authOptions: NextAuthOptions = {
           const res = await publicApiFetch<{
             access_token: string;
             refresh_token: string;
-            plan?: string; // Tipado del plan en la respuesta de Google Auth
+            plan?: string;
+            analysis_count?: number; // Tipado del contador en Google Auth
           }>("/auth/google", {
             method: "POST",
             body: JSON.stringify({
@@ -146,6 +156,7 @@ export const authOptions: NextAuthOptions = {
             user.refreshToken = res.refresh_token;
             user.provider = "google";
             user.plan = res.plan || "free";
+            user.analysis_count = res.analysis_count || 0; // Guardamos contador desde Google login
             return true;
           }
 
@@ -173,13 +184,35 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({ token, user, account, trigger, session }) {
+    async jwt({
+      token,
+      user,
+      account,
+      trigger,
+      session,
+    }: {
+      token: any;
+      user?: any;
+      account?: any;
+      trigger?: "signIn" | "signUp" | "update";
+      session?: any;
+    }) {
       // Soporte robusto para actualización de sesión en tiempo real (Plan, Name, Image, etc)
       if (trigger === "update" && session) {
+        if (session.analysis_count !== undefined) {
+          token.analysis_count = session.analysis_count;
+        }
+        if (session.user?.analysis_count !== undefined) {
+          token.analysis_count = session.user.analysis_count;
+        }
         if (session.plan) token.plan = session.plan;
-        if (session.name) token.name = session.name;
-        if (session.user?.plan) token.plan = session.user.plan; // Compatibilidad con diferentes formas de update()
-        console.log("[AUTH DEBUG] JWT actualizado vía trigger 'update'. Nuevo Plan:", token.plan);
+        if (session.user?.plan) token.plan = session.user.plan;
+
+        console.log("[AUTH DEBUG] ✅ JWT actualizado con éxito:", {
+          plan: token.plan,
+          count: token.analysis_count,
+          trigger,
+        });
       }
 
       if (user) {
@@ -190,6 +223,7 @@ export const authOptions: NextAuthOptions = {
         token.refreshToken = user.refreshToken;
         token.provider = user.provider;
         token.plan = user.plan;
+        token.analysis_count = user.analysis_count; // Inicializar contador en el token
       }
 
       if (account?.provider === "google" && account.access_token) {
@@ -215,13 +249,14 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
 
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: any }) {
       session.user = {
         ...session.user,
         name: token.name,
         email: token.email,
         image: token.picture ?? null,
         plan: token.plan as string | undefined,
+        analysis_count: token.analysis_count as number | undefined, // Exponer contador a la sesión cliente
       };
       session.accessToken = token.accessToken as string | undefined;
       session.refreshToken = token.refreshToken as string | undefined;
@@ -232,7 +267,7 @@ export const authOptions: NextAuthOptions = {
       return session as DefaultSession & { accessToken?: string; refreshToken?: string };
     },
 
-    redirect({ url, baseUrl }) {
+    redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
       if (url.startsWith(baseUrl)) return url;
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       return `${baseUrl}/dashboard`;

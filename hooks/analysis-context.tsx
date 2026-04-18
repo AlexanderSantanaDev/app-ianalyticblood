@@ -1,9 +1,11 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useCallback } from "react";
-import { uploadFile } from "@/lib/api/analysis";
+import { uploadFile, getDashboardStats } from "@/lib/api/analysis";
 import { toast } from "sonner";
 import { useNotifications } from "@/hooks/notification-context";
+import { useSession } from "next-auth/react";
+import { AlertTriangle } from "lucide-react";
 /****************************************************************************************************************************/
 /** Interface del contexto de análisis.*/
 interface AnalysisContextType {
@@ -24,6 +26,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   const [currentStep, setCurrentStep] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const { addNotification } = useNotifications();
+  const { data: session, update: updateSession } = useSession(); // Hook de sesión para actualizar contadores
   /****************************************************************************************************************************/
   // Hooks
   /** Resetear el análisis.*/
@@ -104,6 +107,33 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
           description: "Tu informe ha sido procesado correctamente con IA.",
         });
 
+        // Obtener estadísticas reales del backend para sincronizar
+        try {
+          // Esperamos un momento para asegurar consistencia en el backend
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          const stats = await getDashboardStats(apiFetch);
+          console.log("[ANALYSIS DEBUG] Sincronizando contador tras éxito:", stats.analyses_total);
+
+          // Forma simplificada de update para mayor compatibilidad
+          await updateSession({
+            analysis_count: stats.analyses_total,
+            plan: session?.user?.plan,
+          });
+
+          console.log("[ANALYSIS DEBUG] ✅ Sesión actualizada con:", stats.analyses_total);
+
+          // Disparar evento personalizado para notificar a otros componentes (Sidebar)
+          window.dispatchEvent(
+            new CustomEvent("ianalytic:analysis-completed", {
+              detail: { count: stats.analyses_total },
+            }),
+          );
+        } catch (syncErr) {
+          console.error("[ANALYSIS DEBUG] Error sincronizando contador:", syncErr);
+          await updateSession();
+        }
+
         // Pequeño delay para que el usuario vea el 100%
         setTimeout(() => {
           resetAnalysis();
@@ -111,9 +141,25 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
       } catch (err: any) {
         clearInterval(progressInterval);
         setIsAnalyzing(false);
-        toast.error("Error al procesar", {
-          description: err.message || "No se pudo analizar el informe.",
-        });
+
+        // Toast personalizado de color naranja para el límite de análisis
+        const isLimitError = err.message?.toLowerCase().includes("límite");
+
+        if (isLimitError) {
+          toast.error("Límite de análisis", {
+            description: err.message || "Has alcanzado el límite de tu plan.",
+            icon: <AlertTriangle className="h-5 w-5 text-orange-500" />,
+            style: {
+              border: "1px solid rgba(249, 115, 22, 0.3)",
+              background: "rgba(249, 115, 22, 0.05)",
+            },
+            className: "border-orange-500/30 bg-orange-500/5 text-orange-200",
+          });
+        } else {
+          toast.error("Error al procesar", {
+            description: err.message || "No se pudo analizar el informe.",
+          });
+        }
       }
     },
     [isAnalyzing, resetAnalysis],

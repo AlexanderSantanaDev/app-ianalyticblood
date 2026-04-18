@@ -13,20 +13,61 @@ export default function SubscriptionBadge({ className }: { className?: string })
   /***********************************************************************************************************************/
   //JSX
   if (!isPremium) {
+    const analysisCount = session?.user?.analysis_count || 0;
+    const percentage = Math.min((analysisCount / 5) * 100, 100);
+
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/40 border border-border/50 transition-all hover:bg-muted/60",
-          className,
-        )}
-      >
-        <Zap className="h-3 w-3 text-muted-foreground" />
-        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
-          Básico
-        </span>
-      </motion.div>
+      <div className={cn("flex items-center justify-center", className)}>
+        {/* Versión Móvil: Rayo dinámico sin bordes ni texto */}
+        <div className="flex md:hidden relative items-center justify-center w-8 h-8 group overflow-hidden">
+          {/* Capa de fondo del rayo (Gris/Muted) - Siempre visible */}
+          <Zap className="h-6 w-6 text-muted-foreground/20 absolute" />
+
+          {/* Capa de carga del rayo (Naranja dinámico) - Recortada dinámicamente */}
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
+            animate={{ clipPath: `inset(${100 - percentage}% 0% 0% 0%)` }}
+            transition={{ type: "spring", damping: 30, stiffness: 100 }}
+          >
+            <Zap
+              className={cn(
+                "h-6 w-6 transition-all duration-700",
+                percentage > 0 ? "text-orange-500 fill-orange-500/10" : "text-muted-foreground/20",
+                percentage >= 100 &&
+                  "fill-orange-500/30 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]",
+              )}
+            />
+          </motion.div>
+
+          {/* Glow perimetral premium de fondo cuando hay energía */}
+          {percentage > 0 && (
+            <motion.div
+              animate={{
+                opacity: [0.1, 0.2, 0.1],
+                scale: [0.8, 1, 0.8],
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="absolute h-6 w-6 rounded-full bg-orange-500/20 blur-xl pointer-events-none"
+              style={{ opacity: percentage / 100 }}
+            />
+          )}
+        </div>
+
+        {/* Versión Desktop: Sigue igual para mantener coherencia en pantallas grandes */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className={cn(
+            "hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/40 border border-border/50 transition-all hover:bg-muted/60",
+          )}
+        >
+          <Zap className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
+            Básico
+          </span>
+        </motion.div>
+      </div>
     );
   }
   /***********************************************************************************************************************/
