@@ -106,7 +106,7 @@ export default function StatsPage() {
   const metrics = useMemo(() => {
     if (!data || !data.analyses.length) return null;
 
-    const allAnalyses = data.analyses.sort(
+    const allAnalyses = [...data.analyses].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
     const lastAnalysis = allAnalyses[allAnalyses.length - 1];

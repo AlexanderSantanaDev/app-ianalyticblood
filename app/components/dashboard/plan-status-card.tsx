@@ -13,7 +13,7 @@ import { useAnalysis } from "@/hooks/analysis-context"; // Hook de análisis rea
 /***********************************************************************************************************************/
 export function PlanStatusCard({ className }: { className?: string }) {
   // Hooks
-  const { data: session, update: updateSession } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const apiFetch = useApiFetch(); // Hook para peticiones autenticadas
   const { analysisCount: reactiveAnalysisCount } = useAnalysis(); // Contador reactivo instantáneo
 
@@ -28,6 +28,8 @@ export function PlanStatusCard({ className }: { className?: string }) {
   useEffect(() => {
     // 1. Sincronización inicial silenciosa solo si no tenemos datos
     const syncInitial = async () => {
+      if (status === "loading") return;
+      
       if (session?.user?.email && currentCount === 0) {
         try {
           const stats = await getDashboardStats(apiFetch);
@@ -41,7 +43,7 @@ export function PlanStatusCard({ className }: { className?: string }) {
     };
 
     syncInitial();
-  }, [session?.user?.email, currentCount, updateSession, apiFetch]);
+  }, [session?.user?.email, status, currentCount, updateSession, apiFetch]);
   /***********************************************************************************************************************/
   //JSX
   return (

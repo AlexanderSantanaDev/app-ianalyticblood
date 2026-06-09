@@ -201,9 +201,16 @@ export default function HistoryPage() {
     // Ordenamiento
     result.sort((a, b) => {
       if (sortBy === "alert") {
-        const order = { alert: 3, attention: 2, normal: 1 };
-        const levelA = order[a.alert_level as keyof typeof order] || 0;
-        const levelB = order[b.alert_level as keyof typeof order] || 0;
+        const getAlertOrder = (level: string): number => {
+          switch (level) {
+            case "alert": return 3;
+            case "attention": return 2;
+            case "normal": return 1;
+            default: return 0;
+          }
+        };
+        const levelA = getAlertOrder(a.alert_level);
+        const levelB = getAlertOrder(b.alert_level);
         if (levelA !== levelB) return levelB - levelA; // Mayor alerta primero
         return new Date(b.date).getTime() - new Date(a.date).getTime(); // Desempata con más nuevo
       }
@@ -253,6 +260,8 @@ export default function HistoryPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
+              id="search-history"
+              name="searchHistory"
               placeholder="Buscar por resumen, fecha o estado..."
               className="pl-10 border-none bg-background/50 focus-visible:ring-1 focus-visible:ring-primary/40 h-12 text-base rounded-xl"
               value={search}

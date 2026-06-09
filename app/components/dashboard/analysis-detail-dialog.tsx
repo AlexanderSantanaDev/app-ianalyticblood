@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -133,6 +133,9 @@ export function AnalysisDetailDialog({
       <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0 overflow-hidden">
         {/* Header. */}
         <DialogHeader className="px-6 pt-6 pb-4 bg-gradient-to-r from-primary/5 to-secondary/5">
+          <DialogDescription className="sr-only">
+            Detalles y resultados del análisis de sangre seleccionado.
+          </DialogDescription>
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-xl font-bold">Detalle del análisis</DialogTitle>

@@ -166,41 +166,58 @@ export default function SettingsPage() {
                       Actualiza tu contraseña para mantener tu cuenta segura.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="current-password">Contraseña actual</Label>
-                      <div className="relative">
+                  <CardContent>
+                    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+                      <div className="space-y-2">
+                        <Label htmlFor="current-password">Contraseña actual</Label>
+                        <div className="relative">
+                          <Input
+                            id="current-password"
+                            type={showPassword ? "text" : "password"}
+                            autoComplete="current-password"
+                            className="rounded-xl pr-10"
+                            placeholder="••••••••"
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password">Nueva contraseña</Label>
                         <Input
-                          id="current-password"
-                          type={showPassword ? "text" : "password"}
-                          className="rounded-xl pr-10"
+                          id="new-password"
+                          type="password"
+                          autoComplete="new-password"
+                          className="rounded-xl"
                           placeholder="••••••••"
                         />
-                        <button
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password">Nueva contraseña</Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        className="rounded-xl"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                    <div className="pt-2">
-                      <Button
-                        variant="outline"
-                        className="w-full rounded-xl gap-2 font-bold bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary"
-                      >
-                        Actualizar Contraseña
-                      </Button>
-                    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-password">Confirmar nueva contraseña</Label>
+                        <Input
+                          id="confirm-password"
+                          type="password"
+                          autoComplete="new-password"
+                          className="rounded-xl"
+                          placeholder="••••••••"
+                        />
+                      </div>
+                      <div className="pt-2">
+                        <Button
+                          type="submit"
+                          variant="outline"
+                          disabled={isSaving}
+                          className="w-full rounded-xl gap-2 font-bold bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary"
+                        >
+                          {isSaving ? "Guardando..." : "Actualizar Contraseña"}
+                        </Button>
+                      </div>
+                    </form>
                   </CardContent>
                 </Card>
 

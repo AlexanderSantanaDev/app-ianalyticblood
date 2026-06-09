@@ -12,7 +12,7 @@ const securityHeaders: Record<string, string> = {
   "X-XSS-Protection": "1; mode=block",
 
   // Oculta versión del servidor
-  "X-Powered-By": "Next.js",          // (cambio “Express” típico)
+  "X-Powered-By": "Next.js", // (cambio “Express” típico)
 
   // CORS pre-flight más seguro (solo ejemplos, tu API ya tiene CORS propio)
   "Access-Control-Allow-Origin":
@@ -33,7 +33,7 @@ const securityHeaders: Record<string, string> = {
 const isProd = process.env.NODE_ENV === "production";
 const apiOrigin = new URL(process.env.NEXT_PUBLIC_API_URL!).origin;
 
-//  ───────────── CSP:  ajusta tus fuentes ─────────────
+//  ───────────── CSP:  ajustar fuentes ─────────────
 /* const csp = `// añadir mas adelante para segirdad
   default-src 'self';
   frame-ancestors 'none';
@@ -48,10 +48,15 @@ const csp = `
   img-src 'self' https: data:;
   script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' 'inline-speculation-rules';
   style-src 'self' 'unsafe-inline';
-  connect-src 'self' https://api-ianalyticblood.onrender.com ${apiOrigin};
-`.replace(/\s{2,}/g, " ").trim();
+  connect-src 'self' https://api-ianalyticblood.onrender.com ${apiOrigin} ${!isProd ? "ws://localhost:* ws://127.0.0.1:*" : ""};
+`
+  .replace(/\s{2,}/g, " ")
+  .trim();
 
-export const withSecurityHeaders: NextMiddleware = (req: NextRequest, _ev?: NextFetchEvent) => {
+export const withSecurityHeaders: NextMiddleware = (
+  req: NextRequest,
+  _ev?: NextFetchEvent,
+) => {
   const res = NextResponse.next();
 
   // 1) Cabeceras fijas

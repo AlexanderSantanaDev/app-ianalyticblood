@@ -20,14 +20,14 @@ import { register } from "lib/api/auth";
 import { useToast } from "hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react"; // --> Añadimos useSession aquí
-
+/***********************************************************************************************************************/
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
-
+  /***********************************************************************************************************************/
   // Hooks
   const router = useRouter();
   const { toast } = useToast();
@@ -37,16 +37,30 @@ export default function RegisterPage() {
     e.preventDefault();
     try {
       // Crea la cuenta
-      await register({ name, email, password, terms_accepted: acceptTerms, terms_version: "1.0" });
-      toast({ title: "Cuenta creada ✔️", description: "Inicia sesión para continuar" });
+      await register({
+        name,
+        email,
+        password,
+        terms_accepted: acceptTerms,
+        terms_version: "1.0",
+      });
+      toast({
+        title: "Cuenta creada ✔️",
+        description: "Inicia sesión para continuar",
+      });
 
-      /** 👉  manda al formulario de login **/
+      /** Manda al formulario de login **/
       router.push("/login");
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
     }
   };
 
+  /** Método para iniciar sesion con google */
   const handleGoogleSignup = async () => {
     await signIn("google", { callbackUrl: "/dashboard" });
   };
@@ -55,7 +69,8 @@ export default function RegisterPage() {
   if (status === "loading") {
     return <div>Cargando...</div>;
   }
-
+  /***********************************************************************************************************************/
+  // Render
   return (
     <div className="pt-32 pb-20 min-h-screen flex items-center justify-center">
       <div className="container mx-auto px-4">
@@ -67,7 +82,9 @@ export default function RegisterPage() {
         >
           <Card className="border-border shadow-xl">
             <CardHeader className="space-y-1 text-center">
-              <CardTitle className="text-2xl font-bold">Crear una cuenta</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                Crear una cuenta
+              </CardTitle>
               <CardDescription>
                 Ingresa tus datos para registrarte en IAnalyticBlood
               </CardDescription>
@@ -86,6 +103,7 @@ export default function RegisterPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
+                      autoComplete="name"
                     />
                   </div>
                 </div>
@@ -101,6 +119,7 @@ export default function RegisterPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      autoComplete="email"
                     />
                   </div>
                 </div>
@@ -116,34 +135,47 @@ export default function RegisterPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    La contraseña debe tener al menos 8 caracteres, incluyendo una letra mayúscula y
-                    un número.
+                    La contraseña debe tener al menos 8 caracteres, incluyendo
+                    una letra mayúscula y un número.
                   </p>
                 </div>
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     id="terms"
                     checked={acceptTerms}
-                    onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setAcceptTerms(checked === true)
+                    }
                     className="mt-1"
                   />
                   <Label htmlFor="terms" className="text-sm">
                     Acepto los{" "}
-                    <Link href="/terms" className="text-primary hover:underline">
+                    <Link
+                      href="/terms"
+                      className="text-primary hover:underline"
+                    >
                       Términos de Servicio
                     </Link>{" "}
                     y la{" "}
-                    <Link href="/privacy" className="text-primary hover:underline">
+                    <Link
+                      href="/privacy"
+                      className="text-primary hover:underline"
+                    >
                       Política de Privacidad
                     </Link>
                   </Label>
@@ -162,12 +194,18 @@ export default function RegisterPage() {
                   <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">O regístrate con</span>
+                  <span className="bg-card px-2 text-muted-foreground">
+                    O regístrate con
+                  </span>
                 </div>
               </div>
 
               <div className="w-full">
-                <Button variant="outline" className="w-full" onClick={handleGoogleSignup}>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGoogleSignup}
+                >
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

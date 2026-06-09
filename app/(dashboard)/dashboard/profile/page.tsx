@@ -69,23 +69,8 @@ const healthSchema = z.object({
 /** Tipos de datos para los formularios. */
 type HealthFormValues = z.infer<typeof healthSchema>;
 
-/** Esquemas de validación. */
-const securitySchema = z
-  .object({
-    currentPassword: z.string().min(6, "Debe tener al menos 6 caracteres."),
-    newPassword: z.string().min(6, "Debe tener al menos 6 caracteres."),
-    confirmPassword: z.string().min(6, "Debe tener al menos 6 caracteres."),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Las contraseñas no coinciden.",
-    path: ["confirmPassword"],
-  });
-
 /** Tipos de datos para los formularios. */
-type SecurityFormValues = z.infer<typeof securitySchema>;
-
-/** Tipos de datos para los formularios. */
-type TabValue = "account" | "health" | "security";
+type TabValue = "account" | "health";
 
 /***********************************************************************************************************************/
 export default function ProfilePage() {
@@ -132,7 +117,6 @@ export default function ProfilePage() {
   const tabs = [
     { id: "account", label: "Cuenta General", icon: User },
     { id: "health", label: "Datos Clínicos", icon: HeartPulse },
-    { id: "security", label: "Seguridad", icon: Lock },
   ];
   /***********************************************************************************************************************/
   //JSX
@@ -245,7 +229,7 @@ export default function ProfilePage() {
                   onUpdate={(newProfile) => setProfile(newProfile)}
                 />
               )}
-              {activeTab === "security" && <SecurityTab key="security" />}
+
             </AnimatePresence>
           </motion.div>
         </div>
@@ -348,7 +332,7 @@ function AccountTab({
                 <Label htmlFor="name">Nombre</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input id="name" {...form.register("name")} className="pl-10" />
+                  <Input id="name" autoComplete="given-name" {...form.register("name")} className="pl-10" />
                 </div>
                 {form.formState.errors.name && (
                   <p className="text-xs text-red-500 mt-1">{form.formState.errors.name.message}</p>
@@ -357,14 +341,14 @@ function AccountTab({
 
               <div className="space-y-2">
                 <Label htmlFor="lastName">Apellidos</Label>
-                <Input id="lastName" {...form.register("lastName")} placeholder="Tus apellidos" />
+                <Input id="lastName" autoComplete="family-name" {...form.register("lastName")} placeholder="Tus apellidos" />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Correo Electrónico</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input id="email" {...form.register("email")} className="pl-10" />
+                  <Input id="email" autoComplete="email" {...form.register("email")} className="pl-10" />
                 </div>
                 {form.formState.errors.email && (
                   <p className="text-xs text-red-500 mt-1">{form.formState.errors.email.message}</p>
@@ -377,6 +361,7 @@ function AccountTab({
                   <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="phone"
+                    autoComplete="tel"
                     {...form.register("phone")}
                     placeholder="+34 600 000 000"
                     className="pl-10"
@@ -563,129 +548,7 @@ function HealthTab({ user, onUpdate }: { user: UserType; onUpdate: (u: UserType)
 }
 
 /***********************************************************************************************************************/
-/** Tab: Seguridad. */
-function SecurityTab() {
-  // Estados
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  /***********************************************************************************************************************/
-  // Hooks
-  const form = useForm<SecurityFormValues>({
-    resolver: zodResolver(securitySchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  });
-  /***********************************************************************************************************************/
-  //Métodos
-  /** Método que se ejecuta al enviar el formulario. */
-  const onSubmit = async (data: SecurityFormValues) => {
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    form.reset();
-    toast.success("Contraseña actualizada", {
-      description: "Por seguridad hemos cerrado tus sesiones en otros dispositivos.",
-    });
-    setIsSubmitting(false);
-  };
-  /***********************************************************************************************************************/
-  //JSX
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
-    >
-      <Card className="border-border/60 shadow-lg shadow-background/5 overflow-hidden">
-        <CardHeader className="bg-muted/30 border-b pb-6">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-primary" />
-            <CardTitle className="text-xl">Seguridad de la Cuenta</CardTitle>
-          </div>
-          <CardDescription>
-            Actualiza tu contraseña periódicamente para mantener tu cuenta segura.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <form
-            id="security-form"
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 max-w-md"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Contraseña Actual</Label>
-              <Input id="currentPassword" type="password" {...form.register("currentPassword")} />
-              {form.formState.errors.currentPassword && (
-                <p className="text-xs text-red-500">
-                  {form.formState.errors.currentPassword.message}
-                </p>
-              )}
-            </div>
 
-            <hr className="border-border/50" />
-
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">Nueva Contraseña</Label>
-              <Input id="newPassword" type="password" {...form.register("newPassword")} />
-              {form.formState.errors.newPassword && (
-                <p className="text-xs text-red-500">{form.formState.errors.newPassword.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
-              <Input id="confirmPassword" type="password" {...form.register("confirmPassword")} />
-              {form.formState.errors.confirmPassword && (
-                <p className="text-xs text-red-500">
-                  {form.formState.errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-
-            <div className="pt-2">
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer">
-                <AlertCircle className="w-3.5 h-3.5" />
-                ¿Olvidaste tu contraseña actual? Recuperar.
-              </p>
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="bg-muted/30 border-t py-4 px-6 flex justify-end">
-          <Button
-            type="submit"
-            form="security-form"
-            disabled={isSubmitting || !form.formState.isDirty}
-            className="min-w-[120px] disabled:opacity-50"
-          >
-            {isSubmitting ? "Autenticando..." : "Actualizar Contraseña"}
-          </Button>
-        </CardFooter>
-      </Card>
-
-      {/* 2FA Upsell Visual (solo diseño) */}
-      <div
-        className="mt-6 border border-primary/20 bg-gradient-to-r from-primary/5 to-transparent rounded-2xl p-6 flex flex-col 
-      m:flex-row items-center justify-between gap-4"
-      >
-        <div>
-          <h4 className="font-bold text-foreground mb-1">Doble Factor de Autenticación (2FA)</h4>
-          <p className="text-sm text-muted-foreground max-w-xl">
-            Protege tu información clínica con un nivel extra de seguridad sincronizando la App de
-            Autenticación de Google o Microsoft.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          className="shrink-0 border-primary text-primary hover:bg-primary/10"
-        >
-          Activar 2FA
-        </Button>
-      </div>
-    </motion.div>
-  );
-}
 
 /***********************************************************************************************************************/
 /** Skeleton General. */
