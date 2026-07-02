@@ -20,6 +20,21 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "hooks/use-toast";
 import { signIn, useSession } from "next-auth/react";
+import { z } from "zod"; // Validación con zod antes de enviar al back
+
+// Esquema de validación para el login
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "El correo electrónico es obligatorio")
+    .email("El formato del correo electrónico no es válido")
+    .max(255, "Email demasiado largo"),
+  password: z
+    .string()
+    .min(1, "La contraseña es obligatoria")
+    .max(128, "Contraseña demasiado larga"),
+});
+
 /***********************************************************************************************************************/
 export default function LoginPage() {
   // Estados
@@ -27,6 +42,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevenir doble submit
 
   // Hooks
   const router = useRouter();
@@ -42,35 +58,69 @@ export default function LoginPage() {
   /** Maneja el envío del formulario de login. */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validación con zod ANTES de enviar al backend
+    const validation = loginSchema.safeParse({ email, password });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0]?.message;
+      toast({
+        title: "Error de validación",
+        description: firstError,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Prevenir doble submit (anti-abuse)
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     try {
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: validation.data.email,
+        password: validation.data.password,
         redirect: false,
       });
 
       if (rememberMe) {
-        localStorage.setItem("iab_email", email);
+        localStorage.setItem("iab_email", validation.data.email);
       } else {
         localStorage.removeItem("iab_email");
       }
 
-      if (result?.error) {
+      // NextAuth a veces devuelve { error: null, url: "...error=CredentialsSignin..." }
+      // Aseguramos capturar cualquier indicio de fallo en el login
+      if (
+        result?.error ||
+        result?.ok === false ||
+        (result?.url && result.url.includes("error="))
+      ) {
         toast({
-          title: "Error",
-          description: result.error,
+          title: "Acceso denegado",
+          description:
+            "Correo o contraseña incorrectos. Verifica tus datos e inténtalo de nuevo.",
           variant: "destructive",
         });
+        setIsSubmitting(false);
       } else {
-        router.push("/dashboard");
-        toast({ title: "¡Bienvenido!" });
+        // Feedback visual premium, el toast se ve antes de redirigir
+        toast({
+          title: "¡Bienvenido de nuevo! 👋",
+          description: "Entrando al dashboard...",
+        });
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1200);
       }
-    } catch (err: any) {
+    } catch {
+      // Error genérico
       toast({
-        title: "Error",
-        description: err.message,
+        title: "Error de conexión",
+        description:
+          "No hemos podido conectar con el servidor. Inténtalo más tarde.",
         variant: "destructive",
       });
+      setIsSubmitting(false);
     }
   };
 
@@ -175,8 +225,9 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   className="w-full gradient-bg hover:opacity-90 transition-opacity"
+                  disabled={isSubmitting}
                 >
-                  Iniciar Sesión
+                  {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
                 </Button>
               </form>
 

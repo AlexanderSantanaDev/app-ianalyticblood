@@ -1,35 +1,34 @@
-import type React from "react"
-import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
-import { useToast as useToastOriginal, toast as toastOriginal } from "@/components/ui/use-toast"
-
-type ToasterToast = ToastProps & {
-  id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
-}
-
-const useToast = () => {
-  const { toast, dismiss } = useToastOriginal()
-
-  return {
-    toast,
-    dismiss,
-    // Método de conveniencia para mostrar un toast de éxito
-    success: (props: Omit<ToasterToast, "id">) => {
-      return toast({
-        ...props,
-        variant: "default",
-      })
-    },
-    // Método de conveniencia para mostrar un toast de error
-    error: (props: Omit<ToasterToast, "id">) => {
-      return toast({
-        ...props,
-        variant: "destructive",
-      })
-    },
+import type React from "react";
+import { toast as sonnerToast } from "sonner";
+/***********************************************************************************************************************/
+type ToastProps = {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  variant?: "default" | "destructive" | "success";
+};
+/***********************************************************************************************************************/
+// Redirigimos todas las notificaciones del sistema antiguo (Radix) a Sonner
+// Esto soluciona que no se vieran los toasts y además les da un aspecto muchísimo más premium y fluido.
+const customToast = (props: ToastProps) => {
+  if (props.variant === "destructive") {
+    return sonnerToast.error(props.title, { description: props.description });
   }
-}
+  if (props.variant === "success" || String(props.title).includes("✔")) {
+    return sonnerToast.success(props.title, { description: props.description });
+  }
+  return sonnerToast(props.title, { description: props.description });
+};
 
-export { useToast, toastOriginal as toast }
+/** Exporta las funciones para usarlas en la aplicación */
+const useToast = () => {
+  return {
+    toast: customToast,
+    dismiss: sonnerToast.dismiss,
+    success: (props: Omit<ToastProps, "variant">) =>
+      customToast({ ...props, variant: "success" }),
+    error: (props: Omit<ToastProps, "variant">) =>
+      customToast({ ...props, variant: "destructive" }),
+  };
+};
+
+export { useToast, customToast as toast };

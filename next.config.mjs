@@ -19,13 +19,24 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  // Cabeceras de seguridad ampliadas
   headers() {
     return [
       {
         source: "/(.*)",
         headers: [
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), geolocation=(), microphone=()" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), geolocation=(), microphone=(), payment=(), usb=(), bluetooth=(), display-capture=(), magnetometer=(), gyroscope=(), accelerometer=()",
+          },
+        ],
+      },
+      {
+        // Prevenir que los bots indexen las rutas de API
+        source: "/api/(.*)",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
         ],
       },
     ];

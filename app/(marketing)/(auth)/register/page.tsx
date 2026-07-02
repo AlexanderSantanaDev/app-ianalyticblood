@@ -16,11 +16,32 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Check, X } from "lucide-react";
 import { register } from "lib/api/auth";
 import { useToast } from "hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
+import { z } from "zod";
+/***********************************************************************************************************************/
+// Esquema de validación para registro (coincide con el backend)
+const registerSchema = z.object({
+  name: z
+    .string()
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(100, "Nombre demasiado largo"),
+  email: z
+    .string()
+    .min(1, "El correo electrónico es obligatorio")
+    .email("Formato de correo inválido"),
+  password: z
+    .string()
+    .min(8, "La contraseña debe tener al menos 8 caracteres")
+    .regex(/[A-Z]/, "Debe contener al menos una mayúscula")
+    .regex(/[a-z]/, "Debe contener al menos una minúscula")
+    .regex(/[0-9]/, "Debe contener al menos un número")
+    .max(128, "Contraseña demasiado larga"),
+});
+
 /***********************************************************************************************************************/
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +53,21 @@ export default function RegisterPage() {
   // Nuevo estado para la confirmación de contraseña
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevenir doble submit
+
+  // Validadores dinámicos para feedback visual premium
+  const isLengthValid = password.length >= 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const isPasswordValid =
+    password.length > 0 &&
+    isLengthValid &&
+    hasUpperCase &&
+    hasLowerCase &&
+    hasNumber;
+  const isConfirmValid =
+    confirmPassword.length > 0 && password === confirmPassword;
   /***********************************************************************************************************************/
   // Hooks
   const router = useRouter();
@@ -41,7 +77,20 @@ export default function RegisterPage() {
   /** Método para registrar usuario */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Validación de que las contraseñas coinciden antes de enviar
+
+    // Validación Zod en cliente ANTES de llamar al backend
+    const validation = registerSchema.safeParse({ name, email, password });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0]?.message;
+      toast({
+        title: "Error en los datos",
+        description: firstError,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validación visual de que coinciden
     if (password !== confirmPassword) {
       toast({
         title: "Error",
@@ -50,12 +99,16 @@ export default function RegisterPage() {
       });
       return;
     }
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     try {
-      // Crea la cuenta
+      // Se envían los datos validados por Zod
       await register({
-        name,
-        email,
-        password,
+        name: validation.data.name,
+        email: validation.data.email,
+        password: validation.data.password,
         terms_accepted: acceptTerms,
         terms_version: "1.0",
       });
@@ -64,14 +117,20 @@ export default function RegisterPage() {
         description: "Inicia sesión para continuar",
       });
 
-      /** Manda al formulario de login **/
-      router.push("/login");
-    } catch (err: any) {
+      // Dejamos un margen de tiempo para que el usuario lea el toast premium antes de redirigir
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+    } catch {
+      // Error genérico (no mostrar err.message directo)
       toast({
-        title: "Error",
-        description: err.message,
+        title: "Error de registro",
+        description:
+          "No se pudo crear la cuenta. Verifica que el correo no esté en uso.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -141,12 +200,21 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <Label htmlFor="password">Contraseña</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Lock
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 transition-colors ${password.length > 0 ? (isPasswordValid ? "text-green-500" : "text-red-500") : "text-muted-foreground"}`}
+                    />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className="pl-10"
+                      // Feedback visual premium en el input (bordes verdes o rojos dinámicos)
+                      className={`pl-10 transition-colors ${
+                        password.length > 0
+                          ? isPasswordValid
+                            ? "border-green-500 focus-visible:ring-green-500/50"
+                            : "border-red-500 focus-visible:ring-red-500/50"
+                          : ""
+                      }`}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -167,22 +235,105 @@ export default function RegisterPage() {
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    La contraseña debe tener al menos 8 caracteres, incluyendo
-                    una letra mayúscula y un número.
-                  </p>
+                  {/* Lista de validación dinámica premium */}
+                  <div className="space-y-1 mt-2 p-3 bg-muted/50 rounded-lg border border-border/50">
+                    <p className="text-xs font-medium text-foreground mb-2">
+                      Requisitos de contraseña:
+                    </p>
+                    <ul className="text-xs space-y-1">
+                      <li
+                        className={`flex items-center gap-1.5 transition-colors ${
+                          password.length > 0
+                            ? isLengthValid
+                              ? "text-green-500"
+                              : "text-red-500"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {password.length > 0 && isLengthValid ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <X className="h-3 w-3" />
+                        )}
+                        Mínimo 8 caracteres
+                      </li>
+                      <li
+                        className={`flex items-center gap-1.5 transition-colors ${
+                          password.length > 0
+                            ? hasUpperCase
+                              ? "text-green-500"
+                              : "text-red-500"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {password.length > 0 && hasUpperCase ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <X className="h-3 w-3" />
+                        )}
+                        Al menos una mayúscula
+                      </li>
+                      <li
+                        className={`flex items-center gap-1.5 transition-colors ${
+                          password.length > 0
+                            ? hasLowerCase
+                              ? "text-green-500"
+                              : "text-red-500"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {password.length > 0 && hasLowerCase ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <X className="h-3 w-3" />
+                        )}
+                        Al menos una minúscula
+                      </li>
+                      <li
+                        className={`flex items-center gap-1.5 transition-colors ${
+                          password.length > 0
+                            ? hasNumber
+                              ? "text-green-500"
+                              : "text-red-500"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {password.length > 0 && hasNumber ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <X className="h-3 w-3" />
+                        )}
+                        Al menos un número
+                      </li>
+                    </ul>
+                  </div>
                 </div>
 
                 {/* Nuevo bloque para confirmar la contraseña */}
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password">Confirmar contraseña</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Lock
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 transition-colors ${
+                        confirmPassword.length > 0
+                          ? isConfirmValid
+                            ? "text-green-500"
+                            : "text-red-500"
+                          : "text-muted-foreground"
+                      }`}
+                    />
                     <Input
                       id="confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className="pl-10"
+                      // Feedback visual en confirmación
+                      className={`pl-10 transition-colors ${
+                        confirmPassword.length > 0
+                          ? isConfirmValid
+                            ? "border-green-500 focus-visible:ring-green-500/50"
+                            : "border-red-500 focus-visible:ring-red-500/50"
+                          : ""
+                      }`}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
@@ -242,9 +393,15 @@ export default function RegisterPage() {
                 <Button
                   type="submit"
                   className="w-full gradient-bg hover:opacity-90 transition-opacity"
-                  disabled={!acceptTerms}
+                  // Deshabilitar el botón si la seguridad no se cumple
+                  disabled={
+                    !acceptTerms ||
+                    isSubmitting ||
+                    !isPasswordValid ||
+                    !isConfirmValid
+                  }
                 >
-                  Crear cuenta
+                  {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
                 </Button>
               </form>
 
