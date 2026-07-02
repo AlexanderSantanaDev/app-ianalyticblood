@@ -87,9 +87,9 @@ function getTemplateHTML(data: AnalysisDoc): string {
     .join("");
 
   return `
-    <div id="pdf-content" style="width: 794px; padding: 60px; background: white; color: #111827; font-family: 'Inter', sans-serif;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; 
-      padding-bottom: 20px; border-bottom: 2px solid #8b5cf6;">
+      <div id="pdf-content-1" style="width: 794px; padding: 0 50px 0; background: white; color: #111827; font-family: 'Inter', sans-serif;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; 
+      padding-bottom: 15px; border-bottom: 2px solid #8b5cf6;">
         <div>
           <h1 style="margin: 0; font-size: 28px; color: #8b5cf6; font-weight: 800; letter-spacing: -0.025em;">IAnalyticBlood</h1>
           <p style="margin: 5px 0 0; color: #6b7280; font-size: 14px; font-weight: 500;">Informe Inteligente de Salud</p>
@@ -105,7 +105,7 @@ function getTemplateHTML(data: AnalysisDoc): string {
       <div style="margin-bottom: 35px; padding: 20px; background: #f9fafb; border-radius: 12px; border: 1px solid #f3f4f6;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #111827;">Resumen Ejecutivo</h2>
-          <span style="background: ${statusColor}15; color: ${statusColor}; padding: 4px 10px; border-radius: 99px; 
+          <span style="display: inline-flex; align-items: center; justify-content: center; line-height: 1; background: ${statusColor}15; color: ${statusColor}; padding: 4px 10px; border-radius: 99px; 
           font-size: 11px; font-weight: 700; text-transform: uppercase;">
             Estado: ${statusLabel}
           </span>
@@ -137,7 +137,8 @@ function getTemplateHTML(data: AnalysisDoc): string {
           <tbody>${paramsHTML}</tbody>
         </table>
       </div>
-
+    </div>
+    <div id="pdf-content-2" style="width: 794px; padding: 20px 50px 20px; background: white; color: #111827; font-family: 'Inter', sans-serif;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
         <div>
           <h3 style="margin: 0 0 15px; font-size: 15px; font-weight: 700; color: #111827;">
@@ -174,25 +175,80 @@ export async function downloadAnalysisAsPDF(data: AnalysisDoc) {
   document.body.appendChild(container);
 
   try {
-    const content = container.querySelector("#pdf-content") as HTMLElement;
-    if (!content) return;
+    const content1 = container.querySelector("#pdf-content-1") as HTMLElement;
+    const content2 = container.querySelector("#pdf-content-2") as HTMLElement;
 
-    // Escala 2 para mejor resolución de texto
-    const canvas = await html2canvas(content, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-    });
+    if (!content1 || !content2) return;
 
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: [canvas.width / 2, canvas.height / 2],
-    });
+    // Configurado para tamaño estándar A4 (210x297 mm) con márgenes precisos
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+    // Márgenes reducidos a 10 milímetros para aprovechar mejor el espacio
+    const margin = 10;
+    const printableHeight = pdfHeight - margin * 2;
+
+    // Función para procesar y paginar cualquier bloque de contenido sin cortes bruscos
+    const processContent = async (
+      element: HTMLElement,
+      isFirstPart: boolean,
+    ) => {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+
+      const ratio = pdfWidth / (canvas.width / 2);
+      const scaledHeight = (canvas.height / 2) * ratio;
+
+      let position = 0;
+      let heightLeft = scaledHeight;
+
+      if (!isFirstPart) {
+        pdf.addPage();
+      }
+
+      // Primera página del bloque con margen superior
+      pdf.addImage(imgData, "PNG", 0, margin, pdfWidth, scaledHeight);
+
+      // Ocultar el desbordamiento en el margen inferior de la primera página del bloque
+      pdf.setFillColor(255, 255, 255);
+      pdf.rect(0, pdfHeight - margin, pdfWidth, margin, "F");
+
+      heightLeft -= printableHeight;
+
+      while (heightLeft > 0) {
+        position -= printableHeight; // Desplaza la imagen hacia arriba
+        pdf.addPage();
+
+        // Dibuja la imagen desplazada, respetando el margen superior
+        pdf.addImage(
+          imgData,
+          "PNG",
+          0,
+          position + margin,
+          pdfWidth,
+          scaledHeight,
+        );
+
+        // Máscaras blancas para crear márgenes limpios y evitar que el texto se superponga a los bordes
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, pdfWidth, margin, "F"); // Máscara superior
+        pdf.rect(0, pdfHeight - margin, pdfWidth, margin, "F"); // Máscara inferior
+
+        heightLeft -= printableHeight;
+      }
+    };
+
+    // Procesamos el encabezado y tabla, y luego forzamos las interpretaciones a una nueva hoja
+    await processContent(content1, true);
+    await processContent(content2, false);
+
     // Nombre de archivo más limpio
     pdf.save(`Analisis_Blood_${data.date.split("T")[0]}.pdf`);
   } catch (err) {
