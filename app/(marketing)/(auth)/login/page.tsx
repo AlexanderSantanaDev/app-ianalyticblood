@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,8 +20,9 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "hooks/use-toast";
 import { signIn, useSession } from "next-auth/react";
-
+/***********************************************************************************************************************/
 export default function LoginPage() {
+  // Estados
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,8 +37,9 @@ export default function LoginPage() {
     const saved = localStorage.getItem("iab_email");
     if (saved) setEmail(saved);
   }, []);
-
+  /***********************************************************************************************************************/
   // Métodos
+  /** Maneja el envío del formulario de login. */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -71,17 +74,20 @@ export default function LoginPage() {
     }
   };
 
+  /** Maneja el inicio de sesión con Google. */
   const handleGoogleLogin = async () => {
     await signIn("google", { callbackUrl: "/dashboard" });
   };
 
-  // Mostrar carga mientras se verifica la sesión
+  // Loader
   if (status === "loading") {
-    return <div>Cargando...</div>;
+    return <PageLoader />;
   }
 
+  /***********************************************************************************************************************/
+  // JSX
   return (
-    <div className="pt-32 pb-20 min-h-screen flex items-center justify-center">
+    <div className="pt-32 pb-20 min-h-[100dvh] flex items-center justify-center">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

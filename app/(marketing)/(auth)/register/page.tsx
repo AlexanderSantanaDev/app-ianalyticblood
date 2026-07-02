@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,7 +20,7 @@ import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { register } from "lib/api/auth";
 import { useToast } from "hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react"; // --> Añadimos useSession aquí
+import { signIn, useSession } from "next-auth/react";
 /***********************************************************************************************************************/
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -79,14 +80,14 @@ export default function RegisterPage() {
     await signIn("google", { callbackUrl: "/dashboard" });
   };
 
-  // Mostrar carga mientras se verifica la sesión
+  // Loader
   if (status === "loading") {
-    return <div>Cargando...</div>;
+    return <PageLoader />;
   }
   /***********************************************************************************************************************/
   // Render
   return (
-    <div className="pt-32 pb-20 min-h-screen flex items-center justify-center">
+    <div className="pt-32 pb-20 min-h-[100dvh] flex items-center justify-center">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

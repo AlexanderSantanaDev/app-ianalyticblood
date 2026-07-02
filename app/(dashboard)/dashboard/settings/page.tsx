@@ -89,7 +89,8 @@ export default function SettingsPage() {
     setTimeout(() => {
       setIsSaving(false);
       toast.success("Configuración guardada correctamente ✨", {
-        description: "Tus cambios se han sincronizado en todos tus dispositivos.",
+        description:
+          "Tus cambios se han sincronizado en todos tus dispositivos.",
       });
     }, 1200);
   };
@@ -99,7 +100,7 @@ export default function SettingsPage() {
   return (
     <div className="pt-8 pb-20 min-h-[calc(100dvh-4rem)]">
       <div className="container mx-auto px-4 max-w-5xl w-full">
-        {/* Header Premium */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -109,10 +110,13 @@ export default function SettingsPage() {
             <div className="p-2.5 bg-primary/10 rounded-xl text-primary border border-primary/20 shadow-sm">
               <Settings className="w-6 h-6" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Configuración</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              Configuración
+            </h1>
           </div>
           <p className="text-muted-foreground text-lg sm:ml-[3.5rem] ml-0 max-w-2xl">
-            Gestiona la seguridad de tu cuenta, preferencias de la UI y canales de comunicación.
+            Gestiona la seguridad de tu cuenta, preferencias de la UI y canales
+            de comunicación.
           </p>
         </motion.div>
 
@@ -121,10 +125,30 @@ export default function SettingsPage() {
           <div className="w-full">
             <TabsList className="bg-transparent border-none p-0 h-auto w-full grid grid-cols-2 lg:flex lg:flex-row gap-2 sm:gap-3 mb-2">
               {[
-                { id: "security", label: "Seguridad", icon: Shield, color: "text-primary" },
-                { id: "notifications", label: "Alertas", icon: Bell, color: "text-primary" },
-                { id: "preferences", label: "Preferencias", icon: Globe, color: "text-primary" },
-                { id: "account", label: "Cuenta", icon: User, color: "text-primary" },
+                {
+                  id: "security",
+                  label: "Seguridad",
+                  icon: Shield,
+                  color: "text-primary",
+                },
+                {
+                  id: "notifications",
+                  label: "Alertas",
+                  icon: Bell,
+                  color: "text-primary",
+                },
+                {
+                  id: "preferences",
+                  label: "Preferencias",
+                  icon: Globe,
+                  color: "text-primary",
+                },
+                {
+                  id: "account",
+                  label: "Cuenta",
+                  icon: User,
+                  color: "text-primary",
+                },
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -141,7 +165,11 @@ export default function SettingsPage() {
                       <motion.div
                         layoutId="activeTabSettings"
                         className="absolute inset-0 rounded-2xl border-2 border-primary/20 z-[-1] opacity-0 data-[state=active]:opacity-100"
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        transition={{
+                          type: "spring",
+                          bounce: 0.2,
+                          duration: 0.6,
+                        }}
                       />
                     </AnimatePresence>
                   </TabsTrigger>
@@ -153,23 +181,36 @@ export default function SettingsPage() {
           {/***********************************************************************************************************************/}
           {/* CONTENIDO: SEGURIDAD */}
           <TabsContent value="security" className="space-y-6">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Cambio de Contraseña */}
                 <Card className="border-border/60 shadow-xl rounded-3xl backdrop-blur-sm bg-card/80">
                   <CardHeader>
                     <div className="flex items-center gap-2 mb-1">
                       <Lock className="w-4 h-4 text-primary" />
-                      <CardTitle className="text-xl">Seguridad de Acceso</CardTitle>
+                      <CardTitle className="text-xl">
+                        Seguridad de Acceso
+                      </CardTitle>
                     </div>
                     <CardDescription>
                       Actualiza tu contraseña para mantener tu cuenta segura.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+                    <form
+                      className="space-y-4"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSave();
+                      }}
+                    >
                       <div className="space-y-2">
-                        <Label htmlFor="current-password">Contraseña actual</Label>
+                        <Label htmlFor="current-password">
+                          Contraseña actual
+                        </Label>
                         <div className="relative">
                           <Input
                             id="current-password"
@@ -183,7 +224,11 @@ export default function SettingsPage() {
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             onClick={() => setShowPassword(!showPassword)}
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {showPassword ? (
+                              <EyeOff size={18} />
+                            ) : (
+                              <Eye size={18} />
+                            )}
                           </button>
                         </div>
                       </div>
@@ -198,7 +243,9 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="confirm-password">Confirmar nueva contraseña</Label>
+                        <Label htmlFor="confirm-password">
+                          Confirmar nueva contraseña
+                        </Label>
                         <Input
                           id="confirm-password"
                           type="password"
@@ -227,13 +274,19 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-primary" />
-                        <CardTitle className="text-xl">Doble Factor (2FA)</CardTitle>
+                        <CardTitle className="text-xl">
+                          Doble Factor (2FA)
+                        </CardTitle>
                       </div>
                       <Badge
-                        variant={configs.security.twoFactor ? "default" : "secondary"}
+                        variant={
+                          configs.security.twoFactor ? "default" : "secondary"
+                        }
                         className="rounded-lg"
                       >
-                        {configs.security.twoFactor ? "Activado" : "Recomendado"}
+                        {configs.security.twoFactor
+                          ? "Activado"
+                          : "Recomendado"}
                       </Badge>
                     </div>
                     <CardDescription>
@@ -243,32 +296,43 @@ export default function SettingsPage() {
                   <CardContent className="space-y-6 pt-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-0.5">
-                        <Label className="text-base font-bold">Autenticación en dos pasos</Label>
+                        <Label className="text-base font-bold">
+                          Autenticación en dos pasos
+                        </Label>
                         <p className="text-sm text-muted-foreground">
-                          Usa una app de autenticación (Google/Authy) para confirmar accesos.
+                          Usa una app de autenticación (Google/Authy) para
+                          confirmar accesos.
                         </p>
                       </div>
                       <Switch
                         checked={configs.security.twoFactor}
-                        onCheckedChange={() => handleToggle("security", "twoFactor")}
+                        onCheckedChange={() =>
+                          handleToggle("security", "twoFactor")
+                        }
                       />
                     </div>
 
                     <div className="p-4 bg-muted/40 rounded-2xl border border-dashed text-xs text-muted-foreground leading-relaxed">
-                      Al activar la verificación en dos pasos, necesitaremos un código generado por
-                      tu móvil cada vez que inicies sesión en un dispositivo nuevo.
+                      Al activar la verificación en dos pasos, necesitaremos un
+                      código generado por tu móvil cada vez que inicies sesión
+                      en un dispositivo nuevo.
                     </div>
 
                     <div className="flex items-start justify-between gap-4 pt-2">
                       <div className="space-y-0.5">
-                        <Label className="text-base font-bold">Alertas de Inicio de Sesión</Label>
+                        <Label className="text-base font-bold">
+                          Alertas de Inicio de Sesión
+                        </Label>
                         <p className="text-sm text-muted-foreground">
-                          Te avisaremos por email cuando se acceda desde un lugar desconocido.
+                          Te avisaremos por email cuando se acceda desde un
+                          lugar desconocido.
                         </p>
                       </div>
                       <Switch
                         checked={configs.security.loginAlerts}
-                        onCheckedChange={() => handleToggle("security", "loginAlerts")}
+                        onCheckedChange={() =>
+                          handleToggle("security", "loginAlerts")
+                        }
                       />
                     </div>
                   </CardContent>
@@ -280,12 +344,18 @@ export default function SettingsPage() {
           {/***********************************************************************************************************************/}
           {/* CONTENIDO: NOTIFICACIONES */}
           <TabsContent value="notifications" className="space-y-6">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <Card className="border-border/60 shadow-xl rounded-3xl backdrop-blur-sm bg-card/80 max-w-3xl mx-auto">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-2xl font-bold">Protocolos de Alerta</CardTitle>
+                  <CardTitle className="text-2xl font-bold">
+                    Protocolos de Alerta
+                  </CardTitle>
                   <CardDescription>
-                    Escoge qué información es prioritaria para tu salud y bienestar.
+                    Escoge qué información es prioritaria para tu salud y
+                    bienestar.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8 pt-4">
@@ -297,26 +367,36 @@ export default function SettingsPage() {
                     <div className="space-y-4 divide-y divide-border/40">
                       <div className="flex items-center justify-between pt-2">
                         <div className="space-y-0.5">
-                          <Label className="text-base">Resultados de Análisis</Label>
+                          <Label className="text-base">
+                            Resultados de Análisis
+                          </Label>
                           <p className="text-sm text-muted-foreground">
-                            Recibir una copia en PDF del análisis cuando se procese.
+                            Recibir una copia en PDF del análisis cuando se
+                            procese.
                           </p>
                         </div>
                         <Switch
                           checked={configs.notifications.emailAnalysis}
-                          onCheckedChange={() => handleToggle("notifications", "emailAnalysis")}
+                          onCheckedChange={() =>
+                            handleToggle("notifications", "emailAnalysis")
+                          }
                         />
                       </div>
                       <div className="flex items-center justify-between pt-4">
                         <div className="space-y-0.5">
-                          <Label className="text-base">Resumen Biométrico Mensual</Label>
+                          <Label className="text-base">
+                            Resumen Biométrico Mensual
+                          </Label>
                           <p className="text-sm text-muted-foreground">
-                            Reporte detallado de tus tendencias y salud cada mes.
+                            Reporte detallado de tus tendencias y salud cada
+                            mes.
                           </p>
                         </div>
                         <Switch
                           checked={configs.notifications.emailWeekly}
-                          onCheckedChange={() => handleToggle("notifications", "emailWeekly")}
+                          onCheckedChange={() =>
+                            handleToggle("notifications", "emailWeekly")
+                          }
                         />
                       </div>
                     </div>
@@ -330,26 +410,35 @@ export default function SettingsPage() {
                     <div className="space-y-4 divide-y divide-border/40">
                       <div className="flex items-center justify-between pt-2">
                         <div className="space-y-0.5">
-                          <Label className="text-base">Alertas en Tiempo Real</Label>
+                          <Label className="text-base">
+                            Alertas en Tiempo Real
+                          </Label>
                           <p className="text-sm text-muted-foreground">
-                            Notificaciones instantáneas al completar un escaneado.
+                            Notificaciones instantáneas al completar un
+                            escaneado.
                           </p>
                         </div>
                         <Switch
                           checked={configs.notifications.pushDesktop}
-                          onCheckedChange={() => handleToggle("notifications", "pushDesktop")}
+                          onCheckedChange={() =>
+                            handleToggle("notifications", "pushDesktop")
+                          }
                         />
                       </div>
                       <div className="flex items-center justify-between pt-4">
                         <div className="space-y-0.5">
-                          <Label className="text-base">Avisos de Seguridad</Label>
+                          <Label className="text-base">
+                            Avisos de Seguridad
+                          </Label>
                           <p className="text-sm text-muted-foreground">
                             Cambios de contraseña o accesos nuevos.
                           </p>
                         </div>
                         <Switch
                           checked={configs.notifications.pushSecurity}
-                          onCheckedChange={() => handleToggle("notifications", "pushSecurity")}
+                          onCheckedChange={() =>
+                            handleToggle("notifications", "pushSecurity")
+                          }
                         />
                       </div>
                     </div>
@@ -357,8 +446,8 @@ export default function SettingsPage() {
                 </CardContent>
                 <CardFooter className="bg-muted/30 border-t mt-4 p-6 justify-between flex flex-col sm:flex-row gap-4">
                   <p className="text-xs text-muted-foreground max-w-sm">
-                    No compartiremos tu correo con terceros por motivos publicitarios bajo ninguna
-                    circunstancia.
+                    No compartiremos tu correo con terceros por motivos
+                    publicitarios bajo ninguna circunstancia.
                   </p>
                   <Button
                     onClick={handleSave}
@@ -381,7 +470,10 @@ export default function SettingsPage() {
           {/***********************************************************************************************************************/}
           {/* CONTENIDO: PREFERENCIAS */}
           <TabsContent value="preferences" className="space-y-6">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 {/* Personalización Visual */}
                 <Card className="border-border/60 shadow-xl rounded-3xl backdrop-blur-sm bg-card/80">
@@ -389,7 +481,9 @@ export default function SettingsPage() {
                     <CardTitle className="flex items-center gap-2">
                       <Moon className="w-5 h-5 text-primary" /> Apariencia
                     </CardTitle>
-                    <CardDescription>Ajusta el entorno visual de iAnalytic Blood.</CardDescription>
+                    <CardDescription>
+                      Ajusta el entorno visual de iAnalytic Blood.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
@@ -402,7 +496,9 @@ export default function SettingsPage() {
                         }`}
                       >
                         <Sun className="w-6 h-6 text-orange-500" />
-                        <span className="text-sm font-bold text-foreground">Claro</span>
+                        <span className="text-sm font-bold text-foreground">
+                          Claro
+                        </span>
                       </button>
                       <button
                         onClick={() => setTheme("dark")}
@@ -413,7 +509,9 @@ export default function SettingsPage() {
                         }`}
                       >
                         <Moon className="w-6 h-6 text-blue-400" />
-                        <span className="text-sm font-bold text-foreground">Oscuro</span>
+                        <span className="text-sm font-bold text-foreground">
+                          Oscuro
+                        </span>
                       </button>
                     </div>
 
@@ -432,8 +530,12 @@ export default function SettingsPage() {
                           <SelectValue placeholder="Selecciona idioma" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="es">Español (Recomendado)</SelectItem>
-                          <SelectItem value="en">English (Coming Soon)</SelectItem>
+                          <SelectItem value="es">
+                            Español (Recomendado)
+                          </SelectItem>
+                          <SelectItem value="en">
+                            English (Coming Soon)
+                          </SelectItem>
                           <SelectItem value="fr">Français</SelectItem>
                         </SelectContent>
                       </Select>
@@ -445,7 +547,8 @@ export default function SettingsPage() {
                 <Card className="border-border/60 shadow-xl rounded-3xl backdrop-blur-sm bg-card/80">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5 text-primary" /> Unidades y Análisis
+                      <BarChart3 className="w-5 h-5 text-primary" /> Unidades y
+                      Análisis
                     </CardTitle>
                     <CardDescription>
                       Configura cómo interpretamos tus biomarcadores.
@@ -459,8 +562,12 @@ export default function SettingsPage() {
                           <SelectValue placeholder="Selecciona sistema" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="metric">Sistema Métrico (kg, cm, mg/dL)</SelectItem>
-                          <SelectItem value="imperial">Imperial (lb, ft/in, mmol/L)</SelectItem>
+                          <SelectItem value="metric">
+                            Sistema Métrico (kg, cm, mg/dL)
+                          </SelectItem>
+                          <SelectItem value="imperial">
+                            Imperial (lb, ft/in, mmol/L)
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -468,9 +575,9 @@ export default function SettingsPage() {
                     <div className="p-4 bg-muted/40 rounded-2xl border flex items-start gap-3">
                       <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        El sistema de análisis detectará automáticamente si tu informe utiliza
-                        unidades distintas a tu preferencia y las convertirá para la comparativa
-                        histórica.
+                        El sistema de análisis detectará automáticamente si tu
+                        informe utiliza unidades distintas a tu preferencia y
+                        las convertirá para la comparativa histórica.
                       </p>
                     </div>
 
@@ -490,13 +597,18 @@ export default function SettingsPage() {
           {/***********************************************************************************************************************/}
           {/* CONTENIDO: CUENTA */}
           <TabsContent value="account" className="space-y-6">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <Card className="border-red-500/20 shadow-xl rounded-3xl bg-card/80 overflow-hidden border-2">
                 <CardHeader className="bg-red-500/5 p-8 border-b border-red-500/10">
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-8 h-8 text-red-500" />
                     <div>
-                      <CardTitle className="text-2xl text-red-600">Zona de Riesgo</CardTitle>
+                      <CardTitle className="text-2xl text-red-600">
+                        Zona de Riesgo
+                      </CardTitle>
                       <CardDescription className="text-red-600/60 font-medium">
                         Gestiona tu privacidad y presencia en la plataforma.
                       </CardDescription>
@@ -511,11 +623,14 @@ export default function SettingsPage() {
                     <div className="space-y-1 text-center sm:text-left">
                       <h4 className="font-bold text-lg">Descargar mis datos</h4>
                       <p className="text-sm text-muted-foreground max-w-sm">
-                        Genera un paquete .ZIP con todo tu historial de salud, análisis e imágenes
-                        en formato estructurado.
+                        Genera un paquete .ZIP con todo tu historial de salud,
+                        análisis e imágenes en formato estructurado.
                       </p>
                     </div>
-                    <Button variant="outline" className="rounded-xl px-6 h-12 font-bold shrink-0">
+                    <Button
+                      variant="outline"
+                      className="rounded-xl px-6 h-12 font-bold shrink-0"
+                    >
                       Solicitar Exportación
                     </Button>
                   </div>
@@ -529,8 +644,9 @@ export default function SettingsPage() {
                         Eliminar cuenta permanentemente
                       </h4>
                       <p className="text-sm text-red-600/70 max-w-sm">
-                        Esta acción es irreversible. Se borrarán todos tus datos biométricos e
-                        imágenes procesadas de nuestros servidores.
+                        Esta acción es irreversible. Se borrarán todos tus datos
+                        biométricos e imágenes procesadas de nuestros
+                        servidores.
                       </p>
                     </div>
                     <Button
@@ -542,8 +658,12 @@ export default function SettingsPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="bg-muted/10 p-6 flex justify-center border-t">
-                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-                    <LogOut className="w-4 h-4 mr-2" /> Cerrar sesión en otros dispositivos
+                  <Button
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" /> Cerrar sesión en otros
+                    dispositivos
                   </Button>
                 </CardFooter>
               </Card>

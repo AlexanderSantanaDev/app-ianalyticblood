@@ -121,10 +121,14 @@ export default function HistoryPage() {
   // Filtros y ordenamiento
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "alert">("newest");
-  const [filterLevel, setFilterLevel] = useState<"all" | "normal" | "attention" | "alert">("all");
+  const [filterLevel, setFilterLevel] = useState<
+    "all" | "normal" | "attention" | "alert"
+  >("all");
   // Dialog detalle
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null);
+  const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(
+    null,
+  );
   /***********************************************************************************************************************/
   // Hooks
   const apiFetch = useApiFetch();
@@ -203,10 +207,14 @@ export default function HistoryPage() {
       if (sortBy === "alert") {
         const getAlertOrder = (level: string): number => {
           switch (level) {
-            case "alert": return 3;
-            case "attention": return 2;
-            case "normal": return 1;
-            default: return 0;
+            case "alert":
+              return 3;
+            case "attention":
+              return 2;
+            case "normal":
+              return 1;
+            default:
+              return 0;
           }
         };
         const levelA = getAlertOrder(a.alert_level);
@@ -242,11 +250,13 @@ export default function HistoryPage() {
             <div className="p-2.5 bg-primary/10 rounded-xl text-primary">
               <FileText className="w-6 h-6" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight">Historial de Análisis</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Historial de Análisis
+            </h1>
           </div>
           <p className="text-muted-foreground text-lg sm:ml-[3.25rem] ml-0">
-            Explora tus resultados médicos pasados y filtra para encontrar exactamente lo que
-            buscas.
+            Explora tus resultados médicos pasados y filtra para encontrar
+            exactamente lo que buscas.
           </p>
         </motion.div>
 
@@ -272,16 +282,28 @@ export default function HistoryPage() {
             {/* Sort Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-12 px-4 rounded-xl flex-1 md:flex-none">
+                <Button
+                  variant="outline"
+                  className="h-12 px-4 rounded-xl flex-1 md:flex-none"
+                >
                   <ArrowUpDown className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Ordenar</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
-                  <DropdownMenuRadioItem value="newest">Más recientes</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="oldest">Más antiguos</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="alert">Mayor prioridad</DropdownMenuRadioItem>
+                <DropdownMenuRadioGroup
+                  value={sortBy}
+                  onValueChange={(v) => setSortBy(v as any)}
+                >
+                  <DropdownMenuRadioItem value="newest">
+                    Más recientes
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="oldest">
+                    Más antiguos
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="alert">
+                    Mayor prioridad
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -289,7 +311,10 @@ export default function HistoryPage() {
             {/* Filter Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-12 px-4 rounded-xl flex-1 md:flex-none">
+                <Button
+                  variant="outline"
+                  className="h-12 px-4 rounded-xl flex-1 md:flex-none"
+                >
                   <Filter className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Filtrar nivel</span>
                 </Button>
@@ -299,10 +324,18 @@ export default function HistoryPage() {
                   value={filterLevel}
                   onValueChange={(v) => setFilterLevel(v as any)}
                 >
-                  <DropdownMenuRadioItem value="all">Ver todos</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="normal">Solo Normal</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="attention">Solo Atención</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="alert">Solo Alertas</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="all">
+                    Ver todos
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="normal">
+                    Solo Normal
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="attention">
+                    Solo Atención
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="alert">
+                    Solo Alertas
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -316,8 +349,14 @@ export default function HistoryPage() {
               {filteredAndSortedData.map((item, index) => {
                 const Icon = getAlertIcon(item.alert_level);
                 const badgeStyle = getAlertBadgeClasses(item.alert_level);
-                const formattedDate = format(new Date(item.date), "dd MMMM yyyy", { locale: es });
-                const formattedTime = format(new Date(item.date), "HH:mm", { locale: es });
+                const formattedDate = format(
+                  new Date(item.date),
+                  "dd MMMM yyyy",
+                  { locale: es },
+                );
+                const formattedTime = format(new Date(item.date), "HH:mm", {
+                  locale: es,
+                });
 
                 return (
                   <motion.div
@@ -361,7 +400,8 @@ export default function HistoryPage() {
                                 </span>
                                 <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-border"></span>
                                 <span className="flex items-center gap-1.5 whitespace-nowrap">
-                                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {formattedTime} hs
+                                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />{" "}
+                                  {formattedTime} hs
                                 </span>
                               </div>
                               <p className="text-muted-foreground pt-1 sm:pt-2 sm:line-clamp-2 leading-relaxed text-sm">
@@ -380,15 +420,23 @@ export default function HistoryPage() {
                             >
                               <Eye className="w-4 h-4 sm:mr-2" />
                               <span className="sm:hidden ml-1.5">Detalles</span>
-                              <span className="hidden sm:inline">Ver detalle</span>
+                              <span className="hidden sm:inline">
+                                Ver detalle
+                              </span>
                             </Button>
                             <Button
-                              onClick={() => handleDownload(item.id, formattedDate)}
+                              onClick={() =>
+                                handleDownload(item.id, formattedDate)
+                              }
                               className="flex-1 lg:flex-none h-10 sm:h-11 px-3 sm:px-5 gradient-bg shadow-sm shadow-primary/20"
                             >
                               <Download className="w-4 h-4 sm:mr-2 text-white" />
-                              <span className="sm:hidden ml-1.5 text-white">PDF</span>
-                              <span className="hidden sm:inline text-white">PDF Premium</span>
+                              <span className="sm:hidden ml-1.5 text-white">
+                                PDF
+                              </span>
+                              <span className="hidden sm:inline text-white">
+                                PDF{" "}
+                              </span>
                             </Button>
                           </div>
                         </div>
@@ -409,7 +457,9 @@ export default function HistoryPage() {
             <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
               <Inbox className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h3 className="text-2xl font-bold mb-2">No se encontraron resultados</h3>
+            <h3 className="text-2xl font-bold mb-2">
+              No se encontraron resultados
+            </h3>
             <p className="text-muted-foreground max-w-md mx-auto mb-8">
               {data.length === 0
                 ? "Aún no tienes análisis registrados. Sube tu primer informe de sangre para que la IA extraiga los valores."

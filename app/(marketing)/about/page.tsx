@@ -9,16 +9,17 @@ import { Card, CardContent } from "@/components/ui/card";
 /***********************************************************************************************************************/
 export const metadata = {
   title: "Sobre nosotros | IAnalyticBlood",
-  description: "Conoce nuestra misión, el equipo y la tecnología que impulsa IAnalyticBlood.",
+  description:
+    "Conoce nuestra misión, el equipo y la tecnología que impulsa IAnalyticBlood.",
 };
 /***********************************************************************************************************************/
 export default function AboutPage() {
   /** Equipo de desarrollo. */
   const team = [
-    { 
-      name: "Alexander J. Santana", 
-      role: "Fundador & Desarrollador Fullstack", 
-      img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander&top=shortCurly&hairColor=2c1b18&accessories=sunglasses&accessoriesColor=000000&clothes=graphicShirt&clothesColor=ffffff&skinColor=edb98a&eyes=default&mouth=smile&eyebrows=default" 
+    {
+      name: "Alexander J. Santana",
+      role: "Fundador | Desarrollador de software",
+      img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander&top=shortCurly&hairColor=2c1b18&accessories=sunglasses&accessoriesColor=000000&clothes=graphicShirt&clothesColor=ffffff&skinColor=edb98a&eyes=default&mouth=smile&eyebrows=default",
     },
   ];
 
@@ -76,8 +77,8 @@ export default function AboutPage() {
             Sobre <span className="gradient-text">Nosotros</span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Conoce más sobre IAnalyticBlood, nuestra misión y el equipo detrás de esta innovadora
-            plataforma.
+            Conoce más sobre IAnalyticBlood, nuestra misión y el equipo detrás
+            de esta innovadora plataforma.
           </p>
         </AnimateOnScroll>
 
@@ -88,20 +89,22 @@ export default function AboutPage() {
               <div>
                 <h2 className="text-3xl font-bold mb-6">Nuestra Misión</h2>
                 <p className="text-lg text-muted-foreground mb-4">
-                  En IAnalyticBlood, nuestra misión es democratizar el acceso a la información
-                  médica, permitiendo a las personas entender sus análisis de sangre de manera
-                  sencilla y accesible.
+                  En IAnalyticBlood, nuestra misión es democratizar el acceso a
+                  la información médica, permitiendo a las personas entender sus
+                  análisis de sangre de manera sencilla y accesible.
                 </p>
                 <p className="text-lg text-muted-foreground mb-4">
-                  Creemos que cada persona tiene derecho a comprender su salud sin necesidad de ser
-                  un experto médico. Por eso, hemos desarrollado una plataforma que utiliza
-                  inteligencia artificial avanzada para interpretar análisis de sangre y presentar
-                  los resultados de forma clara y comprensible.
+                  Creemos que cada persona tiene derecho a comprender su salud
+                  sin necesidad de ser un experto médico. Por eso, hemos
+                  desarrollado una plataforma que utiliza inteligencia
+                  artificial avanzada para interpretar análisis de sangre y
+                  presentar los resultados de forma clara y comprensible.
                 </p>
                 <p className="text-lg text-muted-foreground">
-                  Nuestro objetivo es empoderar a las personas para que tomen decisiones informadas
-                  sobre su salud, facilitando la detección temprana de problemas y promoviendo un
-                  estilo de vida saludable.
+                  Nuestro objetivo es empoderar a las personas para que tomen
+                  decisiones informadas sobre su salud, facilitando la detección
+                  temprana de problemas y promoviendo un estilo de vida
+                  saludable.
                 </p>
               </div>
             </AnimateOnScroll>
@@ -131,8 +134,8 @@ export default function AboutPage() {
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="text-3xl font-bold mb-4">El Fundador</h2>
               <p className="text-lg text-muted-foreground">
-                La visión y el desarrollo detrás de IAnalyticBlood, impulsados por la necesidad de
-                democratizar la salud.
+                La visión y el desarrollo detrás de IAnalyticBlood, impulsados
+                por la necesidad de democratizar la salud.
               </p>
             </div>
           </AnimateOnScroll>
@@ -170,23 +173,27 @@ export default function AboutPage() {
               <div className="space-y-6">
                 <h2 className="text-3xl font-bold mb-6">Nuestra Historia</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  IAnalyticBlood no nació en una oficina, sino de una frustración real. El fundador,
-                  **Alexander J. Santana**, tras recibir los resultados de un análisis de sangre
-                  habitual, se encontró con un documento lleno de términos crípticos y cifras
+                  IAnalyticBlood no nació en una oficina, sino de una
+                  frustración real. El fundador, **Alexander J. Santana**, tras
+                  recibir los resultados de un análisis de sangre habitual, se
+                  encontró con un documento lleno de términos crípticos y cifras
                   imposibles de interpretar sin conocimientos médicos avanzados.
                 </p>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Al buscar explicaciones, se dio cuenta de que incluso los profesionales médicos a
-                  menudo utilizaban una jerga técnica que, en lugar de aclarar, generaba más
-                  incertidumbre. "Sentí que mi propia salud era un idioma que yo no podía hablar",
+                  Al buscar explicaciones, se dio cuenta de que incluso los
+                  profesionales médicos a menudo utilizaban una jerga técnica
+                  que, en lugar de aclarar, generaba más incertidumbre. "Sentí
+                  que mi propia salud era un idioma que yo no podía hablar",
                   explica Alexander.
                 </p>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Ese fue el punto de inflexión. Sin asesores externos ni grandes equipos, Alexander
-                  decidió tomar la idea y convertirla en realidad. Como único creador del proyecto
-                  —desde la arquitectura hasta el último detalle del diseño—, desarrolló iAnalytic
-                  Blood con una misión clara: que cualquier persona, incluido él mismo, pudiera
-                  entender qué dice su sangre en un lenguaje natural, claro y directo.
+                  Ese fue el punto de inflexión. Sin asesores externos ni
+                  grandes equipos, Alexander decidió tomar la idea y convertirla
+                  en realidad. Como único creador del proyecto —desde la
+                  arquitectura hasta el último detalle del diseño—, desarrolló
+                  iAnalytic Blood con una misión clara: que cualquier persona,
+                  incluido él mismo, pudiera entender qué dice su sangre en un
+                  lenguaje natural, claro y directo.
                 </p>
               </div>
             </AnimateOnScroll>
@@ -199,7 +206,8 @@ export default function AboutPage() {
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="text-3xl font-bold mb-4">Nuestras Tecnologías</h2>
               <p className="text-lg text-muted-foreground">
-                Utilizamos tecnologías de vanguardia para ofrecer la mejor experiencia posible.
+                Utilizamos tecnologías de vanguardia para ofrecer la mejor
+                experiencia posible.
               </p>
             </div>
           </AnimateOnScroll>
@@ -217,7 +225,8 @@ export default function AboutPage() {
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="text-3xl font-bold mb-4">Nuestros Valores</h2>
               <p className="text-lg text-muted-foreground">
-                Los principios que guían nuestro trabajo y nuestra relación con los usuarios.
+                Los principios que guían nuestro trabajo y nuestra relación con
+                los usuarios.
               </p>
             </div>
           </AnimateOnScroll>
@@ -231,9 +240,10 @@ export default function AboutPage() {
                   </div>
                   <h3 className="font-bold text-xl mb-2">Accesibilidad</h3>
                   <p className="text-muted-foreground">
-                    Creemos que la información médica debe ser accesible para todos,
-                    independientemente de su formación o conocimientos previos. Nos esforzamos por
-                    presentar la información de manera clara y comprensible.
+                    Creemos que la información médica debe ser accesible para
+                    todos, independientemente de su formación o conocimientos
+                    previos. Nos esforzamos por presentar la información de
+                    manera clara y comprensible.
                   </p>
                 </CardContent>
               </Card>
@@ -245,11 +255,14 @@ export default function AboutPage() {
                   <div className="rounded-full w-12 h-12 flex items-center justify-center gradient-bg mb-4">
                     <Shield className="h-6 w-6 text-white" />
                   </div>
-                  <h3 className="font-bold text-xl mb-2">Privacidad y Seguridad</h3>
+                  <h3 className="font-bold text-xl mb-2">
+                    Privacidad y Seguridad
+                  </h3>
                   <p className="text-muted-foreground">
-                    La privacidad y seguridad de los datos de nuestros usuarios es nuestra máxima
-                    prioridad. Utilizamos las tecnologías más avanzadas para garantizar que la
-                    información médica esté siempre protegida.
+                    La privacidad y seguridad de los datos de nuestros usuarios
+                    es nuestra máxima prioridad. Utilizamos las tecnologías más
+                    avanzadas para garantizar que la información médica esté
+                    siempre protegida.
                   </p>
                 </CardContent>
               </Card>
@@ -263,9 +276,9 @@ export default function AboutPage() {
                   </div>
                   <h3 className="font-bold text-xl mb-2">Innovación</h3>
                   <p className="text-muted-foreground">
-                    Estamos constantemente investigando y desarrollando nuevas tecnologías para
-                    mejorar nuestros servicios. La innovación está en el corazón de todo lo que
-                    hacemos.
+                    Estamos constantemente investigando y desarrollando nuevas
+                    tecnologías para mejorar nuestros servicios. La innovación
+                    está en el corazón de todo lo que hacemos.
                   </p>
                 </CardContent>
               </Card>
@@ -279,8 +292,9 @@ export default function AboutPage() {
                   </div>
                   <h3 className="font-bold text-xl mb-2">Empatía</h3>
                   <p className="text-muted-foreground">
-                    Entendemos que la salud es un tema sensible y personal. Nos acercamos a cada
-                    usuario con empatía y respeto, ofreciendo un servicio humano y cercano.
+                    Entendemos que la salud es un tema sensible y personal. Nos
+                    acercamos a cada usuario con empatía y respeto, ofreciendo
+                    un servicio humano y cercano.
                   </p>
                 </CardContent>
               </Card>
@@ -295,15 +309,19 @@ export default function AboutPage() {
               <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 -z-10"></div>
               <div className="p-8 md:p-12 text-center max-w-3xl mx-auto">
                 <h2 className="text-3xl font-bold mb-4">
-                  ¿Listo para entender tus <span className="gradient-text">análisis de sangre</span>
-                  ?
+                  ¿Listo para entender tus{" "}
+                  <span className="gradient-text">análisis de sangre</span>?
                 </h2>
                 <p className="text-xl text-muted-foreground mb-8">
-                  Únete a IAnalyticBlood hoy y comienza a tomar el control de tu salud.
+                  Únete a IAnalyticBlood hoy y comienza a tomar el control de tu
+                  salud.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/register">
-                    <Button size="lg" className="gradient-bg hover:opacity-90 transition-opacity">
+                    <Button
+                      size="lg"
+                      className="gradient-bg hover:opacity-90 transition-opacity"
+                    >
                       Comenzar ahora
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>

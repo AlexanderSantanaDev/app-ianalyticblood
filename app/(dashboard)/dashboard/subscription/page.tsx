@@ -49,12 +49,19 @@ import {
 /** Componente de Contenido de Suscripción (Separado para poder usar Suspense) */
 function SubscriptionContent() {
   // Estados
-  const { data: session, status: authStatus, update: updateSession } = useSession();
+  const {
+    data: session,
+    status: authStatus,
+    update: updateSession,
+  } = useSession();
   const { getMe } = useUserApi();
-  const { createCheckoutSession, createCustomerPortal, syncSubscription } = useSubscriptionApi();
+  const { createCheckoutSession, createCustomerPortal, syncSubscription } =
+    useSubscriptionApi();
   const [profile, setProfile] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
+    "monthly",
+  );
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -80,7 +87,9 @@ function SubscriptionContent() {
             await new Promise((r) => setTimeout(r, 1500));
           }
 
-          console.log(`🛰️ Intento de sincronización ${currentRetry + 1}/${MAX_RETRIES}...`);
+          console.log(
+            `🛰️ Intento de sincronización ${currentRetry + 1}/${MAX_RETRIES}...`,
+          );
           const data = await syncSubscription();
           console.log("✅ Respuesta del backend:", data);
 
@@ -112,7 +121,10 @@ function SubscriptionContent() {
 
             resolve(data);
             return true;
-          } else if (data.status === "no_change" && currentRetry < MAX_RETRIES - 1) {
+          } else if (
+            data.status === "no_change" &&
+            currentRetry < MAX_RETRIES - 1
+          ) {
             currentRetry++;
             console.log("⏳ No detectado aún. Reintentando en 3s...");
             await new Promise((r) => setTimeout(r, 3000));
@@ -120,7 +132,9 @@ function SubscriptionContent() {
           } else {
             if (isManual || currentRetry >= MAX_RETRIES - 1) {
               reject(
-                new Error("No se detectó el pago en Stripe aún. Prueba de nuevo en unos segundos."),
+                new Error(
+                  "No se detectó el pago en Stripe aún. Prueba de nuevo en unos segundos.",
+                ),
               );
             } else {
               resolve(data);
@@ -138,7 +152,9 @@ function SubscriptionContent() {
     });
 
     toast.promise(promise, {
-      loading: isManual ? "Sincronizando pago..." : "Verificando tu membresía Premium...",
+      loading: isManual
+        ? "Sincronizando pago..."
+        : "Verificando tu membresía Premium...",
       success: "¡Membresía Premium activada! Refrescando... 💎",
       error: (err) => `Sincronización: ${err.message || "Inténtalo de nuevo"}`,
     });
@@ -157,7 +173,12 @@ function SubscriptionContent() {
   useEffect(() => {
     const success = searchParams.get("success");
     // Solo disparamos si la sesión está cargada y validada
-    if (success === "true" && authStatus === "authenticated" && !isSyncing && !showSuccess) {
+    if (
+      success === "true" &&
+      authStatus === "authenticated" &&
+      !isSyncing &&
+      !showSuccess
+    ) {
       performSync(false);
       // Limpiamos la URL para evitar re-fuegos al recargar manualmente
       window.history.replaceState({}, "", window.location.pathname);
@@ -189,7 +210,8 @@ function SubscriptionContent() {
   const usageLimit = currentPlan === "free" ? 5 : Infinity;
   // Usar campo analysis_count ahora que está tipado en User
   const currentUsage = profile?.analysis_count ?? 0;
-  const progressValue = usageLimit === Infinity ? 100 : (currentUsage / usageLimit) * 100;
+  const progressValue =
+    usageLimit === Infinity ? 100 : (currentUsage / usageLimit) * 100;
 
   /***********************************************************************************************************************/
   // Métodos de Pago
@@ -251,8 +273,8 @@ function SubscriptionContent() {
             ¡Bienvenido a Premium!
           </h2>
           <p className="text-muted-foreground text-lg max-w-md">
-            Tu cuenta ha sido elevada al siguiente nivel. Estamos preparando tu nuevo panel de
-            control...
+            Tu cuenta ha sido elevada al siguiente nivel. Estamos preparando tu
+            nuevo panel de control...
           </p>
           <div className="mt-8 flex items-center gap-2 text-primary font-bold animate-pulse">
             <Sparkles className="w-5 h-5" />
@@ -272,10 +294,13 @@ function SubscriptionContent() {
             <div className="p-2.5 bg-primary/10 rounded-xl text-primary shadow-sm border border-primary/20">
               <CreditCard className="w-6 h-6" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Mi Suscripción</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              Mi Suscripción
+            </h1>
           </div>
           <p className="text-muted-foreground text-lg ml-[3.5rem] max-w-2xl">
-            Gestiona tus planes, límites de análisis y facturación desde un solo lugar.
+            Gestiona tus planes, límites de análisis y facturación desde un solo
+            lugar.
           </p>
         </motion.div>
 
@@ -323,16 +348,22 @@ function SubscriptionContent() {
                         onClick={() => performSync(true)}
                         disabled={isSyncing}
                       >
-                        {isSyncing ? "Sincronizando..." : "Sincronizar Pago Manualmente"}
+                        {isSyncing
+                          ? "Sincronizando..."
+                          : "Sincronizar Pago Manualmente"}
                       </Button>
                     </div>
                   )}
 
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm items-end">
-                      <span className="font-medium text-foreground">Uso de análisis</span>
+                      <span className="font-medium text-foreground">
+                        Uso de análisis
+                      </span>
                       <span className="text-muted-foreground">
-                        <span className="font-bold text-foreground">{currentUsage}</span>
+                        <span className="font-bold text-foreground">
+                          {currentUsage}
+                        </span>
                         {usageLimit === Infinity ? " / ∞" : ` / ${usageLimit}`}
                       </span>
                     </div>
@@ -367,7 +398,11 @@ function SubscriptionContent() {
                       variant="ghost"
                       className="w-full text-xs hover:bg-primary/10"
                       onClick={() =>
-                        (document.getElementById("plan-selection") as HTMLElement).scrollIntoView({
+                        (
+                          document.getElementById(
+                            "plan-selection",
+                          ) as HTMLElement
+                        ).scrollIntoView({
                           behavior: "smooth",
                         })
                       }
@@ -391,10 +426,12 @@ function SubscriptionContent() {
                 <TrendingUp className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-foreground text-sm mb-1">Ahorra con el plan anual</h4>
+                <h4 className="font-bold text-foreground text-sm mb-1">
+                  Ahorra con el plan anual
+                </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Cambia a facturación anual y obtén un 20% de descuento inmediato en todos los
-                  planes Premium.
+                  Cambia a facturación anual y obtén un 20% de descuento
+                  inmediato en todos los planes Premium.
                 </p>
               </div>
             </motion.div>
@@ -411,14 +448,17 @@ function SubscriptionContent() {
               <div>
                 <h2 className="text-2xl font-bold mb-2">Potencia tu salud</h2>
                 <p className="text-muted-foreground text-sm">
-                  Desbloquea el análisis de IA avanzado y el historial ilimitado.
+                  Desbloquea el análisis de IA avanzado y el historial
+                  ilimitado.
                 </p>
               </div>
 
               {/* Toggle Billing Period con Tabs */}
               <Tabs
                 value={billingPeriod}
-                onValueChange={(val) => setBillingPeriod(val as "monthly" | "yearly")}
+                onValueChange={(val) =>
+                  setBillingPeriod(val as "monthly" | "yearly")
+                }
                 className="w-fit"
               >
                 <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1">
@@ -440,7 +480,7 @@ function SubscriptionContent() {
 
             {/* Plan Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Premium Plan Card */}
+              {/* Plan Card */}
               <motion.div
                 whileHover={{ y: -5 }}
                 className={`relative p-6 rounded-3xl border-2 transition-all ${
@@ -465,12 +505,15 @@ function SubscriptionContent() {
                     <span className="text-3xl font-black">
                       {billingPeriod === "monthly" ? "€9.99" : "€7.99"}
                     </span>
-                    <span className="text-muted-foreground text-xs block">/ mes + IVA</span>
+                    <span className="text-muted-foreground text-xs block">
+                      / mes + IVA
+                    </span>
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-2">Premium Individual</h3>
                 <p className="text-xs text-muted-foreground mb-6 h-8 leading-tight">
-                  Para quienes se toman en serio su bienestar con análisis ilimitados y detallados.
+                  Para quienes se toman en serio su bienestar con análisis
+                  ilimitados y detallados.
                 </p>
 
                 <ul className="space-y-3 mb-8">
@@ -481,7 +524,10 @@ function SubscriptionContent() {
                     "Recomendaciones nutricionales",
                     "Soporte prioritario 24/7",
                   ].map((feat) => (
-                    <li key={feat} className="flex items-center gap-2.5 text-xs text-foreground/80">
+                    <li
+                      key={feat}
+                      className="flex items-center gap-2.5 text-xs text-foreground/80"
+                    >
                       <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
                       {feat}
                     </li>
@@ -497,7 +543,9 @@ function SubscriptionContent() {
                   disabled={currentPlan === "premium" || isUpgrading}
                   onClick={() => handleUpgrade("premium")}
                 >
-                  {currentPlan === "premium" ? "Plan Actual" : "Mejorar a Premium"}
+                  {currentPlan === "premium"
+                    ? "Plan Actual"
+                    : "Mejorar a Premium"}
                 </Button>
               </motion.div>
 
@@ -513,7 +561,9 @@ function SubscriptionContent() {
                   </div>
                   <div className="text-right">
                     <span className="text-2xl font-black">Personalizado</span>
-                    <span className="text-muted-foreground text-xs block">Clínicas y Lab</span>
+                    <span className="text-muted-foreground text-xs block">
+                      Clínicas y Lab
+                    </span>
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-2">Plan Enterprise</h3>
@@ -529,7 +579,10 @@ function SubscriptionContent() {
                     "Exportación masiva de datos",
                     "Account Manager dedicado",
                   ].map((feat) => (
-                    <li key={feat} className="flex items-center gap-2.5 text-xs text-foreground/80">
+                    <li
+                      key={feat}
+                      className="flex items-center gap-2.5 text-xs text-foreground/80"
+                    >
                       <CheckCircle2 className="w-4 h-4 text-secondary shrink-0" />
                       {feat}
                     </li>
@@ -565,7 +618,8 @@ function SubscriptionContent() {
               Confirmar suscripción {selectedPlan?.toUpperCase()}
             </DialogTitle>
             <DialogDescription className="text-center text-muted-foreground pt-1">
-              Estás a punto de desbloquear todo el potencial de tu salud con IAnalytic Blood.
+              Estás a punto de desbloquear todo el potencial de tu salud con
+              IAnalytic Blood.
             </DialogDescription>
           </DialogHeader>
 
@@ -573,10 +627,15 @@ function SubscriptionContent() {
             <div className="bg-muted/40 p-4 rounded-2xl border border-border/50">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-muted-foreground">Plan seleccionado</span>
-                <span className="font-bold uppercase tracking-wider">{selectedPlan}</span>
+                <span className="font-bold uppercase tracking-wider">
+                  {selectedPlan}
+                </span>
               </div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground"> Ciclo de facturación</span>
+                <span className="text-muted-foreground">
+                  {" "}
+                  Ciclo de facturación
+                </span>
                 <span className="font-bold">
                   {billingPeriod === "monthly" ? "Mensual" : "Anual"}
                 </span>
@@ -594,7 +653,8 @@ function SubscriptionContent() {
             >
               <AlertCircle className="w-5 h-5 shrink-0" />
               <p className="text-[10px] leading-tight text-amber-600 font-medium">
-                Al confirmar, serás redirigido a Stripe para completar el pago de forma segura.
+                Al confirmar, serás redirigido a Stripe para completar el pago
+                de forma segura.
               </p>
             </div>
           </div>

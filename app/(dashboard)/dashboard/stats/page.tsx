@@ -19,7 +19,12 @@ import { useApiFetch } from "@/lib/api/client";
 import { getAnalyses, getDashboardStats } from "@/lib/api/analysis";
 import type { AnalysisDoc } from "@/lib/api/types";
 import StatsCharts from "@/components/dashboard/stats-charts";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 /***********************************************************************************************************************/
 // Helpers
 /** Helper para obtener el color del score de salud. */
@@ -120,11 +125,16 @@ export default function StatsPage() {
       totalParams++;
       if (param.status === "normal") normalParams++;
       else if (param.status === "attention") attentionParams++;
-      else if (param.status === "alert" || param.status === "high" || param.status === "low")
+      else if (
+        param.status === "alert" ||
+        param.status === "high" ||
+        param.status === "low"
+      )
         alertParams++;
     });
 
-    const healthScore = totalParams > 0 ? Math.round((normalParams / totalParams) * 100) : 0;
+    const healthScore =
+      totalParams > 0 ? Math.round((normalParams / totalParams) * 100) : 0;
 
     const uniqueBiomarkersTracked = new Set<string>();
     allAnalyses.forEach((a) => {
@@ -157,8 +167,8 @@ export default function StatsPage() {
           </div>
           <h1 className="text-3xl font-bold mb-4">No hay datos suficientes</h1>
           <p className="text-muted-foreground text-lg mb-8">
-            Necesitas subir al menos un análisis de sangre para que la IA genere tus estadísticas y
-            gráficas de evolución a lo largo del tiempo.
+            Necesitas subir al menos un análisis de sangre para que la IA genere
+            tus estadísticas y gráficas de evolución a lo largo del tiempo.
           </p>
           <a
             href="/dashboard/upload"
@@ -177,7 +187,7 @@ export default function StatsPage() {
   return (
     <div className="pt-8 md:pt-12 pb-12 min-h-screen">
       <div className="container mx-auto px-4 max-w-7xl w-full">
-        {/* Header Premium */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -187,11 +197,16 @@ export default function StatsPage() {
             <div className="p-2.5 bg-primary/10 rounded-xl text-primary shadow-sm border border-primary/20">
               <BarChart3 className="w-6 h-6" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Estadísticas</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              Estadísticas
+            </h1>
           </div>
           <p className="text-muted-foreground text-lg ml-[3.5rem] leading-relaxed max-w-3xl">
-            Panorámica avanzada de salud. Analizamos la tendencia histórica de tus{" "}
-            <strong className="text-foreground">{metrics?.uniqueBiomarkersTracked}</strong>{" "}
+            Panorámica avanzada de salud. Analizamos la tendencia histórica de
+            tus{" "}
+            <strong className="text-foreground">
+              {metrics?.uniqueBiomarkersTracked}
+            </strong>{" "}
             biomarcadores basándonos en tu clínica.
           </p>
         </motion.div>
@@ -227,9 +242,13 @@ export default function StatsPage() {
                 <div className="space-y-1">
                   <h3 className="text-4xl font-black tracking-tighter">
                     {metrics.healthScore}
-                    <span className="text-xl text-muted-foreground font-normal">/100</span>
+                    <span className="text-xl text-muted-foreground font-normal">
+                      /100
+                    </span>
                   </h3>
-                  <p className="text-sm text-muted-foreground font-medium">Índice Vital Global</p>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Índice Vital Global
+                  </p>
                 </div>
                 <div className="mt-5">
                   <Progress
@@ -252,10 +271,13 @@ export default function StatsPage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-bold">{metrics.normalParams}</h3>
-                  <p className="text-sm text-muted-foreground font-medium">Marcadores Normales</p>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Marcadores Normales
+                  </p>
                 </div>
                 <div className="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground">
-                  En el último informe ({metrics.lastDate.toLocaleDateString("es-ES")})
+                  En el último informe (
+                  {metrics.lastDate.toLocaleDateString("es-ES")})
                 </div>
               </CardContent>
             </Card>
@@ -272,7 +294,9 @@ export default function StatsPage() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-3xl font-bold">{metrics.attentionParams}</h3>
+                  <h3 className="text-3xl font-bold">
+                    {metrics.attentionParams}
+                  </h3>
                   <p className="text-sm text-muted-foreground font-medium">
                     Marcadores en Atención
                   </p>
@@ -293,7 +317,9 @@ export default function StatsPage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-bold">{metrics.alertParams}</h3>
-                  <p className="text-sm text-muted-foreground font-medium">Marcadores Críticos</p>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Marcadores Críticos
+                  </p>
                 </div>
                 <div className="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground">
                   Desviación significativa detectada
@@ -310,7 +336,9 @@ export default function StatsPage() {
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center gap-2 mb-6 ml-1">
-            <h2 className="text-2xl font-bold tracking-tight">Evolución Clínica Estricta</h2>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Evolución Clínica Estricta
+            </h2>
             <TooltipWrapper content="Representación de las curvas de tendencia históricas filtrando valores erráticos.">
               <Info className="w-4 h-4 text-muted-foreground cursor-help" />
             </TooltipWrapper>
@@ -325,7 +353,13 @@ export default function StatsPage() {
   );
 }
 
-function TooltipWrapper({ children, content }: { children: React.ReactNode; content: string }) {
+function TooltipWrapper({
+  children,
+  content,
+}: {
+  children: React.ReactNode;
+  content: string;
+}) {
   return (
     <TooltipProvider>
       <Tooltip>

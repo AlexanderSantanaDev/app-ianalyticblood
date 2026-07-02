@@ -104,7 +104,8 @@ export default function ProfilePage() {
   // Datos del usuario (Priorizar los de la API sobre los de la sesión)
   const userName = profile?.name || session?.user?.name || "Usuario";
   const userLastName = profile?.lastName || "";
-  const userEmail = profile?.email || session?.user?.email || "correo@ejemplo.com";
+  const userEmail =
+    profile?.email || session?.user?.email || "correo@ejemplo.com";
 
   const initials = userName
     .split(" ")
@@ -123,7 +124,7 @@ export default function ProfilePage() {
   return (
     <div className="pt-8 md:pt-12 pb-12 min-h-[calc(100vh-4rem)]">
       <div className="container mx-auto px-4 max-w-6xl w-full">
-        {/* Header Premium */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -133,11 +134,13 @@ export default function ProfilePage() {
             <div className="p-2.5 bg-primary/10 rounded-xl text-primary shadow-sm border border-primary/20">
               <User className="w-6 h-6" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Tu Perfil</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              Tu Perfil
+            </h1>
           </div>
           <p className="text-muted-foreground text-lg sm:ml-[3.5rem] ml-0 leading-relaxed max-w-2xl">
-            Gestiona tu información personal, historial médico base y las preferencias de seguridad
-            de tu cuenta.
+            Gestiona tu información personal, historial médico base y las
+            preferencias de seguridad de tu cuenta.
           </p>
         </motion.div>
 
@@ -157,8 +160,12 @@ export default function ProfilePage() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col overflow-hidden">
-                <span className="font-bold text-foreground truncate">{userName}</span>
-                <span className="text-xs text-muted-foreground truncate">{userEmail}</span>
+                <span className="font-bold text-foreground truncate">
+                  {userName}
+                </span>
+                <span className="text-xs text-muted-foreground truncate">
+                  {userEmail}
+                </span>
               </div>
             </div>
 
@@ -187,7 +194,11 @@ export default function ProfilePage() {
                         <motion.div
                           layoutId="activeTabProfile"
                           className="absolute inset-0 rounded-2xl border-2 border-primary/20 z-[-1]"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                          transition={{
+                            type: "spring",
+                            bounce: 0.2,
+                            duration: 0.6,
+                          }}
                         />
                       )}
                     </AnimatePresence>
@@ -229,7 +240,6 @@ export default function ProfilePage() {
                   onUpdate={(newProfile) => setProfile(newProfile)}
                 />
               )}
-
             </AnimatePresence>
           </motion.div>
         </div>
@@ -307,7 +317,8 @@ function AccountTab({
             <div className="flex flex-col gap-2 text-center sm:text-left">
               <h4 className="font-semibold text-foreground">Foto de perfil</h4>
               <p className="text-xs text-muted-foreground mr-4 max-w-[250px]">
-                Sube una imagen para reconocerte fácilmente en los informes generados. (Max 2MB)
+                Sube una imagen para reconocerte fácilmente en los informes
+                generados. (Max 2MB)
               </p>
               <div className="flex items-center gap-2 mt-1 justify-center sm:justify-start">
                 <Button variant="secondary" size="sm" className="h-8">
@@ -326,32 +337,55 @@ function AccountTab({
           </div>
 
           {/* FORMULARIO */}
-          <form id="account-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            id="account-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6"
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input id="name" autoComplete="given-name" {...form.register("name")} className="pl-10" />
+                  <Input
+                    id="name"
+                    autoComplete="given-name"
+                    {...form.register("name")}
+                    className="pl-10"
+                  />
                 </div>
                 {form.formState.errors.name && (
-                  <p className="text-xs text-red-500 mt-1">{form.formState.errors.name.message}</p>
+                  <p className="text-xs text-red-500 mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="lastName">Apellidos</Label>
-                <Input id="lastName" autoComplete="family-name" {...form.register("lastName")} placeholder="Tus apellidos" />
+                <Input
+                  id="lastName"
+                  autoComplete="family-name"
+                  {...form.register("lastName")}
+                  placeholder="Tus apellidos"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Correo Electrónico</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input id="email" autoComplete="email" {...form.register("email")} className="pl-10" />
+                  <Input
+                    id="email"
+                    autoComplete="email"
+                    {...form.register("email")}
+                    className="pl-10"
+                  />
                 </div>
                 {form.formState.errors.email && (
-                  <p className="text-xs text-red-500 mt-1">{form.formState.errors.email.message}</p>
+                  <p className="text-xs text-red-500 mt-1">
+                    {form.formState.errors.email.message}
+                  </p>
                 )}
               </div>
 
@@ -394,7 +428,13 @@ function AccountTab({
 
 /***********************************************************************************************************************/
 /** Tab: Salud / Medical. */
-function HealthTab({ user, onUpdate }: { user: UserType; onUpdate: (u: UserType) => void }) {
+function HealthTab({
+  user,
+  onUpdate,
+}: {
+  user: UserType;
+  onUpdate: (u: UserType) => void;
+}) {
   // Estados
   const [isSubmitting, setIsSubmitting] = useState(false);
   /***********************************************************************************************************************/
@@ -422,7 +462,8 @@ function HealthTab({ user, onUpdate }: { user: UserType; onUpdate: (u: UserType)
       await updateMe({ medical_data: data });
       onUpdate({ ...user, medical_data: data });
       toast.success("Expediente base actualizado", {
-        description: "Esta información ayudará a la IA a personalizar tus lecturas.",
+        description:
+          "Esta información ayudará a la IA a personalizar tus lecturas.",
       });
     } catch (error) {
       toast.error("Error al guardar los datos médicos.");
@@ -455,13 +496,18 @@ function HealthTab({ user, onUpdate }: { user: UserType; onUpdate: (u: UserType)
           <div className="mt-4 bg-primary/10 border border-primary/20 text-primary p-3 rounded-lg flex items-start gap-3 text-sm">
             <Info className="w-5 h-5 shrink-0 mt-0.5" />
             <p>
-              Tus datos clínicos están encriptados y se utilizan única y exclusivamente como
-              contexto adicional para el motor de IA de DeepSeek durante el resumen.
+              Tus datos clínicos están encriptados y se utilizan única y
+              exclusivamente como contexto adicional para el motor de IA de
+              DeepSeek durante el resumen.
             </p>
           </div>
         </CardHeader>
         <CardContent className="p-6">
-          <form id="health-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            id="health-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6"
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="bloodType">Grupo Sanguíneo</Label>
@@ -469,17 +515,21 @@ function HealthTab({ user, onUpdate }: { user: UserType; onUpdate: (u: UserType)
                   <Droplet className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500/70 z-10" />
                   <Select
                     value={form.watch("bloodType")}
-                    onValueChange={(val) => form.setValue("bloodType", val, { shouldDirty: true })}
+                    onValueChange={(val) =>
+                      form.setValue("bloodType", val, { shouldDirty: true })
+                    }
                   >
                     <SelectTrigger className="pl-10 bg-background">
                       <SelectValue placeholder="Seleccionar..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"].map((v) => (
-                        <SelectItem key={v} value={v}>
-                          {v}
-                        </SelectItem>
-                      ))}
+                      {["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"].map(
+                        (v) => (
+                          <SelectItem key={v} value={v}>
+                            {v}
+                          </SelectItem>
+                        ),
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -548,7 +598,6 @@ function HealthTab({ user, onUpdate }: { user: UserType; onUpdate: (u: UserType)
 }
 
 /***********************************************************************************************************************/
-
 
 /***********************************************************************************************************************/
 /** Skeleton General. */

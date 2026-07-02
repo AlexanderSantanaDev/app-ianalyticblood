@@ -12,7 +12,7 @@ const securityHeaders: Record<string, string> = {
   "X-XSS-Protection": "1; mode=block",
 
   // Oculta versión del servidor
-  "X-Powered-By": "Next.js", // (cambio “Express” típico)
+  "X-Powered-By": "Next.js", // (“Express” típico)
 
   // CORS pre-flight más seguro (solo ejemplos, tu API ya tiene CORS propio)
   "Access-Control-Allow-Origin":

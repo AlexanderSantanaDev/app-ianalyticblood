@@ -5,7 +5,13 @@ import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isSameDay, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon, Clock, ChevronRight, FileText, Beaker } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  ChevronRight,
+  FileText,
+  Beaker,
+} from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
@@ -18,7 +24,11 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useApiFetch } from "@/lib/api/client";
-import { getAnalyses, getDashboardStats, type DashboardStats } from "@/lib/api/analysis";
+import {
+  getAnalyses,
+  getDashboardStats,
+  type DashboardStats,
+} from "@/lib/api/analysis";
 import type { AnalysisDoc } from "@/lib/api/types";
 import { AnalysisDetailDialog } from "@/components/dashboard/analysis-detail-dialog";
 /***********************************************************************************************************************/
@@ -79,7 +89,9 @@ export default function CalendarPage() {
     stats: null,
   });
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null);
+  const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(
+    null,
+  );
   /***********************************************************************************************************************/
   // Hooks
   const apiFetch = useApiFetch();
@@ -150,14 +162,17 @@ export default function CalendarPage() {
   }
 
   // Next reminder processing
-  const reminderDateObj = data.stats?.next_reminder ? new Date(data.stats.next_reminder) : null;
-  const isReminderSelected = date && reminderDateObj && isSameDay(date, reminderDateObj);
+  const reminderDateObj = data.stats?.next_reminder
+    ? new Date(data.stats.next_reminder)
+    : null;
+  const isReminderSelected =
+    date && reminderDateObj && isSameDay(date, reminderDateObj);
   /***********************************************************************************************************************/
   //JSX
   return (
     <div className="pt-12 pb-12 min-h-screen">
       <div className="container mx-auto px-4 max-w-7xl w-full">
-        {/* Header Premium */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -172,8 +187,8 @@ export default function CalendarPage() {
             </h1>
           </div>
           <p className="text-muted-foreground text-lg ml-[3.5rem] leading-relaxed max-w-2xl">
-            Tu línea de tiempo médica. Revisa el historial de tus analíticas día a día y prepárate
-            para tus próximas citas programadas.
+            Tu línea de tiempo médica. Revisa el historial de tus analíticas día
+            a día y prepárate para tus próximas citas programadas.
           </p>
         </motion.div>
 
@@ -192,7 +207,8 @@ export default function CalendarPage() {
                   selected={date}
                   onSelect={setDate}
                   disabled={(date) =>
-                    date > new Date() && (!reminderDateObj || !isSameDay(date, reminderDateObj))
+                    date > new Date() &&
+                    (!reminderDateObj || !isSameDay(date, reminderDateObj))
                   }
                   locale={es}
                   className="w-full flex justify-center [&_.rdp-day]:text-sm sm:[&_.rdp-day]:text-base [&_.rdp-day]:w-10 
@@ -249,7 +265,9 @@ export default function CalendarPage() {
                       <Clock className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-foreground">Tu próximo análisis</h4>
+                      <h4 className="font-bold text-foreground">
+                        Tu próximo análisis
+                      </h4>
                       <p className="text-sm text-muted-foreground mt-0.5">
                         {getNextReminderText(data.stats.next_reminder)}
                       </p>
@@ -314,7 +332,8 @@ export default function CalendarPage() {
                                 </div>
                               </div>
                               <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                                {analysis.overview?.summary || "Sin resumen disponible."}
+                                {analysis.overview?.summary ||
+                                  "Sin resumen disponible."}
                               </p>
 
                               <div className="flex justify-between items-center mt-1">
@@ -331,7 +350,8 @@ export default function CalendarPage() {
                                   size="sm"
                                   className="h-8 px-2 text-primary hover:bg-primary/10"
                                 >
-                                  Detalles <ChevronRight className="w-4 h-4 ml-1" />
+                                  Detalles{" "}
+                                  <ChevronRight className="w-4 h-4 ml-1" />
                                 </Button>
                               </div>
                             </div>
@@ -350,10 +370,12 @@ export default function CalendarPage() {
                       <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mb-4">
                         <Clock className="w-8 h-8 text-purple-500" />
                       </div>
-                      <h3 className="font-bold text-lg mb-2">Recordatorio Analítico</h3>
+                      <h3 className="font-bold text-lg mb-2">
+                        Recordatorio Analítico
+                      </h3>
                       <p className="text-muted-foreground text-sm">
-                        Éste día tienes programada una analítica clínica de control o seguimiento
-                        recurrente.
+                        Éste día tienes programada una analítica clínica de
+                        control o seguimiento recurrente.
                       </p>
                     </motion.div>
                   ) : (
@@ -370,10 +392,15 @@ export default function CalendarPage() {
                       >
                         <CalendarIcon className="w-8 h-8 opacity-40" />
                       </div>
-                      <h3 className="font-medium text-lg mb-1">Día sin actividad</h3>
+                      <h3 className="font-medium text-lg mb-1">
+                        Día sin actividad
+                      </h3>
                       <p className="text-sm opacity-80 max-w-[250px]">
                         No encontramos registros clínicos subidos el{" "}
-                        {date ? format(date, "d 'de' MMMM", { locale: es }) : "día indicado"}.
+                        {date
+                          ? format(date, "d 'de' MMMM", { locale: es })
+                          : "día indicado"}
+                        .
                       </p>
                     </motion.div>
                   )}
@@ -406,6 +433,12 @@ export default function CalendarPage() {
 }
 
 /** Pequeno mock element interno para hacer consistente CardBody. */
-function CardBody({ children, className }: { children: React.ReactNode; className?: string }) {
+function CardBody({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return <div className={className}>{children}</div>;
 }

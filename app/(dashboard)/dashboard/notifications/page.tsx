@@ -37,12 +37,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { formatTimeAgo } from "@/lib/utils";
-import { useNotifications, NotificationType } from "@/hooks/notification-context";
+import {
+  useNotifications,
+  NotificationType,
+} from "@/hooks/notification-context";
 /***********************************************************************************************************************/
 export default function NotificationsPage() {
   // Consumir el estado global de notificaciones
-  const { notifications, unreadCount, toggleRead, deleteNotification, markAllAsRead, clearAll } =
-    useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    toggleRead,
+    deleteNotification,
+    markAllAsRead,
+    clearAll,
+  } = useNotifications();
   const [filter, setFilter] = useState<string>("all");
 
   // Filtros aplicados al estado global
@@ -69,7 +78,7 @@ export default function NotificationsPage() {
   return (
     <div className="pt-8 pb-12 min-h-[calc(100dvh-4rem)]">
       <div className="container mx-auto px-4 max-w-5xl w-full">
-        {/* Header Premium */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -80,10 +89,13 @@ export default function NotificationsPage() {
               <div className="p-2.5 bg-primary/10 rounded-xl text-primary border border-primary/20 shadow-sm">
                 <Bell className="w-6 h-6" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Notificaciones</h1>
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+                Notificaciones
+              </h1>
             </div>
             <p className="text-muted-foreground text-lg sm:ml-[3.5rem] ml-0 max-w-2xl">
-              Mantente al día con tus análisis, alertas de salud e inicios de sesión.
+              Mantente al día con tus análisis, alertas de salud e inicios de
+              sesión.
             </p>
           </div>
 
@@ -116,12 +128,14 @@ export default function NotificationsPage() {
                       ¿Vaciar notificaciones?
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-base text-muted-foreground">
-                      Esta acción eliminará permanentemente todo tu historial de alertas y análisis
-                      recientes. No se puede deshacer.
+                      Esta acción eliminará permanentemente todo tu historial de
+                      alertas y análisis recientes. No se puede deshacer.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className="gap-3">
-                    <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
+                    <AlertDialogCancel className="rounded-xl font-bold">
+                      Cancelar
+                    </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={clearAll}
                       className="rounded-xl bg-red-500 hover:bg-red-600 font-bold"
@@ -161,21 +175,40 @@ export default function NotificationsPage() {
                     <motion.div
                       layoutId="activeTabNotification"
                       className="absolute inset-0 rounded-2xl border-2 border-primary/20 z-[-1]"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      transition={{
+                        type: "spring",
+                        bounce: 0.2,
+                        duration: 0.6,
+                      }}
                     />
                   )}
                 </TabsTrigger>
 
                 {[
-                  { id: "analysis", label: "Análisis", icon: FileText, color: "text-blue-500" },
-                  { id: "health", label: "Salud", icon: Activity, color: "text-red-500" },
+                  {
+                    id: "analysis",
+                    label: "Análisis",
+                    icon: FileText,
+                    color: "text-blue-500",
+                  },
+                  {
+                    id: "health",
+                    label: "Salud",
+                    icon: Activity,
+                    color: "text-red-500",
+                  },
                   {
                     id: "security",
                     label: "Seguridad",
                     icon: ShieldCheck,
                     color: "text-purple-500",
                   },
-                  { id: "system", label: "Sistema", icon: Info, color: "text-amber-500" },
+                  {
+                    id: "system",
+                    label: "Sistema",
+                    icon: Info,
+                    color: "text-amber-500",
+                  },
                 ].map((cat) => {
                   const Icon = cat.icon;
                   return (
@@ -194,7 +227,11 @@ export default function NotificationsPage() {
                         <motion.div
                           layoutId="activeTabNotification"
                           className="absolute inset-0 rounded-2xl border-2 border-primary/20 z-[-1]"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                          transition={{
+                            type: "spring",
+                            bounce: 0.2,
+                            duration: 0.6,
+                          }}
                         />
                       )}
                     </TabsTrigger>
@@ -208,7 +245,9 @@ export default function NotificationsPage() {
             <CardHeader className="bg-muted/30 border-b py-4 px-4 sm:px-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <h3 className="font-bold text-[10px] sm:text-sm text-muted-foreground uppercase tracking-widest">
-                  {filter === "all" ? "Historial Reciente" : `Filtro: ${filter.toUpperCase()}`}
+                  {filter === "all"
+                    ? "Historial Reciente"
+                    : `Filtro: ${filter.toUpperCase()}`}
                 </h3>
                 <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
                   <Clock className="w-3.5 h-3.5" />
@@ -255,7 +294,9 @@ export default function NotificationsPage() {
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-1">
                             <h4
                               className={`font-bold transition-all text-sm sm:text-base leading-tight ${
-                                notif.read ? "text-muted-foreground" : "text-foreground"
+                                notif.read
+                                  ? "text-muted-foreground"
+                                  : "text-foreground"
                               }`}
                             >
                               {notif.title}
@@ -264,7 +305,9 @@ export default function NotificationsPage() {
                           </div>
                           <p
                             className={`text-xs sm:text-sm leading-relaxed max-w-2xl transition-all line-clamp-3 sm:line-clamp-none ${
-                              notif.read ? "text-muted-foreground/80" : "text-foreground/90"
+                              notif.read
+                                ? "text-muted-foreground/80"
+                                : "text-foreground/90"
                             }`}
                           >
                             {notif.description}
@@ -284,7 +327,9 @@ export default function NotificationsPage() {
                               className="text-[10px] sm:text-xs text-primary hover:underline flex items-center gap-1 font-medium"
                             >
                               <Check className="w-3 h-3" />
-                              {notif.read ? "Marcar como no leído" : "Marcar como leído"}
+                              {notif.read
+                                ? "Marcar como no leído"
+                                : "Marcar como leído"}
                             </button>
                           </div>
                         </div>
@@ -300,7 +345,10 @@ export default function NotificationsPage() {
                                 <MoreVertical className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="rounded-xl p-1">
+                            <DropdownMenuContent
+                              align="end"
+                              className="rounded-xl p-1"
+                            >
                               <DropdownMenuItem
                                 className="text-destructive focus:text-destructive rounded-lg gap-2 text-xs sm:text-sm"
                                 onClick={() => deleteNotification(notif.id)}
@@ -329,10 +377,12 @@ export default function NotificationsPage() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <h3 className="text-2xl font-bold text-foreground">Todo en orden ✅</h3>
+                        <h3 className="text-2xl font-bold text-foreground">
+                          Todo en orden ✅
+                        </h3>
                         <p className="text-muted-foreground text-base max-w-sm mx-auto leading-relaxed">
-                          Has gestionado todas tus notificaciones. Por ahora estás al día con tu
-                          salud y seguridad.
+                          Has gestionado todas tus notificaciones. Por ahora
+                          estás al día con tu salud y seguridad.
                         </p>
                       </div>
                       <div className="pt-2">
