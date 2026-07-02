@@ -49,7 +49,7 @@ async function fetchGoogleAvatar(accessToken: string | undefined) {
 }
 
 /* Main configuration */
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     /* Google Provider */
     GoogleProvider({
