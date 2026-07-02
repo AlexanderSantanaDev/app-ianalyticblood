@@ -1,4 +1,8 @@
-import NextAuth, { type NextAuthOptions, type DefaultSession, type User } from "next-auth";
+import NextAuth, {
+  type NextAuthOptions,
+  type DefaultSession,
+  type User,
+} from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { publicApiFetch } from "@/lib/api/client";
@@ -25,7 +29,6 @@ declare module "next-auth" {
 /* Helper function to fetch Google avatar */
 async function fetchGoogleAvatar(accessToken: string | undefined) {
   if (!accessToken) {
-    console.log("No accessToken provided for fetchGoogleAvatar");
     return null;
   }
 
@@ -38,7 +41,6 @@ async function fetchGoogleAvatar(accessToken: string | undefined) {
       return null;
     }
     const data = await res.json();
-    console.log("Fetched userinfo:", data);
     return data.picture ?? null;
   } catch (error) {
     console.error("Error fetching Google avatar:", error);
@@ -76,19 +78,23 @@ export const authOptions: NextAuthOptions = {
         const password = credentials?.password;
         if (!email || !password) return null;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-          method: "POST",
-          body: new URLSearchParams({
-            username: email,
-            password: password,
-          }),
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+          {
+            method: "POST",
+            body: new URLSearchParams({
+              username: email,
+              password: password,
+            }),
+          },
+        );
 
         if (!res.ok) return null;
 
         const data = await res.json();
         // Extraemos el alias de forma segura y capitalizamos
-        const rawName = data.name || data.full_name || email.split("@")[0] || "Usuario";
+        const rawName =
+          data.name || data.full_name || email.split("@")[0] || "Usuario";
         const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
         return {
@@ -117,7 +123,13 @@ export const authOptions: NextAuthOptions = {
 
   /* Callbacks */
   callbacks: {
-    async signIn({ user, account }: { user: any; account: any }): Promise<boolean | string> {
+    async signIn({
+      user,
+      account,
+    }: {
+      user: any;
+      account: any;
+    }): Promise<boolean | string> {
       if (account?.provider === "google") {
         try {
           const envUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -135,9 +147,11 @@ export const authOptions: NextAuthOptions = {
             apiUrl = apiUrl.replace("localhost", "127.0.0.1");
           }
 
-          console.log(`[AUTH DEBUG] Intentando registro/login Google`);
-          console.log(`[AUTH DEBUG] Backend URL configurada: ${apiUrl}`);
-          console.log(`[AUTH DEBUG] Email: ${user.email}`);
+          // Logs de debug reducidos
+          if (process.env.NODE_ENV !== "production") {
+            console.log(`[AUTH DEBUG] Intentando registro/login Google`);
+            console.log(`[AUTH DEBUG] Backend URL configurada: ${apiUrl}`);
+          }
 
           const res = await publicApiFetch<{
             access_token: string;
@@ -157,7 +171,9 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (res && res.access_token) {
-            console.log(`[AUTH DEBUG] ✅ Autenticación exitosa con el backend`);
+            if (process.env.NODE_ENV !== "production") {
+              console.log(`[AUTH DEBUG] ✅ Autenticación Google exitosa`);
+            }
             user.accessToken = res.access_token;
             user.refreshToken = res.refresh_token;
             user.provider = "google";
@@ -166,14 +182,22 @@ export const authOptions: NextAuthOptions = {
             return true;
           }
 
-          console.error("[AUTH DEBUG] ❌ No se recibió access_token del backend");
+          console.error(
+            "[AUTH DEBUG] ❌ No se recibió access_token del backend",
+          );
           return false;
         } catch (error: any) {
-          console.error("[AUTH DEBUG] ❌ Error crítico en el backend:", error.message);
+          console.error(
+            "[AUTH DEBUG] ❌ Error crítico en el backend:",
+            error.message,
+          );
 
           // Log PROFUNDO de la causa del fallo (Causa raíz: ECONNREFUSED, etc.)
           if (error.cause) {
-            console.error("[AUTH DEBUG] 👉 Causa Técnica Detallada:", error.cause);
+            console.error(
+              "[AUTH DEBUG] 👉 Causa Técnica Detallada:",
+              error.cause,
+            );
           }
 
           // Debug si el api no esta corriendo..
@@ -213,12 +237,6 @@ export const authOptions: NextAuthOptions = {
         }
         if (session.plan) token.plan = session.plan;
         if (session.user?.plan) token.plan = session.user.plan;
-
-        console.log("[AUTH DEBUG] ✅ JWT actualizado con éxito:", {
-          plan: token.plan,
-          count: token.analysis_count,
-          trigger,
-        });
       }
 
       if (user) {
@@ -233,24 +251,19 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (account?.provider === "google" && account.access_token) {
-        console.log("Google account access_token:", account.access_token); // Log para depurar
         token.googleAccessToken = account.access_token as string;
       }
 
-      // Intentamos obtener la imagen si no está presente
-      if (!token.picture && token.googleAccessToken) {
-        console.log(
-          "Attempting to fetch Google avatar with access_token:",
-          token.googleAccessToken,
+      // Solo intentar fetch de avatar una vez — si ya se intentó, no repetir
+      if (!token.picture && token.googleAccessToken && !token._avatarFetched) {
+        const fetchedPicture = await fetchGoogleAvatar(
+          token.googleAccessToken as string,
         );
-        const fetchedPicture = await fetchGoogleAvatar(token.googleAccessToken as string);
         if (fetchedPicture) {
           token.picture = fetchedPicture;
         }
+        token._avatarFetched = true; // Evitar llamadas repetidas a googleapis en cada request
       }
-
-      // Log para verificar el estado de token.picture
-      console.log("Token picture after fetch attempt:", token.picture);
 
       return token;
     },
@@ -267,10 +280,10 @@ export const authOptions: NextAuthOptions = {
       session.accessToken = token.accessToken as string | undefined;
       session.refreshToken = token.refreshToken as string | undefined;
 
-      // Log para depurar session.user.image
-      console.log("Session user image:", session.user.image);
-
-      return session as DefaultSession & { accessToken?: string; refreshToken?: string };
+      return session as DefaultSession & {
+        accessToken?: string;
+        refreshToken?: string;
+      };
     },
 
     redirect({ url, baseUrl }: { url: string; baseUrl: string }) {

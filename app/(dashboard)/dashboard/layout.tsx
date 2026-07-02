@@ -6,7 +6,6 @@ import DashboardFooter from "@/components/dashboard/dashboard-footer";
 import NavigationLoader from "@/components/dashboard/navigation-loader";
 import PageTransition from "@/components/dashboard/page-transition";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { ThemeProvider } from "@/components/theme-provider";
 import { LoadingProvider } from "@/hooks/loading-context";
 import { ReactNode } from "react";
 /****************************************************************************************************************************/
@@ -34,12 +33,10 @@ const DashboardContent = ({ children }: { children: ReactNode }) => {
 /** Layout principal del dashboard. */
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-      <LoadingProvider>
-        <SidebarProvider defaultOpen={true}>
-          <DashboardContent>{children}</DashboardContent>
-        </SidebarProvider>
-      </LoadingProvider>
-    </ThemeProvider>
+    <LoadingProvider>
+      <SidebarProvider defaultOpen={true}>
+        <DashboardContent>{children}</DashboardContent>
+      </SidebarProvider>
+    </LoadingProvider>
   );
 }

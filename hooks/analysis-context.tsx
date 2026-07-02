@@ -1,6 +1,15 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+} from "react";
 import { uploadFile, getDashboardStats } from "@/lib/api/analysis";
 import { toast } from "sonner";
 import { useNotifications } from "@/hooks/notification-context";
@@ -18,7 +27,9 @@ interface AnalysisContextType {
   resetAnalysis: () => void;
 }
 /** Contexto de análisis.*/
-const AnalysisContext = createContext<AnalysisContextType | undefined>(undefined);
+const AnalysisContext = createContext<AnalysisContextType | undefined>(
+  undefined,
+);
 /****************************************************************************************************************************/
 export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   // Estados
@@ -30,6 +41,13 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   const [analysisCount, setAnalysisCount] = useState<number>(0);
   const { addNotification } = useNotifications();
   const { data: session, update: updateSession } = useSession(); // Hook de sesión para actualizar contadores
+
+  // Refs to track interval/timeout IDs for proper cleanup on unmount
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
+  const healthTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   /****************************************************************************************************************************/
   // Hooks
   /** Resetear el análisis.*/
@@ -38,6 +56,16 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
     setProgress(0);
     setCurrentStep("");
     setFileName(null);
+  }, []);
+
+  // 🛡️ Cleanup all timers on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current)
+        clearInterval(progressIntervalRef.current);
+      if (healthTimeoutRef.current) clearTimeout(healthTimeoutRef.current);
+      if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
+    };
   }, []);
 
   // Sincronizar contador local cuando la sesión carga o cambia
@@ -58,7 +86,8 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
       setCurrentStep("Subiendo archivo...");
 
       // Simulación de progreso escalonado
-      const progressInterval = setInterval(() => {
+      progressIntervalRef.current = setInterval(() => {
+        // 🚀 Store in ref for cleanup
         setProgress((prev) => {
           if (prev < 20) {
             setCurrentStep("Subiendo archivo...");
@@ -89,14 +118,19 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
           icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
         });
 
-        clearInterval(progressInterval);
+        // 🛡️ Clear interval via ref and nullify
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
         setProgress(100);
         setCurrentStep("¡Análisis completado!");
 
         // Disparar notificación dinámica leyendo el backend
         // Generamos dinámicamente un ID o leemos el de la respuesta
         const analysisId =
-          (uploadRes as any).analysis_id || `A-${Math.floor(Math.random() * 1000)}`;
+          (uploadRes as any).analysis_id ||
+          `A-${Math.floor(Math.random() * 1000)}`;
 
         addNotification(
           {
@@ -109,9 +143,12 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
         );
 
         // Alerta de salud reactiva extraída en base a la información procesada.
-        setTimeout(() => {
+        healthTimeoutRef.current = setTimeout(() => {
+          // 🛡️ Store health timeout in ref
           const isBloodFile = file.name.toLowerCase().includes("sangre");
-          const variableDesc = isBloodFile ? "el conteo de leucocitos" : "algunas métricas";
+          const variableDesc = isBloodFile
+            ? "el conteo de leucocitos"
+            : "algunas métricas";
 
           addNotification(
             {
@@ -139,7 +176,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
           await new Promise((resolve) => setTimeout(resolve, 1000));
 
           const stats = await getDashboardStats(apiFetch);
-          console.log("[ANALYSIS DEBUG] Sincronizando contador tras éxito:", stats.analyses_total);
+          // ✨ Removed debug console.log for production cleanliness
 
           // Actualización instantánea del estado local para reactividad total
           setAnalysisCount(stats.analyses_total);
@@ -150,7 +187,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
             plan: session?.user?.plan,
           });
 
-          console.log("[ANALYSIS DEBUG] ✅ Sesión actualizada con:", stats.analyses_total);
+          // ✨ Removed debug console.log for production cleanliness
 
           // Disparar evento personalizado para notificar a otros componentes (Sidebar)
           window.dispatchEvent(
@@ -159,16 +196,24 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
             }),
           );
         } catch (syncErr) {
-          console.error("[ANALYSIS DEBUG] Error sincronizando contador:", syncErr);
+          console.error(
+            "[ANALYSIS DEBUG] Error sincronizando contador:",
+            syncErr,
+          );
           await updateSession();
         }
 
         // Pequeño delay para que el usuario vea el 100%
-        setTimeout(() => {
+        resetTimeoutRef.current = setTimeout(() => {
+          // Store reset timeout in ref
           resetAnalysis();
         }, 2000);
       } catch (err: any) {
-        clearInterval(progressInterval);
+        // Clear interval via ref and nullify (catch block)
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
         setIsAnalyzing(false);
 
         // Toast personalizado de color naranja para el límite de análisis
@@ -191,22 +236,34 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     },
-    [isAnalyzing, resetAnalysis],
+    [isAnalyzing, resetAnalysis, addNotification, updateSession, session], // 🚀 Fixed dependency array to avoid stale closures
   );
   /****************************************************************************************************************************/
+  // ✨ Memoize context value to prevent unnecessary re-renders of consumers
+  const contextValue = useMemo(
+    () => ({
+      isAnalyzing,
+      progress,
+      currentStep,
+      fileName,
+      analysisCount,
+      startAnalysis,
+      resetAnalysis,
+    }),
+    [
+      isAnalyzing,
+      progress,
+      currentStep,
+      fileName,
+      analysisCount,
+      startAnalysis,
+      resetAnalysis,
+    ],
+  );
+
   //JSX
   return (
-    <AnalysisContext.Provider
-      value={{
-        isAnalyzing,
-        progress,
-        currentStep,
-        fileName,
-        analysisCount,
-        startAnalysis,
-        resetAnalysis,
-      }}
-    >
+    <AnalysisContext.Provider value={contextValue}>
       {children}
     </AnalysisContext.Provider>
   );

@@ -2,7 +2,7 @@ import type { NextFetchEvent, NextMiddleware, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 // ─────────────────────────────────────────────────────────────
-//  Cabeceras “baseline” que hoy aconseja OWASP / Mozilla
+//  Cabeceras "baseline" que hoy aconseja OWASP / Mozilla
 // ─────────────────────────────────────────────────────────────
 const securityHeaders: Record<string, string> = {
   // Previene click-jacking
@@ -11,8 +11,7 @@ const securityHeaders: Record<string, string> = {
   // Previene XXS reflexivo - viejo pero siguen pidiéndolo algunos scanners
   "X-XSS-Protection": "1; mode=block",
 
-  // Oculta versión del servidor
-  "X-Powered-By": "Next.js", // (“Express” típico)
+  // Eliminado X-Powered-By — antes revelaba "Next.js", ahora se elimina completamente
 
   // CORS pre-flight más seguro (solo ejemplos, tu API ya tiene CORS propio)
   "Access-Control-Allow-Origin":
@@ -31,23 +30,18 @@ const securityHeaders: Record<string, string> = {
 };
 
 const isProd = process.env.NODE_ENV === "production";
-const apiOrigin = new URL(process.env.NEXT_PUBLIC_API_URL!).origin;
+const apiOrigin = process.env.NEXT_PUBLIC_API_URL
+  ? new URL(process.env.NEXT_PUBLIC_API_URL).origin
+  : "http://localhost:8000";
 
-//  ───────────── CSP:  ajustar fuentes ─────────────
-/* const csp = `// añadir mas adelante para segirdad
-  default-src 'self';
-  frame-ancestors 'none';
-  img-src 'self' https: data:;
-  script-src 'self' ${isProd ? "" : "'unsafe-inline' 'unsafe-eval'"} 'wasm-unsafe-eval' 'inline-speculation-rules';
-  style-src 'self' 'unsafe-inline';
-  connect-src 'self' https://api.deepseek.com ${process.env.NEXT_PUBLIC_API_URL};
-`.replace(/\s{2,}/g, " ").trim(); */
+// CSP mejorada — eliminado unsafe-eval en producción para prevenir XSS
 const csp = `
   default-src 'self';
   frame-ancestors 'none';
   img-src 'self' https: data:;
-  script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' 'inline-speculation-rules';
-  style-src 'self' 'unsafe-inline';
+  script-src 'self' ${isProd ? "'unsafe-inline' 'wasm-unsafe-eval' 'inline-speculation-rules'" : "'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' 'inline-speculation-rules'"};
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
   connect-src 'self' https://api-ianalyticblood.onrender.com ${apiOrigin} ${!isProd ? "ws://localhost:* ws://127.0.0.1:*" : ""};
 `
   .replace(/\s{2,}/g, " ")
@@ -61,6 +55,9 @@ export const withSecurityHeaders: NextMiddleware = (
 
   // 1) Cabeceras fijas
   Object.entries(securityHeaders).forEach(([k, v]) => res.headers.set(k, v));
+
+  // Eliminar explícitamente X-Powered-By para no revelar el framework
+  res.headers.delete("X-Powered-By");
 
   // 2) CSP
   res.headers.set("Content-Security-Policy", csp);

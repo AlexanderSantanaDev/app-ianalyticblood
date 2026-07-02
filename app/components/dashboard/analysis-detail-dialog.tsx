@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -99,21 +105,41 @@ export function AnalysisDetailDialog({
   // Hook para fetch de API
   const apiFetch = useApiFetch();
   // Hook para cargar el análisis
+  // AbortController para cancelar peticiones al cerrar el dialog y evitar race conditions
   useEffect(() => {
     if (!open || !analysisId) return;
+
+    const controller = new AbortController();
+
+    // Limpiar datos anteriores para evitar mostrar data stale
+    setData(null);
     setLoading(true);
     setError(null);
+
     getAnalysis(apiFetch, analysisId)
       .then((res) => {
-        // La API devuelve ApiSuccess<AnalysisDoc>, extraemos .data
-        setData(res.data);
+        // Verificar si la petición fue abortada antes de actualizar estado
+        if (!controller.signal.aborted) {
+          setData(res.data);
+        }
       })
       .catch((err) => {
-        console.error("Error fetching analysis:", err);
-        setError(err.message || "Error al cargar el análisis");
+        if (!controller.signal.aborted) {
+          console.error("Error fetching analysis:", err);
+          setError(err.message || "Error al cargar el análisis");
+        }
       })
-      .finally(() => setLoading(false));
-  }, [open, analysisId]);
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    // Cleanup - abortar petición pendiente al cerrar dialog o cambiar de análisis
+    return () => {
+      controller.abort();
+    };
+  }, [open, analysisId, apiFetch]);
   /****************************************************************************************************************************/
   // Badge de alerta
   const alertBadge = data ? getAlertBadge(data.overview.alert_level) : null;
@@ -138,7 +164,9 @@ export function AnalysisDetailDialog({
           </DialogDescription>
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle className="text-xl font-bold">Detalle del análisis</DialogTitle>
+              <DialogTitle className="text-xl font-bold">
+                Detalle del análisis
+              </DialogTitle>
               {data && (
                 <p className="text-sm text-muted-foreground mt-1">
                   {new Date(data.date).toLocaleDateString("es-ES", {
@@ -150,7 +178,10 @@ export function AnalysisDetailDialog({
               )}
             </div>
             {alertBadge && AlertIcon && (
-              <Badge variant="outline" className={`${alertBadge.className} gap-1.5 px-3 py-1`}>
+              <Badge
+                variant="outline"
+                className={`${alertBadge.className} gap-1.5 px-3 py-1`}
+              >
                 <AlertIcon className="h-3.5 w-3.5" />
                 {alertBadge.label}
               </Badge>
@@ -190,8 +221,12 @@ export function AnalysisDetailDialog({
                     {data.overview.summary}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-muted-foreground">Estado:</span>
-                    <span className="text-xs font-medium">{data.overview.general_state}</span>
+                    <span className="text-xs text-muted-foreground">
+                      Estado:
+                    </span>
+                    <span className="text-xs font-medium">
+                      {data.overview.general_state}
+                    </span>
                   </div>
                 </div>
 
@@ -211,7 +246,9 @@ export function AnalysisDetailDialog({
                           className="rounded-lg border bg-card/50 p-3 space-y-1 hover:bg-card transition-colors"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium truncate max-w-[60%]">{name}</span>
+                            <span className="text-xs font-medium truncate max-w-[60%]">
+                              {name}
+                            </span>
                             <span
                               className={`text-xs font-semibold ${getParamStatusColor(
                                 param.status,
@@ -225,13 +262,15 @@ export function AnalysisDetailDialog({
                               {param.value !== null ? param.value : "—"}
                             </span>
                             {param.unit && (
-                              <span className="text-xs text-muted-foreground">{param.unit}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {param.unit}
+                              </span>
                             )}
                           </div>
                           {param.reference_range && (
                             <p className="text-[11px] text-muted-foreground">
-                              Ref: {param.reference_range[0]} — {param.reference_range[1]}{" "}
-                              {param.unit}
+                              Ref: {param.reference_range[0]} —{" "}
+                              {param.reference_range[1]} {param.unit}
                             </p>
                           )}
                         </div>
@@ -287,7 +326,10 @@ export function AnalysisDetailDialog({
 
                 {/* Botón de descarga dentro del dialog */}
                 <div className="pt-2">
-                  <Button onClick={handleDownload} className="w-full gradient-bg">
+                  <Button
+                    onClick={handleDownload}
+                    className="w-full gradient-bg"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Descargar informe
                   </Button>

@@ -1,18 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  //  Habilitado ESLint durante el build para detectar errores antes de producción
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
+  // Habilitado TypeScript checks durante el build — los errores de tipos ya no pasan a producción
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
+  // Habilitada optimización de imágenes de Next.js (WebP/AVIF, lazy loading, srcset)
   images: {
-    unoptimized: true,
+    unoptimized: false,
+    formats: ["image/avif", "image/webp"],
   },
   experimental: {
-    // webpackBuildWorker: true,
-    // parallelServerBuildTraces: true,
-    // parallelServerCompiles: true,
+    // Habilitadas optimizaciones de build en paralelo
+    webpackBuildWorker: true,
+    parallelServerBuildTraces: true,
+    parallelServerCompiles: true,
   },
   headers() {
     return [

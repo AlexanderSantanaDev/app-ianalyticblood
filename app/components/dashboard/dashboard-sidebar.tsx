@@ -28,7 +28,11 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useNotifications } from "@/hooks/notification-context";
 /****************************************************************************************************************************/
 /** Interfaz para items del menú con soporte para disabled */
@@ -38,8 +42,56 @@ interface MenuItem {
   href: string;
   disabled?: boolean;
 }
+
+// menuItems hoistedado fuera del componente para evitar recreación en cada render
+const MENU_ITEMS: MenuItem[] = [
+  { title: "Panel", icon: Home, href: "/dashboard", disabled: false },
+  {
+    title: "Subir análisis",
+    icon: Upload,
+    href: "/dashboard/upload",
+    disabled: false,
+  },
+  {
+    title: "Historial",
+    icon: FileText,
+    href: "/dashboard/history",
+    disabled: false,
+  },
+  {
+    title: "Estadísticas",
+    icon: BarChart3,
+    href: "/dashboard/stats",
+    disabled: false,
+  },
+  {
+    title: "Calendario",
+    icon: Calendar,
+    href: "/dashboard/calendar",
+    disabled: false,
+  },
+  { title: "Perfil", icon: User, href: "/dashboard/profile", disabled: false },
+  {
+    title: "Suscripción",
+    icon: CreditCard,
+    href: "/dashboard/subscription",
+    disabled: false,
+  },
+  {
+    title: "Notificaciones",
+    icon: Bell,
+    href: "/dashboard/notifications",
+    disabled: false,
+  },
+  {
+    title: "Configuración",
+    icon: Settings,
+    href: "/dashboard/settings",
+    disabled: false,
+  },
+];
 /****************************************************************************************************************************/
-export default function DashboardSidebar() {
+function DashboardSidebarComponent() {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const { unreadCount } = useNotifications();
@@ -54,63 +106,8 @@ export default function DashboardSidebar() {
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 
-  // solo "Panel" habilitado, el resto desactivado temporalmente
-  const menuItems: MenuItem[] = [
-    {
-      title: "Panel",
-      icon: Home,
-      href: "/dashboard",
-      disabled: false,
-    },
-    {
-      title: "Subir análisis",
-      icon: Upload,
-      href: "/dashboard/upload",
-      disabled: false,
-    },
-    {
-      title: "Historial",
-      icon: FileText,
-      href: "/dashboard/history",
-      disabled: false,
-    },
-    {
-      title: "Estadísticas",
-      icon: BarChart3,
-      href: "/dashboard/stats",
-      disabled: false,
-    },
-    {
-      title: "Calendario",
-      icon: Calendar,
-      href: "/dashboard/calendar",
-      disabled: false,
-    },
-    {
-      title: "Perfil",
-      icon: User,
-      href: "/dashboard/profile",
-      disabled: false,
-    },
-    {
-      title: "Suscripción",
-      icon: CreditCard,
-      href: "/dashboard/subscription",
-      disabled: false,
-    },
-    {
-      title: "Notificaciones",
-      icon: Bell,
-      href: "/dashboard/notifications",
-      disabled: false,
-    },
-    {
-      title: "Configuración",
-      icon: Settings,
-      href: "/dashboard/settings",
-      disabled: false,
-    },
-  ];
+  // Usando constante MENU_ITEMS hoistedada
+  const menuItems = MENU_ITEMS;
 
   //JSX
   return (
@@ -197,13 +194,19 @@ export default function DashboardSidebar() {
                           : "text-sidebar-foreground/60 dark:text-sidebar-foreground/40 group-hover:text-sidebar-foreground/90 dark:group-hover:text-sidebar-foreground/70 group-hover:scale-110",
                       )}
                     />
-                    <span className={cn("tracking-tight text-sm", active && "font-semibold")}>
+                    <span
+                      className={cn(
+                        "tracking-tight text-sm",
+                        active && "font-semibold",
+                      )}
+                    >
                       {item.title}
                     </span>
                     {/* Indicador dinámico vinculado al estado real */}
-                    {item.href === "/dashboard/notifications" && unreadCount > 0 && (
-                      <span className="ml-auto flex h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary))] animate-pulse" />
-                    )}
+                    {item.href === "/dashboard/notifications" &&
+                      unreadCount > 0 && (
+                        <span className="ml-auto flex h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary))] animate-pulse" />
+                      )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -245,9 +248,16 @@ export default function DashboardSidebar() {
           <span className="text-[10px] font-semibold text-sidebar-foreground/40 tracking-widest uppercase">
             iAnalytic Blood
           </span>
-          <span className="text-[10px] font-bold text-primary/60 tracking-tight">v1.0</span>
+          <span className="text-[10px] font-bold text-primary/60 tracking-tight">
+            v1.0
+          </span>
         </div>
       </SidebarFooter>
     </Sidebar>
   );
 }
+
+// React.memo para evitar re-renders innecesarios del sidebar
+import { memo } from "react";
+const DashboardSidebar = memo(DashboardSidebarComponent);
+export default DashboardSidebar;

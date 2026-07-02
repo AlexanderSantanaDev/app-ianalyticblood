@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { FileUploadProps } from "@/types/dashboard";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
@@ -8,6 +8,7 @@ import { useApiFetch } from "@/lib/api/client";
 import { useAnalysis } from "@/hooks/analysis-context";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import { ShieldCheck, Database, Sparkles, CheckCircle2 } from "lucide-react";
 /****************************************************************************************************************************/
 export const FileUpload = ({ onUpload }: FileUploadProps) => {
@@ -17,20 +18,40 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const apiFetch = useApiFetch();
   const { startAnalysis, isAnalyzing, progress, currentStep } = useAnalysis();
+  // Referencia al input de archivo para evitar document.getElementById
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Límite de 20MB para archivos subidos
+  const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+  // Cleanup de previewUrl al desmontar para evitar memory leaks
+  useEffect(() => {
+    return () => {
+      setPreviewUrl(null);
+    };
+  }, []);
   /****************************************************************************************************************************/
   // Métodos
   /** Maneja el cambio de archivo */
-  const handleChange = (f: File) => {
+  // Envolver handleChange en useCallback para memoización
+  const handleChange = useCallback((f: File) => {
+    // Validación de tamaño máximo de archivo (20MB)
+    if (f.size > MAX_FILE_SIZE) {
+      toast.error("Archivo demasiado grande", {
+        description: `El archivo pesa ${(f.size / 1024 / 1024).toFixed(1)}MB. El máximo permitido es 20MB.`,
+      });
+      return;
+    }
     setFile(f);
     if (f.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => setPreviewUrl(reader.result as string);
       reader.readAsDataURL(f);
     }
-  };
+  }, []);
 
   /** Maneja el procesamiento del archivo */
-  const handleProcess = async () => {
+  // Envolver handleProcess en useCallback para memoización
+  const handleProcess = useCallback(async () => {
     if (!file) return;
     try {
       await startAnalysis(file, apiFetch);
@@ -41,49 +62,63 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
       setFile(null);
       setPreviewUrl(null);
     }
-  };
+  }, [file, startAnalysis, apiFetch, onUpload]);
 
   /** Maneja el arrastre del archivo */
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  // Envolver handleDragOver en useCallback para memoización
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
-  };
+  }, []);
 
   /** Maneja la salida del arrastre del archivo */
-  const handleDragLeave = () => setIsDragging(false);
+  // Envolver handleDragLeave en useCallback para memoización
+  const handleDragLeave = useCallback(() => setIsDragging(false), []);
 
   /** Maneja la caída del archivo */
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const droppedFile = files[0];
-      const isPdf = droppedFile.type === "application/pdf";
-      const isImage = droppedFile.type.startsWith("image/");
-      if (isPdf || isImage) {
-        handleChange(droppedFile);
-      } else {
-        console.warn("Formato de archivo no válido. Sube un PDF o una imagen.");
+  // Envolver handleDrop en useCallback para memoización
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        const droppedFile = files[0];
+        const isPdf = droppedFile.type === "application/pdf";
+        const isImage = droppedFile.type.startsWith("image/");
+        if (isPdf || isImage) {
+          handleChange(droppedFile);
+        } else {
+          console.warn(
+            "Formato de archivo no válido. Sube un PDF o una imagen.",
+          );
+        }
       }
-    }
-  };
+    },
+    [handleChange],
+  );
 
   /** Maneja el cambio de archivo */
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const { files } = e.target;
-    if (files && files.length > 0) {
-      const selectedFile = files[0];
-      const isPdf = selectedFile.type === "application/pdf";
-      const isImage = selectedFile.type.startsWith("image/");
-      if (isPdf || isImage) {
-        handleChange(selectedFile);
-      } else {
-        console.warn("Formato de archivo no válido. Sube un PDF o una imagen.");
+  // Envolver handleFileChange en useCallback para memoización
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      const { files } = e.target;
+      if (files && files.length > 0) {
+        const selectedFile = files[0];
+        const isPdf = selectedFile.type === "application/pdf";
+        const isImage = selectedFile.type.startsWith("image/");
+        if (isPdf || isImage) {
+          handleChange(selectedFile);
+        } else {
+          console.warn(
+            "Formato de archivo no válido. Sube un PDF o una imagen.",
+          );
+        }
       }
-    }
-  };
+    },
+    [handleChange],
+  );
   /****************************************************************************************************************************/
   //JSX
   return (
@@ -109,16 +144,29 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full group-hover:bg-primary/30 transition-all duration-500" />
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                  transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
                   className="relative w-24 h-24 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center"
                 >
                   <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
                     {progress < 30 ? (
-                      <Database className="text-primary animate-pulse" size={28} />
+                      <Database
+                        className="text-primary animate-pulse"
+                        size={28}
+                      />
                     ) : progress < 70 ? (
-                      <Sparkles className="text-primary animate-pulse" size={28} />
+                      <Sparkles
+                        className="text-primary animate-pulse"
+                        size={28}
+                      />
                     ) : progress < 95 ? (
-                      <ShieldCheck className="text-primary animate-pulse" size={28} />
+                      <ShieldCheck
+                        className="text-primary animate-pulse"
+                        size={28}
+                      />
                     ) : (
                       <CheckCircle2 className="text-primary" size={28} />
                     )}
@@ -177,7 +225,9 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
           ? `${(file.size / 1024 / 1024).toFixed(2)} MB`
           : "o haz clic para seleccionar un archivo"}
       </p>
+      {/* Usar ref en lugar de id para acceso directo al input */}
       <input
+        ref={fileInputRef}
         type="file"
         id="file-upload"
         className="hidden"
@@ -189,7 +239,8 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
           variant={file ? "outline" : "default"}
           onClick={(e) => {
             e.preventDefault();
-            document.getElementById("file-upload")?.click();
+            // Usar fileInputRef en lugar de document.getElementById
+            fileInputRef.current?.click();
           }}
           className={file ? "" : "gradient-bg"}
           disabled={isAnalyzing}
@@ -207,7 +258,11 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
         </div>
       )}
       {file && (
-        <Button className="ml-2 gradient-bg" onClick={handleProcess} disabled={isAnalyzing}>
+        <Button
+          className="ml-2 gradient-bg"
+          onClick={handleProcess}
+          disabled={isAnalyzing}
+        >
           Procesar archivo
         </Button>
       )}

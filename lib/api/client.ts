@@ -1,7 +1,14 @@
 import { useSession, signOut } from "next-auth/react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 /****************************************************************************************************************************/
 const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
+
+//  Mutex para evitar race conditions en token refresh concurrente
+let refreshPromise: Promise<{
+  access_token: string;
+  refresh_token: string;
+}> | null = null;
 /****************************************************************************************************************************/
 /** Función para rutas públicas (sin autenticación). */
 export async function publicApiFetch<T = unknown>(
@@ -10,7 +17,8 @@ export async function publicApiFetch<T = unknown>(
 ): Promise<T> {
   const headers: Record<string, string> = {
     ...((options.headers as Record<string, string>) || {}),
-    ...(options.body instanceof FormData || options.body instanceof URLSearchParams
+    ...(options.body instanceof FormData ||
+    options.body instanceof URLSearchParams
       ? {}
       : { "Content-Type": "application/json" }),
   };
@@ -36,90 +44,105 @@ export async function publicApiFetch<T = unknown>(
 export function useApiFetch() {
   const { data: session, status } = useSession();
 
-  /** Hook para obtener apiFetch con autenticación. */
-  const apiFetch = async <T = unknown>(path: string, options: RequestInit = {}): Promise<T> => {
-    // Si la sesión no está cargada, esperar
-    if (status === "loading") {
-      console.warn(
-        "⚠️ [API] apiFetch invocada mientras la sesión aún cargaba. Abortando solicitud.",
-      );
-      throw new Error("La sesión aún se está cargando. Por favor, espera un momento.");
-    }
-
-    const accessToken = session?.accessToken;
-    // console.log("Estado de la sesión:", status);
-    // console.log("Access Token usado:", accessToken);
-
-    // Si no hay access token pero la sesión está autenticada, cerrar sesión
-    if (!accessToken && status === "authenticated") {
-      console.error("No access token available despite authenticated session");
-      toast.error("Sesión inválida. Por favor, inicia sesión nuevamente.");
-      await signOut({ callbackUrl: "/login" });
-      throw new Error("No access token available");
-    }
-
-    // Agregar headers
-    const headers: Record<string, string> = {
-      ...((options.headers as Record<string, string>) || {}),
-      ...(options.body instanceof FormData || options.body instanceof URLSearchParams
-        ? {}
-        : { "Content-Type": "application/json" }),
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    };
-
-    let res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-    //console.log("Respuesta inicial:", res.status, res.statusText);
-
-    // Si el token ha expirado, intentar refrescarlo
-    if (res.status === 401 && session?.refreshToken) {
-      console.log("Intentando refrescar el token...");
-      const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.refreshToken}`,
-        },
-      });
-
-      // Si el token se refrescó correctamente, actualizar la sesión
-      if (refreshRes.ok) {
-        const data = await refreshRes.json();
-        console.log("Nuevo access token obtenido:", data.access_token);
-        // Actualizamos la sesión con los nuevos tokens
-        session.accessToken = data.access_token;
-        session.refreshToken = data.refresh_token;
-        headers.Authorization = `Bearer ${data.access_token}`;
-        res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-      } else {
-        console.error("Fallo al refrescar el token:", refreshRes.status);
-        toast.error("Sesión expirada. Por favor, inicia sesión nuevamente.");
-        await signOut({ callbackUrl: "/login" });
-        throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+  // apiFetch envuelto en useCallback para estabilizar referencia y evitar re-renders cascading
+  const apiFetch = useCallback(
+    async <T = unknown>(
+      path: string,
+      options: RequestInit = {},
+    ): Promise<T> => {
+      // Si la sesión no está cargada, esperar
+      if (status === "loading") {
+        console.warn(
+          "⚠️ [API] apiFetch invocada mientras la sesión aún cargaba. Abortando solicitud.",
+        );
+        throw new Error(
+          "La sesión aún se está cargando. Por favor, espera un momento.",
+        );
       }
-    }
 
-    const data = await res.json();
+      const accessToken = session?.accessToken;
+      // console.log("Estado de la sesión:", status);
+      // console.log("Access Token usado:", accessToken);
 
-    // Si la respuesta no es exitosa, lanzar error
-    if (!res.ok) {
-      console.error("Error en la solicitud:", data.detail);
-      throw new Error(data.detail || "Error de red");
-    }
+      // Si no hay access token pero la sesión está autenticada, cerrar sesión
+      if (!accessToken && status === "authenticated") {
+        console.error(
+          "No access token available despite authenticated session",
+        );
+        toast.error("Sesión inválida. Por favor, inicia sesión nuevamente.");
+        await signOut({ callbackUrl: "/login" });
+        throw new Error("No access token available");
+      }
 
-    // Retornar los datos
-    return data as T;
-  };
+      // Agregar headers
+      const headers: Record<string, string> = {
+        ...((options.headers as Record<string, string>) || {}),
+        ...(options.body instanceof FormData ||
+        options.body instanceof URLSearchParams
+          ? {}
+          : { "Content-Type": "application/json" }),
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      };
+
+      let res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+      //console.log("Respuesta inicial:", res.status, res.statusText);
+
+      // Si el token ha expirado, intentar refrescarlo
+      if (res.status === 401 && session?.refreshToken) {
+        // Mutex — si ya hay un refresh en curso, esperar a que termine
+        if (!refreshPromise) {
+          refreshPromise = fetch(`${API_BASE}/auth/refresh`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.refreshToken}`,
+            },
+          })
+            .then(async (refreshRes) => {
+              if (!refreshRes.ok) {
+                throw new Error("Refresh failed");
+              }
+              return refreshRes.json();
+            })
+            .finally(() => {
+              refreshPromise = null; // Liberar mutex al completar
+            });
+        }
+
+        try {
+          const data = await refreshPromise;
+          // Actualizar sesión con los nuevos tokens
+          session.accessToken = data.access_token;
+          session.refreshToken = data.refresh_token;
+          headers.Authorization = `Bearer ${data.access_token}`;
+          res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+        } catch {
+          toast.error("Sesión expirada. Por favor, inicia sesión nuevamente.");
+          await signOut({ callbackUrl: "/login" });
+          throw new Error(
+            "Sesión expirada. Por favor, inicia sesión nuevamente.",
+          );
+        }
+      }
+
+      const data = await res.json();
+
+      // Si la respuesta no es exitosa, lanzar error
+      if (!res.ok) {
+        console.error("Error en la solicitud:", data.detail);
+        throw new Error(data.detail || "Error de red");
+      }
+
+      // Retornar los datos
+      return data as T;
+    },
+    [session, status],
+  );
 
   return apiFetch;
 }
 
-/** Utilidad get. */
-export const get = <T>(p: string) => {
-  const apiFetch = useApiFetch();
-  return apiFetch<T>(p);
-};
-
-/** Utilidad post. */
+/** Utilidad post pública (sin autenticación). */
 export const post = <T>(p: string, body: any, isForm = false) =>
   publicApiFetch<T>(p, {
     method: "POST",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -49,9 +49,31 @@ import SubscriptionBadge from "@/components/dashboard/subscription-badge";
 import { useNotifications } from "@/hooks/notification-context";
 import { useAnalysis } from "@/hooks/analysis-context";
 /****************************************************************************************************************************/
+// Constantes hoistedas fuera del componente para evitar recreación en cada render
+const PAGE_MAP: Record<string, { label: string; Icon: React.ElementType }> = {
+  dashboard: { label: "Panel de Control", Icon: LayoutDashboard },
+  upload: { label: "Subir análisis", Icon: Upload },
+  history: { label: "Historial", Icon: History },
+  stats: { label: "Estadísticas", Icon: BarChart3 },
+  calendar: { label: "Calendario", Icon: CalendarDays },
+  profile: { label: "Mi Perfil", Icon: UserCircle },
+  subscription: { label: "Suscripción", Icon: CreditCard },
+  notifications: { label: "Notificaciones", Icon: BellRing },
+  settings: { label: "Configuración", Icon: Settings2 },
+  help: { label: "Centro de ayuda", Icon: HelpCircle },
+};
+
+// Función utilitaria hoistedada fuera del componente
+const getInitials = (str = "") =>
+  str
+    .split(/\s+/)
+    .map((w) => w[0] || "")
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+/****************************************************************************************************************************/
 // Estados
-export default function DashboardNavbar() {
-  1;
+function DashboardNavbarComponent() {
   // Todos los Hooks se llaman al inicio, antes de cualquier condicional
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -75,34 +97,11 @@ export default function DashboardNavbar() {
     setIsMac(/Mac|iPhone|iPod|iPad/.test(navigator.userAgent));
   }, []);
   /****************************************************************************************************************************/
-  /** Mapa de rutas con nombre propio en español e icono por sección. */
-  const PAGE_MAP: Record<string, { label: string; Icon: React.ElementType }> = {
-    dashboard: { label: "Panel de Control", Icon: LayoutDashboard },
-    upload: { label: "Subir análisis", Icon: Upload },
-    history: { label: "Historial", Icon: History },
-    stats: { label: "Estadísticas", Icon: BarChart3 },
-    calendar: { label: "Calendario", Icon: CalendarDays },
-    profile: { label: "Mi Perfil", Icon: UserCircle },
-    subscription: { label: "Suscripción", Icon: CreditCard },
-    notifications: { label: "Notificaciones", Icon: BellRing },
-    settings: { label: "Configuración", Icon: Settings2 },
-    help: { label: "Centro de ayuda", Icon: HelpCircle },
-  };
-
-  /** Obtiene el meta de la página actual */
+  // getPageMeta usa constante hoistedada
   const getPageMeta = () => {
     const segment = pathname.split("/").pop() ?? "dashboard";
     return PAGE_MAP[segment] ?? PAGE_MAP["dashboard"];
   };
-
-  /** Obtiene las iniciales del nombre del usuario. */
-  const getInitials = (str = "") =>
-    str
-      .split(/\s+/)
-      .map((w) => w[0] || "")
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
 
   // Mientras carga.. mostramos skeleton
   if (status === "loading") {
@@ -150,13 +149,20 @@ export default function DashboardNavbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        isScrolled ? "bg-background/80 backdrop-blur-md shadow-md" : "bg-background"
+        isScrolled
+          ? "bg-background/80 backdrop-blur-md shadow-md"
+          : "bg-background"
       }`}
     >
       <div className="flex items-center justify-between px-4 h-16 border-b">
         <div className="flex items-center">
           {isMobile && (
-            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="mr-2"
+            >
               <Menu className="h-5 w-5" />
               <span className="sr-only">Abrir menú</span>
             </Button>
@@ -165,10 +171,14 @@ export default function DashboardNavbar() {
             <span className="text-xl font-bold gradient-text hidden md:inline-block">
               IAnalyticBlood
             </span>
-            <span className="text-xl font-bold gradient-text md:hidden">AB</span>
+            <span className="text-xl font-bold gradient-text md:hidden">
+              AB
+            </span>
           </Link>
           {/* Separador + título con icono de la sección activa */}
-          <span className="hidden md:inline-block mx-4 text-muted-foreground/30">|</span>
+          <span className="hidden md:inline-block mx-4 text-muted-foreground/30">
+            |
+          </span>
           <div className="hidden md:flex items-center gap-2">
             <PageIcon className="h-4 w-4 text-primary/70" />
             <span className="text-sm font-semibold text-foreground/80 tracking-tight">
@@ -273,7 +283,9 @@ export default function DashboardNavbar() {
                       switch (type) {
                         case "analysis":
                           return {
-                            icon: <FileText className="h-4 w-4 text-blue-500" />,
+                            icon: (
+                              <FileText className="h-4 w-4 text-blue-500" />
+                            ),
                             bg: "bg-blue-500/10",
                           };
                         case "health":
@@ -283,7 +295,9 @@ export default function DashboardNavbar() {
                           };
                         case "security":
                           return {
-                            icon: <ShieldCheck className="h-4 w-4 text-purple-500" />,
+                            icon: (
+                              <ShieldCheck className="h-4 w-4 text-purple-500" />
+                            ),
                             bg: "bg-purple-500/10",
                           };
                         default:
@@ -301,7 +315,9 @@ export default function DashboardNavbar() {
                         className={`p-4 hover:bg-muted/50 cursor-pointer transition-colors group flex gap-3 ${
                           !notification.read ? "bg-primary/5" : ""
                         }`}
-                        onClick={() => !notification.read && markAsRead(notification.id)}
+                        onClick={() =>
+                          !notification.read && markAsRead(notification.id)
+                        }
                       >
                         <div
                           className={`h-10 w-10 shrink-0 rounded-xl flex items-center justify-center ${meta.bg}`}
@@ -312,7 +328,9 @@ export default function DashboardNavbar() {
                           <div className="flex justify-between items-start mb-0.5">
                             <p
                               className={`font-bold text-sm truncate pr-4 ${
-                                !notification.read ? "text-foreground" : "text-muted-foreground"
+                                !notification.read
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
                               }`}
                             >
                               {notification.title}
@@ -354,7 +372,10 @@ export default function DashboardNavbar() {
                   className="w-full justify-center text-xs font-bold hover:bg-primary/5 hover:text-primary rounded-xl"
                   asChild
                 >
-                  <Link href="/dashboard/notifications" className="flex items-center gap-2">
+                  <Link
+                    href="/dashboard/notifications"
+                    className="flex items-center gap-2"
+                  >
                     Ver todas las notificaciones
                     <ArrowRight className="h-3 w-3" />
                   </Link>
@@ -369,7 +390,11 @@ export default function DashboardNavbar() {
           {/* Menú de usuario */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full relative"
+              >
                 <div className="relative">
                   <Avatar className="h-8 w-8 border border-border/50">
                     {avatar && <AvatarImage src={avatar} alt={name} />}
@@ -401,12 +426,17 @@ export default function DashboardNavbar() {
                                   ? "inset(-10% -10% -10% -10%)" // Forzamos visibilidad total al 100%
                                   : `inset(${100 - percentage}% 0% 0% 0%)`,
                             }}
-                            transition={{ type: "spring", damping: 30, stiffness: 100 }}
+                            transition={{
+                              type: "spring",
+                              damping: 30,
+                              stiffness: 100,
+                            }}
                           >
                             <Zap
                               className={cn(
                                 "h-3.5 w-3.5 text-orange-500 fill-orange-500 transition-all duration-700",
-                                percentage >= 100 && "drop-shadow-[0_0_5px_rgba(249,115,22,0.8)]",
+                                percentage >= 100 &&
+                                  "drop-shadow-[0_0_5px_rgba(249,115,22,0.8)]",
                               )}
                             />
                           </motion.div>
@@ -427,7 +457,9 @@ export default function DashboardNavbar() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{name.replace(/\b\w/g, (c) => c.toUpperCase())}</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {name.replace(/\b\w/g, (c) => c.toUpperCase())}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/profile">Perfil</Link>
@@ -450,3 +482,7 @@ export default function DashboardNavbar() {
     </header>
   );
 }
+
+// React.memo para evitar re-renders innecesarios cuando el padre re-renderiza
+const DashboardNavbar = memo(DashboardNavbarComponent);
+export default DashboardNavbar;
