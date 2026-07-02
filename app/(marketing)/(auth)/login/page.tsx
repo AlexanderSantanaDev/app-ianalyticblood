@@ -53,13 +53,21 @@ export default function LoginPage() {
       }
 
       if (result?.error) {
-        toast({ title: "Error", description: result.error, variant: "destructive" });
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        });
       } else {
         router.push("/dashboard");
         toast({ title: "¡Bienvenido!" });
       }
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -83,8 +91,12 @@ export default function LoginPage() {
         >
           <Card className="border-border shadow-xl">
             <CardHeader className="space-y-1 text-center">
-              <CardTitle className="text-2xl font-bold">Iniciar Sesión</CardTitle>
-              <CardDescription>Ingresa tus credenciales para acceder a tu cuenta</CardDescription>
+              <CardTitle className="text-2xl font-bold">
+                Iniciar Sesión
+              </CardTitle>
+              <CardDescription>
+                Ingresa tus credenciales para acceder a tu cuenta
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -107,7 +119,10 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Contraseña</Label>
-                    <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm text-primary hover:underline"
+                    >
                       ¿Olvidaste tu contraseña?
                     </Link>
                   </div>
@@ -123,20 +138,29 @@ export default function LoginPage() {
                       required
                       autoComplete="current-password"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                    {/* El icono del ojo solo se muestra cuando hay texto escrito */}
+                    {password.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="remember"
                     checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setRememberMe(checked === true)
+                    }
                   />
                   <Label htmlFor="remember" className="text-sm">
                     Recordarme
@@ -155,12 +179,18 @@ export default function LoginPage() {
                   <div className="w-full border-t border-border"></div>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">O continúa con</span>
+                  <span className="bg-card px-2 text-muted-foreground">
+                    O continúa con
+                  </span>
                 </div>
               </div>
 
               <div className="w-full">
-                <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGoogleLogin}
+                >
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

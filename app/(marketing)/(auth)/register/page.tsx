@@ -23,9 +23,13 @@ import { signIn, useSession } from "next-auth/react"; // --> Añadimos useSessio
 /***********************************************************************************************************************/
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
+  // Nuevo estado para controlar visibilidad del campo de confirmación
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Nuevo estado para la confirmación de contraseña
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   /***********************************************************************************************************************/
   // Hooks
@@ -33,8 +37,18 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const { status } = useSession(); // --> Obtenemos el estado de la sesión con useSession
 
+  /** Método para registrar usuario */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Validación de que las contraseñas coinciden antes de enviar
+    if (password !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Las contraseñas no coinciden.",
+        variant: "destructive",
+      });
+      return;
+    }
     try {
       // Crea la cuenta
       await register({
@@ -137,22 +151,66 @@ export default function RegisterPage() {
                       required
                       autoComplete="new-password"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
+                    {/* El icono del ojo solo se muestra cuando hay texto escrito */}
+                    {password.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     La contraseña debe tener al menos 8 caracteres, incluyendo
                     una letra mayúscula y un número.
                   </p>
+                </div>
+
+                {/* Nuevo bloque para confirmar la contraseña */}
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirmar contraseña</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-10"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      autoComplete="new-password"
+                    />
+                    {/* El icono del ojo solo se muestra cuando hay texto escrito */}
+                    {confirmPassword.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  {/* Mensaje visual de error si las contraseñas no coinciden */}
+                  {confirmPassword.length > 0 &&
+                    password !== confirmPassword && (
+                      <p className="text-xs text-red-500 mt-1 font-medium">
+                        Las contraseñas no coinciden.
+                      </p>
+                    )}
                 </div>
                 <div className="flex items-start space-x-2">
                   <Checkbox
