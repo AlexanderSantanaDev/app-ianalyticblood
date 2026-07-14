@@ -19,6 +19,7 @@ import { useApiFetch } from "@/lib/api/client";
 import { getAnalyses, getDashboardStats } from "@/lib/api/analysis";
 import type { AnalysisDoc } from "@/lib/api/types";
 import StatsCharts from "@/components/dashboard/stats-charts";
+import { getCached, setCached, CACHE_KEYS } from "@/lib/dashboard-cache";
 import {
   Tooltip,
   TooltipContent,
@@ -68,21 +69,28 @@ function StatsSkeleton() {
 }
 /***********************************************************************************************************************/
 export default function StatsPage() {
-  // Estados
-  const [loading, setLoading] = useState(true);
-  const hasLoadedOnce = useRef(false);
+  // Inicializado desde cache para evitar skeleton en re-mount
+  const [loading, setLoading] = useState<boolean>(
+    () =>
+      getCached<{ analyses: AnalysisDoc[]; stats: any }>(CACHE_KEYS.STATS) ===
+      null,
+  );
   const [data, setData] = useState<{
     analyses: AnalysisDoc[];
     stats: any;
-  } | null>(null);
+  } | null>(() =>
+    getCached<{ analyses: AnalysisDoc[]; stats: any }>(CACHE_KEYS.STATS),
+  );
   /****************************************************************************************************************************/
   // Hooks
   const apiFetch = useApiFetch();
   const { status } = useSession();
 
-  // Fetch Data
+  // Ref para garantizar un solo fetch por mount
+  const fetchCalledRef = useRef(false);
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && !fetchCalledRef.current) {
+      fetchCalledRef.current = true;
       fetchData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,21 +99,23 @@ export default function StatsPage() {
   // Métodos
   /** Función para obtener los datos del dashboard. */
   const fetchData = async () => {
-    setLoading(true);
+    // Silent refresh si ya hay cache — no toca loading para evitar micro-blink
+    const isSilent =
+      getCached<{ analyses: AnalysisDoc[]; stats: any }>(CACHE_KEYS.STATS) !==
+      null;
+    if (!isSilent) setLoading(true);
     try {
       const [analysesRes, statsRes] = await Promise.all([
         getAnalyses(apiFetch, 0, 50),
         getDashboardStats(apiFetch),
       ]);
-      setData({
-        analyses: analysesRes.data || [],
-        stats: statsRes,
-      });
+      const newData = { analyses: analysesRes.data || [], stats: statsRes };
+      setData(newData);
+      setCached(CACHE_KEYS.STATS, newData);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
-      hasLoadedOnce.current = true;
+      if (!isSilent) setLoading(false);
     }
   };
 
@@ -154,8 +164,8 @@ export default function StatsPage() {
     };
   }, [data]);
 
-  // Renderizado condicional — solo skeleton en carga inicial real
-  if (!hasLoadedOnce.current && (status === "loading" || loading)) {
+  // Solo skeleton si no hay datos en cache y está en primera carga
+  if (loading && !data) {
     return <StatsSkeleton />;
   }
 

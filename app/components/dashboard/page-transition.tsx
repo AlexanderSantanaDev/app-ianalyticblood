@@ -9,11 +9,11 @@ interface PageTransitionProps {
   children: ReactNode;
 }
 
-/** Variantes de animación — fade suave + leve desplazamiento vertical */
+// Animación simplificada — solo fade, sin desplazamiento vertical.
 const variants = {
-  hidden: { opacity: 0, y: 8 },
-  enter: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -4 },
+  hidden: { opacity: 0 },
+  enter: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 /****************************************************************************************************************************/
 /** Componente PageTransition. */
@@ -22,16 +22,16 @@ export default function PageTransition({ children }: PageTransitionProps) {
   /****************************************************************************************************************************/
   //JSX
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
-        key={pathname} // key = pathname fuerza remount en cada cambio de ruta
+        key={pathname}
         variants={variants}
         initial="hidden"
         animate="enter"
         exit="exit"
         transition={{
-          duration: 0.22,
-          ease: [0.25, 0.46, 0.45, 0.94], // cubic-bezier tipo iOS
+          duration: 0.15,
+          ease: "easeInOut",
         }}
         className="flex-1 flex flex-col min-h-0"
       >

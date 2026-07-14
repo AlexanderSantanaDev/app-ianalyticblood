@@ -31,6 +31,7 @@ import {
 } from "@/lib/api/analysis";
 import type { AnalysisDoc } from "@/lib/api/types";
 import { AnalysisDetailDialog } from "@/components/dashboard/analysis-detail-dialog";
+import { getCached, setCached, CACHE_KEYS } from "@/lib/dashboard-cache";
 /***********************************************************************************************************************/
 // Helpers
 /** Obtiene el color de la badge según el nivel de alerta. */
@@ -78,17 +79,16 @@ function CalendarSkeleton() {
 
 /***********************************************************************************************************************/
 export default function CalendarPage() {
-  // Estados
-  const [loading, setLoading] = useState(true);
-  const hasLoadedOnce = useRef(false);
+  // Inicializado desde cache para evitar skeleton en re-mount
+  type CalendarData = { analyses: AnalysisDoc[]; stats: DashboardStats | null };
+  const cachedCalendar = getCached<CalendarData>(CACHE_KEYS.CALENDAR);
+  const [loading, setLoading] = useState<boolean>(
+    () => cachedCalendar === null,
+  );
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [data, setData] = useState<{
-    analyses: AnalysisDoc[];
-    stats: DashboardStats | null;
-  }>({
-    analyses: [],
-    stats: null,
-  });
+  const [data, setData] = useState<CalendarData>(
+    () => cachedCalendar ?? { analyses: [], stats: null },
+  );
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(
     null,
@@ -98,9 +98,11 @@ export default function CalendarPage() {
   const apiFetch = useApiFetch();
   const { status } = useSession();
 
-  // Fetch Data
+  // Ref para garantizar un solo fetch por mount
+  const fetchCalledRef = useRef(false);
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && !fetchCalledRef.current) {
+      fetchCalledRef.current = true;
       fetchData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -109,21 +111,24 @@ export default function CalendarPage() {
   // Métodos
   /** Fetch Data */
   const fetchData = async () => {
-    setLoading(true);
+    // Silent refresh si ya hay cache — no toca loading para evitar micro-blink
+    const isSilent = getCached<CalendarData>(CACHE_KEYS.CALENDAR) !== null;
+    if (!isSilent) setLoading(true);
     try {
       const [analysesRes, statsRes] = await Promise.all([
-        getAnalyses(apiFetch, 0, 100), // Get a large chunk for the calendar
+        getAnalyses(apiFetch, 0, 100),
         getDashboardStats(apiFetch),
       ]);
-      setData({
+      const calData = {
         analyses: analysesRes.data || [],
         stats: statsRes as any,
-      });
+      };
+      setData(calData);
+      setCached(CACHE_KEYS.CALENDAR, calData);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
-      hasLoadedOnce.current = true;
+      if (!isSilent) setLoading(false);
     }
   };
 
@@ -158,8 +163,8 @@ export default function CalendarPage() {
     setDetailDialogOpen(true);
   };
 
-  // Skeleton — solo en carga inicial real
-  if (!hasLoadedOnce.current && (status === "loading" || loading)) {
+  // Solo skeleton si no hay datos en cache y está en primera carga
+  if (loading && data.analyses.length === 0) {
     return <CalendarSkeleton />;
   }
 

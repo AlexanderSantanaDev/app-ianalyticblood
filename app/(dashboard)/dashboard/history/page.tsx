@@ -35,6 +35,7 @@ import { AnalysisSummary } from "@/types/dashboard";
 import { AnalysisDetailDialog } from "@/components/dashboard/analysis-detail-dialog";
 import { downloadAnalysisAsPDF } from "@/lib/api/download-analysis";
 import { toast } from "sonner";
+import { getCached, setCached, CACHE_KEYS } from "@/lib/dashboard-cache";
 
 /***********************************************************************************************************************/
 // Helpers
@@ -115,10 +116,13 @@ function HistorySkeleton() {
 /***********************************************************************************************************************/
 // Página Principal
 export default function HistoryPage() {
-  // Estados
-  const [data, setData] = useState<AnalysisSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const hasLoadedOnce = useRef(false);
+  // Estado inicializado desde cache — si hay datos previos, loading=false desde el primer render
+  const [data, setData] = useState<AnalysisSummary[]>(
+    () => getCached<AnalysisSummary[]>(CACHE_KEYS.HISTORY) ?? [],
+  );
+  const [loading, setLoading] = useState<boolean>(
+    () => getCached<AnalysisSummary[]>(CACHE_KEYS.HISTORY) === null,
+  );
   // Filtros y ordenamiento
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "alert">("newest");
@@ -138,22 +142,29 @@ export default function HistoryPage() {
   // Fetch data
   const fetchData = async () => {
     if (status !== "authenticated") return;
-    setLoading(true);
+    // Silent refresh si ya hay cache — no toca loading para evitar micro-blink
+    const hasCachedData =
+      getCached<AnalysisSummary[]>(CACHE_KEYS.HISTORY) !== null;
+    if (!hasCachedData) setLoading(true);
     try {
-      const historyRes = await getAnalysesSummary(apiFetch, 0, 50); // Fetch hasta 50 para el historial real
+      const historyRes = await getAnalysesSummary(apiFetch, 0, 50);
       setData(historyRes);
+      setCached(CACHE_KEYS.HISTORY, historyRes);
     } catch (err: any) {
       console.error(err);
       toast.error("Error al cargar historial");
     } finally {
-      setLoading(false);
-      hasLoadedOnce.current = true;
+      if (!hasCachedData) setLoading(false);
     }
   };
 
-  // Actualiza el fetch data cuando cambia el estado de la sesión
+  // Ref para garantizar un solo fetch por mount — independientemente de cuántos
+  // cambios de status de NextAuth ocurran durante la navegación
+  const fetchCalledRef = useRef(false);
+
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && !fetchCalledRef.current) {
+      fetchCalledRef.current = true;
       fetchData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -234,8 +245,8 @@ export default function HistoryPage() {
     return result;
   }, [data, search, sortBy, filterLevel]);
 
-  // Control de carga — solo skeleton en carga inicial real
-  if (!hasLoadedOnce.current && (status === "loading" || loading)) {
+  // Solo skeleton si no hay datos en cache y está en primera carga
+  if (loading && data.length === 0) {
     return <HistorySkeleton />;
   }
   /***********************************************************************************************************************/

@@ -39,6 +39,15 @@ import { AnalysisDetailDialog } from "@/components/dashboard/analysis-detail-dia
 import StatsCharts from "@/components/dashboard/stats-charts";
 import { toast } from "sonner";
 import { downloadAnalysisAsPDF } from "@/lib/api/download-analysis";
+import { getCached, setCached, CACHE_KEYS } from "@/lib/dashboard-cache";
+
+// Tipo del snapshot de cache del dashboard
+interface DashboardSnapshot {
+  stats: DashboardStats;
+  recent: AnalysisSummary[];
+  historyData: AnalysisSummary[];
+  allAnalyses: AnalysisDoc[];
+}
 /***********************************************************************************************************************/
 /** Helper para badge de nivel de alerta. */
 function getAlertBadgeClasses(level: string) {
@@ -124,13 +133,21 @@ function DashboardSkeleton() {
 }
 /***********************************************************************************************************************/
 export default function DashboardPage() {
-  // Estados
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recent, setRecent] = useState<AnalysisSummary[]>([]);
-  const [historyData, setHistoryData] = useState<AnalysisSummary[]>([]);
-  const [allAnalyses, setAllAnalyses] = useState<AnalysisDoc[]>([]);
-  const [loading, setLoading] = useState(true);
-  const hasLoadedOnce = useRef(false);
+  // Inicializamos desde cache para evitar skeleton en re-mount por PageTransition
+  const cached = getCached<DashboardSnapshot>(CACHE_KEYS.DASHBOARD);
+  const [stats, setStats] = useState<DashboardStats | null>(
+    () => cached?.stats ?? null,
+  );
+  const [recent, setRecent] = useState<AnalysisSummary[]>(
+    () => cached?.recent ?? [],
+  );
+  const [historyData, setHistoryData] = useState<AnalysisSummary[]>(
+    () => cached?.historyData ?? [],
+  );
+  const [allAnalyses, setAllAnalyses] = useState<AnalysisDoc[]>(
+    () => cached?.allAnalyses ?? [],
+  );
+  const [loading, setLoading] = useState<boolean>(() => cached === null);
   const [activeTab, setActiveTab] = useState<"upload" | "history" | "insights">(
     "upload",
   );
@@ -143,20 +160,25 @@ export default function DashboardPage() {
   // Hooks
   const apiFetch = useApiFetch();
   const { data: session, status } = useSession();
-  // Hook para obtener los datos del dashboard
+  // Ref para garantizar un solo fetch por mount
+  const fetchCalledRef = useRef(false);
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && !fetchCalledRef.current) {
+      fetchCalledRef.current = true;
       fetchData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
   /***********************************************************************************************************************/
   // Métodos
   /** Función para obtener los datos del dashboard. */
   const fetchData = async () => {
     if (status !== "authenticated") return;
-    setLoading(true);
+    // Silent refresh si ya hay cache — no toca loading para evitar micro-blink
+    const isSilent =
+      getCached<DashboardSnapshot>(CACHE_KEYS.DASHBOARD) !== null;
+    if (!isSilent) setLoading(true);
     try {
-      // Traemos datos para recientes (3), historial (20) y todas para stats (50)
       const [statsRes, recentRes, historyRes, allRes] = await Promise.all([
         getDashboardStats(apiFetch),
         getAnalysesSummary(apiFetch, 0, 3),
@@ -167,11 +189,16 @@ export default function DashboardPage() {
       setRecent(recentRes);
       setHistoryData(historyRes);
       setAllAnalyses(allRes.data);
+      setCached<DashboardSnapshot>(CACHE_KEYS.DASHBOARD, {
+        stats: statsRes,
+        recent: recentRes,
+        historyData: historyRes,
+        allAnalyses: allRes.data,
+      });
     } catch (err: any) {
       console.error(err);
     } finally {
-      setLoading(false);
-      hasLoadedOnce.current = true;
+      if (!isSilent) setLoading(false);
     }
   };
 
@@ -207,9 +234,8 @@ export default function DashboardPage() {
     return "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100";
   }, [stats]);
 
-  // Loading — solo mostramos skeleton en la carga inicial real,
-  // nunca cuando NextAuth refresca la sesión tras navegación
-  if (!hasLoadedOnce.current && (status === "loading" || loading)) {
+  // Solo skeleton si no hay datos en cache y aun está cargando la primera vez
+  if (loading && !stats) {
     return <DashboardSkeleton />;
   }
 

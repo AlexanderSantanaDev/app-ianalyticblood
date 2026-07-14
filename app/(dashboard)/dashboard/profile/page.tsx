@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
@@ -10,21 +10,19 @@ import { toast } from "sonner";
 import {
   User,
   HeartPulse,
-  Lock,
   Camera,
   Mail,
   Smartphone,
-  ShieldCheck,
   Activity,
   Droplet,
   Save,
   LogOut,
-  AlertCircle,
   Info,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useUserApi } from "@/lib/api/user";
 import { User as UserType } from "@/lib/api/types";
+import { getCached, setCached, CACHE_KEYS } from "@/lib/dashboard-cache";
 
 import {
   Card,
@@ -77,29 +75,37 @@ export default function ProfilePage() {
   // Restaurada la sesión y useUserApi para integración real
   const { data: session, status } = useSession();
   const { getMe } = useUserApi();
-  const [profile, setProfile] = useState<UserType | null>(null);
+  // Inicializado desde cache para evitar skeleton en re-mount
+  const [profile, setProfile] = useState<UserType | null>(() =>
+    getCached<UserType>(CACHE_KEYS.PROFILE),
+  );
   const [activeTab, setActiveTab] = useState<TabValue>("account");
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-  const hasLoadedOnce = useRef(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(
+    () => getCached<UserType>(CACHE_KEYS.PROFILE) === null,
+  );
 
   useEffect(() => {
     const fetchProfile = async () => {
+      // Silent refresh si ya hay cache — no toca loading para evitar micro-blink
+      const isSilent = getCached<UserType>(CACHE_KEYS.PROFILE) !== null;
+      if (!isSilent) setIsLoadingProfile(true);
       try {
         const data = await getMe();
         setProfile(data);
+        setCached(CACHE_KEYS.PROFILE, data);
       } catch (error) {
         console.error("Error al cargar perfil:", error);
-        toast.error("No se pudo cargar la información del perfil.");
+        if (!isSilent)
+          toast.error("No se pudo cargar la información del perfil.");
       } finally {
-        setIsLoadingProfile(false);
-        hasLoadedOnce.current = true;
+        if (!isSilent) setIsLoadingProfile(false);
       }
     };
     fetchProfile();
   }, []);
 
-  // Skeleton de carga — solo en carga inicial real
-  if (!hasLoadedOnce.current && (status === "loading" || isLoadingProfile)) {
+  // Solo skeleton si no hay datos en cache y está en primera carga
+  if (isLoadingProfile && !profile) {
     return <ProfileSkeleton />;
   }
 
@@ -598,9 +604,6 @@ function HealthTab({
     </motion.div>
   );
 }
-
-/***********************************************************************************************************************/
-
 /***********************************************************************************************************************/
 /** Skeleton General. */
 function ProfileSkeleton() {

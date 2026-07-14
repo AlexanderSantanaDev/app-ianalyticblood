@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,7 +17,6 @@ import {
   XCircle,
   RefreshCw,
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   BarChart3,
@@ -460,7 +459,6 @@ export default function AdminPage() {
   const [loadingMetrics, setLoadingMetrics] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingHealth, setLoadingHealth] = useState(true);
-  const hasLoadedOnce = useRef(false);
   const [activeTab, setActiveTab] = useState<
     "overview" | "users" | "analytics"
   >("overview");
@@ -485,7 +483,6 @@ export default function AdminPage() {
       toast.error("No se pudieron cargar las métricas del panel.");
     } finally {
       setLoadingMetrics(false);
-      hasLoadedOnce.current = true;
     }
   }, [token]);
 
@@ -538,14 +535,10 @@ export default function AdminPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  // Loading state — solo en carga inicial real
-  if (!hasLoadedOnce.current && status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <RefreshCw className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
-  }
+  // Guard simplificado — el middleware garantiza autenticación,
+  // el isAdmin guard de abajo maneja el acceso. Eliminamos el spinner de status='loading'
+  // que causaba el parpadeo en cada navegación
+  if (status !== "authenticated") return null;
 
   // Guard cliente
   if (!isAdmin) return null;
