@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
@@ -48,10 +54,16 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
   },
 ];
 /** Contexto de Notificaciones. */
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined,
+);
 
 /** Proveedor de Notificaciones. */
-export function NotificationProvider({ children }: { children: React.ReactNode }) {
+export function NotificationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const { status } = useSession(); // 🛡️ Verificamos si realmente tiene sesión activa
@@ -78,15 +90,24 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   // Persistencia automática cada vez que cambien las notificaciones
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem("ianalytic_notifications", JSON.stringify(notifications));
+      localStorage.setItem(
+        "ianalytic_notifications",
+        JSON.stringify(notifications),
+      );
     }
   }, [notifications, isLoaded]);
 
+  const alertScheduledRef = useRef(false);
+
   // Sistema de seguridad dinámico (detecta OS real y ubicación, solo si hace login)
   useEffect(() => {
-    if (isLoaded && status === "authenticated") {
+    if (isLoaded && status === "authenticated" && !alertScheduledRef.current) {
       const hasSessionAlert = sessionStorage.getItem("ianalytic_session_alert");
       if (!hasSessionAlert) {
+        alertScheduledRef.current = true;
+        // Marca inmediatamente en sessionStorage para evitar múltiples ejecuciones
+        sessionStorage.setItem("ianalytic_session_alert", "true");
+
         // Detección dinámica del entorno en lugar de mocks
         const ua = navigator.userAgent;
         let os = "un dispositivo nuevo";
@@ -112,7 +133,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             description: `Se ha detectado un acceso desde ${os} cerca de ${loc}. Si no has sido tú, revisa tu seguridad en las preferencias de cuenta.`,
             priority: "high",
           });
-          sessionStorage.setItem("ianalytic_session_alert", "true");
         }, 3000); // 3 segundos después de entrar al dashboard
       }
     }
@@ -144,12 +164,16 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   /** Marcar una como leída. */
   const markAsRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+    );
   };
 
   /** Alternar estado de lectura. */
   const toggleRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)));
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)),
+    );
   };
 
   /** Eliminar una notificación. */
@@ -194,7 +218,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 export function useNotifications() {
   const context = useContext(NotificationContext);
   if (context === undefined) {
-    throw new Error("useNotifications must be used within a NotificationProvider");
+    throw new Error(
+      "useNotifications must be used within a NotificationProvider",
+    );
   }
   return context;
 }

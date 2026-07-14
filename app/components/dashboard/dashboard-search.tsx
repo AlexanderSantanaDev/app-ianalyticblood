@@ -203,7 +203,10 @@ const RECENT_ITEMS: SearchItem[] = [
 ];
 
 /****************************************************************************************************************************/
-export default function DashboardSearch({ open, onOpenChange }: DashboardSearchProps) {
+export default function DashboardSearch({
+  open,
+  onOpenChange,
+}: DashboardSearchProps) {
   const router = useRouter();
   const { unreadCount } = useNotifications();
   const [query, setQuery] = useState("");
@@ -356,7 +359,7 @@ export default function DashboardSearch({ open, onOpenChange }: DashboardSearchP
             placeholder="Busca secciones, análisis o acciones..."
             autoFocus
             className={cn(
-              "flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50",
+              "flex-1 bg-transparent text-base sm:text-sm text-foreground placeholder:text-muted-foreground/50",
               "outline-none border-none ring-0 focus:ring-0 focus:outline-none",
               "tracking-tight",
             )}
@@ -384,7 +387,9 @@ export default function DashboardSearch({ open, onOpenChange }: DashboardSearchP
               <div className="w-12 h-12 rounded-2xl bg-muted/50 flex items-center justify-center mb-3">
                 <Search className="h-5 w-5 text-muted-foreground/40" />
               </div>
-              <p className="text-sm font-semibold text-foreground/60">Sin resultados</p>
+              <p className="text-sm font-semibold text-foreground/60">
+                Sin resultados
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 No encontramos nada para &quot;{query}&quot;
               </p>
@@ -549,7 +554,9 @@ const SearchResultItem = forwardRef<
         <Icon
           className={cn(
             "h-4 w-4 transition-colors duration-150",
-            isFocused ? "text-primary/70" : "text-muted-foreground/60 group-hover:text-primary/70",
+            isFocused
+              ? "text-primary/70"
+              : "text-muted-foreground/60 group-hover:text-primary/70",
           )}
         />
       </div>
@@ -560,7 +567,9 @@ const SearchResultItem = forwardRef<
           <span
             className={cn(
               "text-sm font-medium truncate transition-colors",
-              isFocused ? "text-foreground" : "text-foreground/80 group-hover:text-foreground",
+              isFocused
+                ? "text-foreground"
+                : "text-foreground/80 group-hover:text-foreground",
             )}
           >
             {item.label}
