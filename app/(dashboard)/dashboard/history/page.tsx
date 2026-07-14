@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -118,6 +118,7 @@ export default function HistoryPage() {
   // Estados
   const [data, setData] = useState<AnalysisSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasLoadedOnce = useRef(false);
   // Filtros y ordenamiento
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "alert">("newest");
@@ -146,6 +147,7 @@ export default function HistoryPage() {
       toast.error("Error al cargar historial");
     } finally {
       setLoading(false);
+      hasLoadedOnce.current = true;
     }
   };
 
@@ -232,8 +234,8 @@ export default function HistoryPage() {
     return result;
   }, [data, search, sortBy, filterLevel]);
 
-  // Control de carga
-  if (status === "loading" || loading) {
+  // Control de carga — solo skeleton en carga inicial real
+  if (!hasLoadedOnce.current && (status === "loading" || loading)) {
     return <HistorySkeleton />;
   }
   /***********************************************************************************************************************/

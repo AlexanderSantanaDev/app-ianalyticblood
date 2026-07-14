@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
@@ -70,6 +70,7 @@ function StatsSkeleton() {
 export default function StatsPage() {
   // Estados
   const [loading, setLoading] = useState(true);
+  const hasLoadedOnce = useRef(false);
   const [data, setData] = useState<{
     analyses: AnalysisDoc[];
     stats: any;
@@ -104,6 +105,7 @@ export default function StatsPage() {
       console.error(err);
     } finally {
       setLoading(false);
+      hasLoadedOnce.current = true;
     }
   };
 
@@ -152,8 +154,8 @@ export default function StatsPage() {
     };
   }, [data]);
 
-  // Renderizado condicional
-  if (status === "loading" || loading) {
+  // Renderizado condicional — solo skeleton en carga inicial real
+  if (!hasLoadedOnce.current && (status === "loading" || loading)) {
     return <StatsSkeleton />;
   }
 

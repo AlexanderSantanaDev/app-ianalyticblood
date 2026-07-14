@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isSameDay, startOfDay } from "date-fns";
@@ -80,6 +80,7 @@ function CalendarSkeleton() {
 export default function CalendarPage() {
   // Estados
   const [loading, setLoading] = useState(true);
+  const hasLoadedOnce = useRef(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [data, setData] = useState<{
     analyses: AnalysisDoc[];
@@ -122,6 +123,7 @@ export default function CalendarPage() {
       console.error(err);
     } finally {
       setLoading(false);
+      hasLoadedOnce.current = true;
     }
   };
 
@@ -156,8 +158,8 @@ export default function CalendarPage() {
     setDetailDialogOpen(true);
   };
 
-  // Skeleton
-  if (status === "loading" || loading) {
+  // Skeleton — solo en carga inicial real
+  if (!hasLoadedOnce.current && (status === "loading" || loading)) {
     return <CalendarSkeleton />;
   }
 

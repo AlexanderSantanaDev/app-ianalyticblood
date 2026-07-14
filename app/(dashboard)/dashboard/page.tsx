@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -130,6 +130,7 @@ export default function DashboardPage() {
   const [historyData, setHistoryData] = useState<AnalysisSummary[]>([]);
   const [allAnalyses, setAllAnalyses] = useState<AnalysisDoc[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasLoadedOnce = useRef(false);
   const [activeTab, setActiveTab] = useState<"upload" | "history" | "insights">(
     "upload",
   );
@@ -170,6 +171,7 @@ export default function DashboardPage() {
       console.error(err);
     } finally {
       setLoading(false);
+      hasLoadedOnce.current = true;
     }
   };
 
@@ -205,8 +207,9 @@ export default function DashboardPage() {
     return "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100";
   }, [stats]);
 
-  // Loading
-  if (status === "loading" || loading) {
+  // Loading — solo mostramos skeleton en la carga inicial real,
+  // nunca cuando NextAuth refresca la sesión tras navegación
+  if (!hasLoadedOnce.current && (status === "loading" || loading)) {
     return <DashboardSkeleton />;
   }
 

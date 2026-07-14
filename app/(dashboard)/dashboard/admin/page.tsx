@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -460,6 +460,7 @@ export default function AdminPage() {
   const [loadingMetrics, setLoadingMetrics] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingHealth, setLoadingHealth] = useState(true);
+  const hasLoadedOnce = useRef(false);
   const [activeTab, setActiveTab] = useState<
     "overview" | "users" | "analytics"
   >("overview");
@@ -484,6 +485,7 @@ export default function AdminPage() {
       toast.error("No se pudieron cargar las métricas del panel.");
     } finally {
       setLoadingMetrics(false);
+      hasLoadedOnce.current = true;
     }
   }, [token]);
 
@@ -536,8 +538,8 @@ export default function AdminPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  // Loading state
-  if (status === "loading") {
+  // Loading state — solo en carga inicial real
+  if (!hasLoadedOnce.current && status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <RefreshCw className="h-6 w-6 animate-spin text-primary" />

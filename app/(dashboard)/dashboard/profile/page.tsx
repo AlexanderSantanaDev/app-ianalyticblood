@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
@@ -80,6 +80,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserType | null>(null);
   const [activeTab, setActiveTab] = useState<TabValue>("account");
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -91,13 +92,14 @@ export default function ProfilePage() {
         toast.error("No se pudo cargar la información del perfil.");
       } finally {
         setIsLoadingProfile(false);
+        hasLoadedOnce.current = true;
       }
     };
     fetchProfile();
   }, []);
 
-  // Skeleton de carga
-  if (status === "loading" || isLoadingProfile) {
+  // Skeleton de carga — solo en carga inicial real
+  if (!hasLoadedOnce.current && (status === "loading" || isLoadingProfile)) {
     return <ProfileSkeleton />;
   }
 
