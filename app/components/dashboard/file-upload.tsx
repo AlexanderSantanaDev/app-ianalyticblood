@@ -130,7 +130,7 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* Loader overlay más premium con BARRA DE PROGRESO */}
+      {/* Loader overlay más con BARRA DE PROGRESO */}
       <AnimatePresence>
         {isAnalyzing && (
           <motion.div

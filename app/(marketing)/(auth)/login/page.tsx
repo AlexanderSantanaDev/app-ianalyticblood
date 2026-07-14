@@ -103,7 +103,7 @@ export default function LoginPage() {
         });
         setIsSubmitting(false);
       } else {
-        // Feedback visual premium, el toast se ve antes de redirigir
+        // Feedback visual, el toast se ve antes de redirigir
         toast({
           title: "¡Bienvenido de nuevo! 👋",
           description: "Entrando al dashboard...",

@@ -261,7 +261,7 @@ export async function downloadAnalysisAsPDF(data: AnalysisDoc) {
 
 /** Imprime el informe (usando el mismo diseño) */
 export function printAnalysis(data: AnalysisDoc) {
-  // Reutilización del mismo template premium para imprimir
+  // Reutilización del mismo template para imprimir
   const html = getTemplateHTML(data);
   const win = window.open("", "_blank");
   if (!win) return;

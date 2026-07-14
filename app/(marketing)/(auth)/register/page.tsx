@@ -55,7 +55,7 @@ export default function RegisterPage() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevenir doble submit
 
-  // Validadores dinámicos para feedback visual premium
+  // Validadores dinámicos para feedback visual
   const isLengthValid = password.length >= 8;
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
@@ -117,7 +117,7 @@ export default function RegisterPage() {
         description: "Inicia sesión para continuar",
       });
 
-      // Dejamos un margen de tiempo para que el usuario lea el toast premium antes de redirigir
+      // Dejamos un margen de tiempo para que el usuario lea el toast antes de redirigir
       setTimeout(() => {
         router.push("/login");
       }, 1500);
@@ -207,7 +207,7 @@ export default function RegisterPage() {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      // Feedback visual premium en el input (bordes verdes o rojos dinámicos)
+                      // Feedback visual en el input (bordes verdes o rojos dinámicos)
                       className={`pl-10 transition-colors ${
                         password.length > 0
                           ? isPasswordValid
@@ -235,7 +235,7 @@ export default function RegisterPage() {
                       </button>
                     )}
                   </div>
-                  {/* Lista de validación dinámica premium */}
+                  {/* Lista de validación dinámica */}
                   <div className="space-y-1 mt-2 p-3 bg-muted/50 rounded-lg border border-border/50">
                     <p className="text-xs font-medium text-foreground mb-2">
                       Requisitos de contraseña:

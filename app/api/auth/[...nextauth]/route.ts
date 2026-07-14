@@ -7,7 +7,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { publicApiFetch } from "@/lib/api/client";
 /***********************************************************************************************************************/
-/* Extend User type to include accessToken, refreshToken, and provider */
+/* Extend User type to include accessToken, refreshToken, provider, role */
 declare module "next-auth" {
   interface User {
     accessToken?: string;
@@ -15,6 +15,8 @@ declare module "next-auth" {
     provider?: string;
     plan?: string;
     analysis_count?: number;
+    // Campo role para control de acceso al panel de admin
+    role?: "user" | "admin";
   }
   interface Session {
     accessToken?: string;
@@ -22,6 +24,8 @@ declare module "next-auth" {
     user: {
       plan?: string;
       analysis_count?: number;
+      // Role expuesto en la sesión de cliente para condicionar UI
+      role?: "user" | "admin";
     } & DefaultSession["user"];
   }
 }
@@ -106,12 +110,15 @@ const authOptions: NextAuthOptions = {
           provider: "credentials",
           plan: data.plan || "free",
           analysis_count: data.analysis_count || 0,
+          // Guardamos el rol devuelto por el backend en el token JWT
+          role: (data.role as "user" | "admin") || "user",
         } as User & {
           accessToken: string;
           refreshToken: string;
           provider: string;
           plan: string;
           analysis_count: number;
+          role: "user" | "admin";
         };
       },
     }),
@@ -157,7 +164,9 @@ const authOptions: NextAuthOptions = {
             access_token: string;
             refresh_token: string;
             plan?: string;
-            analysis_count?: number; // Tipado del contador en Google Auth
+            analysis_count?: number;
+            // Role incluido en la respuesta del backend de Google — necesario para el admin panel
+            role?: "user" | "admin";
           }>("/auth/google", {
             method: "POST",
             body: JSON.stringify({
@@ -166,7 +175,6 @@ const authOptions: NextAuthOptions = {
               picture: user.image,
               provider: "google",
             }),
-            // Inyectamos la URL corregida para evitar el error de fetch failed
             headers: { "x-api-url-override": apiUrl },
           });
 
@@ -178,7 +186,9 @@ const authOptions: NextAuthOptions = {
             user.refreshToken = res.refresh_token;
             user.provider = "google";
             user.plan = res.plan || "free";
-            user.analysis_count = res.analysis_count || 0; // Guardamos contador desde Google login
+            user.analysis_count = res.analysis_count || 0;
+            // Role guardado desde Google login — el backend ya lo devuelve en _make_tokens
+            user.role = res.role || "user";
             return true;
           }
 
@@ -247,7 +257,9 @@ const authOptions: NextAuthOptions = {
         token.refreshToken = user.refreshToken;
         token.provider = user.provider;
         token.plan = user.plan;
-        token.analysis_count = user.analysis_count; // Inicializar contador en el token
+        token.analysis_count = user.analysis_count;
+        // Rol guardado en el JWT — fuente de verdad para AuthZ en el frontend
+        token.role = user.role || "user";
       }
 
       if (account?.provider === "google" && account.access_token) {
@@ -275,7 +287,9 @@ const authOptions: NextAuthOptions = {
         email: token.email,
         image: token.picture ?? null,
         plan: token.plan as string | undefined,
-        analysis_count: token.analysis_count as number | undefined, // Exponer contador a la sesión cliente
+        analysis_count: token.analysis_count as number | undefined,
+        // Role expuesto en sesión de cliente para renderizado condicional de UI admin
+        role: (token.role as "user" | "admin") ?? "user",
       };
       session.accessToken = token.accessToken as string | undefined;
       session.refreshToken = token.refreshToken as string | undefined;

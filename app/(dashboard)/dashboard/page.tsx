@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -124,10 +130,14 @@ export default function DashboardPage() {
   const [historyData, setHistoryData] = useState<AnalysisSummary[]>([]);
   const [allAnalyses, setAllAnalyses] = useState<AnalysisDoc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"upload" | "history" | "insights">("upload");
+  const [activeTab, setActiveTab] = useState<"upload" | "history" | "insights">(
+    "upload",
+  );
   // Estados para el dialog de detalle
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null);
+  const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(
+    null,
+  );
   /***********************************************************************************************************************/
   // Hooks
   const apiFetch = useApiFetch();
@@ -239,11 +249,15 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center">
-                    <div className="text-4xl font-bold mr-4">{stats?.analyses_total ?? 0}</div>
+                    <div className="text-4xl font-bold mr-4">
+                      {stats?.analyses_total ?? 0}
+                    </div>
                     <div className="text-sm text-muted-foreground">
                       {stats?.analyses_this_month ? (
                         <div className="flex items-center text-green-600">
-                          <span className="mr-1">+{stats.analyses_this_month}</span>
+                          <span className="mr-1">
+                            +{stats.analyses_this_month}
+                          </span>
                           <span>este mes</span>
                         </div>
                       ) : (
@@ -299,7 +313,9 @@ export default function DashboardPage() {
             >
               <Card className="hover:shadow-lg transition-shadow duration-300">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Próximo recordatorio</CardTitle>
+                  <CardTitle className="text-lg">
+                    Próximo recordatorio
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center">
@@ -309,7 +325,9 @@ export default function DashboardPage() {
                     <div>
                       <div className="font-medium">
                         {stats?.next_reminder
-                          ? new Date(stats.next_reminder).toLocaleDateString("es-ES")
+                          ? new Date(stats.next_reminder).toLocaleDateString(
+                              "es-ES",
+                            )
                           : "—"}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -325,7 +343,11 @@ export default function DashboardPage() {
           </div>
 
           {/* Tabs con contenido mejorado */}
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-8">
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => setActiveTab(v as any)}
+            className="mb-8"
+          >
             <TabsList
               className="flex w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] 
             [scrollbar-width:none] justify-start sm:grid sm:grid-cols-3 h-auto p-1 bg-muted rounded-xl mb-8"
@@ -355,7 +377,9 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Subir nuevo análisis</CardTitle>
-                  <CardDescription>PDF o imagen - extracción automática con IA 🧠</CardDescription>
+                  <CardDescription>
+                    PDF o imagen - extracción automática con IA 🧠
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <FileUpload onUpload={handleFileUpload} />
@@ -387,22 +411,28 @@ export default function DashboardPage() {
                                 <div className="min-w-0">
                                   <CardTitle className="text-base">
                                     Análisis{" "}
-                                    {new Date(analysis.date).toLocaleDateString("es-ES", {
-                                      day: "numeric",
-                                      month: "short",
-                                      year: "numeric",
-                                    })}
+                                    {new Date(analysis.date).toLocaleDateString(
+                                      "es-ES",
+                                      {
+                                        day: "numeric",
+                                        month: "short",
+                                        year: "numeric",
+                                      },
+                                    )}
                                   </CardTitle>
                                   {/* Fecha relativa */}
                                   <CardDescription className="text-xs mt-0.5">
-                                    {new Date(analysis.date).toLocaleTimeString("es-ES", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
+                                    {new Date(analysis.date).toLocaleTimeString(
+                                      "es-ES",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      },
+                                    )}
                                   </CardDescription>
                                 </div>
                               </div>
-                              {/* Badge premium */}
+                              {/* Badge */}
                               <span
                                 className={`px-2.5 py-1 rounded-full text-[11px] font-semibold 
                                   flex-shrink-0 ${getAlertBadgeClasses(analysis.alert_level)}`}
@@ -426,7 +456,9 @@ export default function DashboardPage() {
                               >
                                 <Eye className="h-4 w-4 sm:mr-1.5" />
                                 <span className="sm:hidden ml-1">Ver</span>
-                                <span className="hidden sm:inline">Ver detalles</span>
+                                <span className="hidden sm:inline">
+                                  Ver detalles
+                                </span>
                               </Button>
                               <Button
                                 variant="outline"
@@ -436,7 +468,9 @@ export default function DashboardPage() {
                               >
                                 <Download className="h-4 w-4 sm:mr-1.5" />
                                 <span className="sm:hidden ml-1">PDF</span>
-                                <span className="hidden sm:inline">Descargar</span>
+                                <span className="hidden sm:inline">
+                                  Descargar
+                                </span>
                               </Button>
                             </div>
                           </CardContent>
@@ -447,7 +481,9 @@ export default function DashboardPage() {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed rounded-lg">
                     <Inbox className="w-10 h-10 mb-4 text-muted-foreground" />
-                    <p className="font-medium">Todavía no hay análisis recientes</p>
+                    <p className="font-medium">
+                      Todavía no hay análisis recientes
+                    </p>
                     <p className="text-muted-foreground text-sm mt-2">
                       Cuando subas tu primer archivo, aparecerá aquí.
                     </p>
@@ -489,7 +525,9 @@ export default function DashboardPage() {
                                   <div className="flex justify-between sm:justify-start items-center gap-3">
                                     <h4 className="font-bold text-base sm:text-lg group-hover:text-primary transition-colors">
                                       Análisis{" "}
-                                      {new Date(analysis.date).toLocaleDateString("es-ES", {
+                                      {new Date(
+                                        analysis.date,
+                                      ).toLocaleDateString("es-ES", {
                                         day: "numeric",
                                         month: "long",
                                         year: "numeric",
@@ -506,10 +544,13 @@ export default function DashboardPage() {
 
                                   <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1 sm:mt-0.5">
                                     <Clock className="h-3 w-3" />
-                                    {new Date(analysis.date).toLocaleTimeString("es-ES", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
+                                    {new Date(analysis.date).toLocaleTimeString(
+                                      "es-ES",
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      },
+                                    )}
                                   </p>
                                 </div>
 
@@ -518,12 +559,16 @@ export default function DashboardPage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleViewDetails(analysis.id)}
+                                    onClick={() =>
+                                      handleViewDetails(analysis.id)
+                                    }
                                     className="flex-1 sm:flex-none h-10 sm:h-9 px-4 hover:border-primary/50 hover:text-primary transition-all"
                                   >
                                     <Eye className="h-4 w-4 sm:mr-2" />
                                     <span className="sm:hidden ml-1">Ver</span>
-                                    <span className="hidden sm:inline">Ver detalle</span>
+                                    <span className="hidden sm:inline">
+                                      Ver detalle
+                                    </span>
                                   </Button>
                                   <Button
                                     variant="outline"
@@ -533,7 +578,9 @@ export default function DashboardPage() {
                                   >
                                     <Download className="h-4 w-4 sm:mr-2" />
                                     <span className="sm:hidden ml-1">PDF</span>
-                                    <span className="hidden sm:inline">Descargar</span>
+                                    <span className="hidden sm:inline">
+                                      Descargar
+                                    </span>
                                   </Button>
                                 </div>
                               </div>
@@ -582,8 +629,9 @@ export default function DashboardPage() {
                         Vista Rápida de Tendencias
                       </h3>
                       <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-                        Aquí puedes ver la evolución básica de tus biomarcadores. Para un desglose
-                        completo, cálculo de tu Índice Vital y estado clínico, visita la sección
+                        Aquí puedes ver la evolución básica de tus
+                        biomarcadores. Para un desglose completo, cálculo de tu
+                        Índice Vital y estado clínico, visita la sección
                         dedicada.
                       </p>
                     </div>
@@ -591,7 +639,9 @@ export default function DashboardPage() {
                       asChild
                       className="shrink-0 gradient-bg border-none shadow-md shadow-primary/20 hover:opacity-90"
                     >
-                      <Link href="/dashboard/stats">Ver todas las estadísticas</Link>
+                      <Link href="/dashboard/stats">
+                        Ver todas las estadísticas
+                      </Link>
                     </Button>
                   </div>
                   <StatsCharts analyses={allAnalyses} />

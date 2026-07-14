@@ -188,7 +188,7 @@ function DashboardNavbarComponent() {
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Buscador desktop — abre el command palette premium al hacer click */}
+          {/* Buscador desktop — abre el command palette al hacer click */}
           {!isMobile && (
             <button
               onClick={() => setIsSearchOpen(true)}
@@ -225,7 +225,7 @@ function DashboardNavbarComponent() {
             </Button>
           )}
 
-          {/* Command Palette premium — unificado para desktop y móvil */}
+          {/* Command Palette — unificado para desktop y móvil */}
           <DashboardSearch open={isSearchOpen} onOpenChange={setIsSearchOpen} />
 
           {/* Indicador Global de Análisis (IA) */}

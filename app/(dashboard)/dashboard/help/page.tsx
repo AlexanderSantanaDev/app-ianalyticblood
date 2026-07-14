@@ -6,7 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import HelpCategories from "@/components/dashboard/help-categories";
 import HelpFAQ from "@/components/dashboard/help-faq";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { useChat } from "@/hooks/use-chat";
 /***********************************************************************************************************************/
 export default function HelpPage() {
@@ -35,8 +41,8 @@ export default function HelpPage() {
             transition={{ delay: 0.1 }}
             className="text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed"
           >
-            Busca en nuestra base de conocimientos o explora las categorías para resolver tus dudas
-            rápidamente.
+            Busca en nuestra base de conocimientos o explora las categorías para
+            resolver tus dudas rápidamente.
           </motion.p>
 
           <motion.div
@@ -61,7 +67,9 @@ export default function HelpPage() {
       {/* Categorías modulares */}
       <section className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold tracking-tight">Explorar por categorías</h2>
+          <h2 className="text-xl font-bold tracking-tight">
+            Explorar por categorías
+          </h2>
         </div>
         <HelpCategories />
       </section>
@@ -83,8 +91,9 @@ export default function HelpPage() {
               <CardTitle className="text-xl">Pregunta a nuestra IA</CardTitle>
             </div>
             <CardDescription className="max-w-md">
-              Nuestra IA no solo analiza informes, también puede ayudarte a entender cómo funciona
-              iAnalytic Blood. Prueba a consultarle cualquier duda técnica.
+              Nuestra IA no solo analiza informes, también puede ayudarte a
+              entender cómo funciona iAnalytic Blood. Prueba a consultarle
+              cualquier duda técnica.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -104,10 +113,12 @@ export default function HelpPage() {
         <HelpFAQ />
       </section>
 
-      {/* Sección de contacto directo premium */}
+      {/* Sección de contacto directo */}
       <section className="text-center space-y-8 py-10">
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold tracking-tight">¿Aún necesitas ayuda?</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            ¿Aún necesitas ayuda?
+          </h2>
           <p className="text-muted-foreground">
             Estamos aquí para apoyarte en cada paso de tu salud.
           </p>

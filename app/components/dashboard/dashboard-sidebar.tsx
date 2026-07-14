@@ -14,9 +14,11 @@ import {
   Bell,
   HelpCircle,
   Lock,
+  ShieldCheck, // Icono para el acceso admin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlanStatusCard } from "./plan-status-card";
+import { useSession } from "next-auth/react"; // Necesario para leer el role del usuario
 import {
   Sidebar,
   SidebarContent,
@@ -95,6 +97,9 @@ function DashboardSidebarComponent() {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const { unreadCount } = useNotifications();
+  // Obtenemos el role del usuario para mostrar la opción de admin solo a los administradores
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
 
   /** Verifica si la ruta está activa */
   const isActive = (path: string) => {
@@ -213,6 +218,51 @@ function DashboardSidebarComponent() {
             );
           })}
         </SidebarMenu>
+
+        {/* Sección de administrador — solo visible para usuarios con role=admin */}
+        {isAdmin && (
+          <>
+            <SidebarSeparator className="my-2 bg-amber-500/20 border-0 h-px" />
+            <div className="px-3 mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500/70">
+                Administración
+              </span>
+            </div>
+            <SidebarMenu className="gap-1">
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith("/dashboard/admin")}
+                  tooltip="Panel de Administración"
+                  className="h-11 rounded-xl transition-all duration-200"
+                >
+                  <Link
+                    href="/dashboard/admin"
+                    onClick={() => {
+                      if (isMobile) setOpenMobile(false);
+                    }}
+                    className={cn(
+                      "flex items-center gap-3 px-3 transition-all duration-300 group",
+                      pathname.startsWith("/dashboard/admin")
+                        ? "bg-amber-500/15 text-amber-400 font-bold border-l-2 border-amber-500"
+                        : "text-sidebar-foreground/70 hover:text-amber-400 hover:bg-amber-500/10",
+                    )}
+                  >
+                    <ShieldCheck
+                      className={cn(
+                        "h-4.5 w-4.5 shrink-0 transition-all duration-300",
+                        pathname.startsWith("/dashboard/admin")
+                          ? "text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.7)]"
+                          : "text-sidebar-foreground/50 group-hover:text-amber-400 group-hover:scale-110",
+                      )}
+                    />
+                    <span className="tracking-tight text-sm">Admin Panel</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </>
+        )}
       </SidebarContent>
 
       {/* Separador con glow sutil de marca */}
@@ -243,7 +293,7 @@ function DashboardSidebarComponent() {
           </SidebarMenuItem>
         </SidebarMenu>
 
-        {/* Badge de versión premium al fondo del sidebar */}
+        {/* Badge de versión al fondo del sidebar */}
         <div className="mx-2 px-3 py-2 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between">
           <span className="text-[10px] font-semibold text-sidebar-foreground/40 tracking-widest uppercase">
             iAnalytic Blood

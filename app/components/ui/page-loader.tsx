@@ -33,7 +33,7 @@ export function PageLoader() {
           className="absolute w-20 h-20 rounded-full bg-secondary/10 blur-xl"
         />
 
-        {/* Caja principal del icono con Glassmorphism premium */}
+        {/* Caja principal del icono con Glassmorphism */}
         <motion.div
           animate={{
             scale: [1, 1.05, 1],

@@ -5,7 +5,11 @@ import { Zap, Crown, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 /***********************************************************************************************************************/
-export default function SubscriptionBadge({ className }: { className?: string }) {
+export default function SubscriptionBadge({
+  className,
+}: {
+  className?: string;
+}) {
   // Hooks
   const { data: session } = useSession();
   const plan = session?.user?.plan || "free";
@@ -33,14 +37,16 @@ export default function SubscriptionBadge({ className }: { className?: string })
             <Zap
               className={cn(
                 "h-6 w-6 transition-all duration-700",
-                percentage > 0 ? "text-orange-500 fill-orange-500/10" : "text-muted-foreground/20",
+                percentage > 0
+                  ? "text-orange-500 fill-orange-500/10"
+                  : "text-muted-foreground/20",
                 percentage >= 100 &&
                   "fill-orange-500/30 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]",
               )}
             />
           </motion.div>
 
-          {/* Glow perimetral premium de fondo cuando hay energía */}
+          {/* Glow perimetral de fondo cuando hay energía */}
           {percentage > 0 && (
             <motion.div
               animate={{

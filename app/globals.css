@@ -200,7 +200,7 @@
     scrollbar-color: hsl(var(--muted-foreground) / 0.1) transparent;
   }
 
-  /* Barra desplazadora premium para el dashboard/contenedores internos */
+  /* Barra desplazadora para el dashboard/contenedores internos */
   .dark ::-webkit-scrollbar-thumb {
     @apply bg-white/5;
   }

@@ -4,6 +4,8 @@ import { getToken } from "next-auth/jwt";
 
 // Rutas que requieren autenticación (JWT check) — solo ejecutar getToken cuando sea necesario
 const PROTECTED_PREFIXES = ["/dashboard"];
+// Rutas exclusivas de administrador — solo rol "admin" puede acceder
+const ADMIN_PREFIXES = ["/dashboard/admin"];
 const AUTH_PAGES = ["/login", "/register"];
 
 // Rate limiting simple por IP para rutas de API del frontend
@@ -84,11 +86,20 @@ export async function middleware(req: NextRequest, ev: NextFetchEvent) {
 
   const token = await getToken({ req });
 
-  /* ② Protegemos las rutas privadas */
+  /* ① Protegemos las rutas privadas */
   if (needsAuth && !token) {
     const login = new URL("/login", req.url);
     login.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(login, { headers: res.headers });
+  }
+
+  // Protegemos las rutas de admin — si el rol del token no es admin, redirigimos al dashboard
+  const isAdminRoute = ADMIN_PREFIXES.some((p) => pathname.startsWith(p));
+  if (isAdminRoute && token?.role !== "admin") {
+    // No revelar que la ruta existe — redirigir limpio al dashboard
+    return NextResponse.redirect(new URL("/dashboard", req.url), {
+      headers: res.headers,
+    });
   }
 
   // Redirigir usuarios autenticados desde /login y /register al /dashboard

@@ -8,7 +8,7 @@ type ToastProps = {
 };
 /***********************************************************************************************************************/
 // Redirigimos todas las notificaciones del sistema antiguo (Radix) a Sonner
-// Esto soluciona que no se vieran los toasts y además les da un aspecto muchísimo más premium y fluido.
+// Esto soluciona que no se vieran los toasts y además les da un aspecto muchísimo más fluido.
 const customToast = (props: ToastProps) => {
   if (props.variant === "destructive") {
     return sonnerToast.error(props.title, { description: props.description });

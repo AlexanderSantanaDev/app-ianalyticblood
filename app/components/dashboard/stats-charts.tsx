@@ -11,7 +11,13 @@ import {
   AreaChart,
   Area,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Activity, TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 import type { AnalysisDoc } from "@/lib/api/types";
 /****************************************************************************************************************************/
@@ -42,7 +48,10 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
       const dataPoints = sorted
         .filter((ana) => ana.parameters[paramName])
         .map((ana) => ({
-          date: new Date(ana.date).toLocaleDateString("es-ES", { day: "2-digit", month: "short" }),
+          date: new Date(ana.date).toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "short",
+          }),
           fullDate: new Date(ana.date).toLocaleDateString("es-ES"),
           value: ana.parameters[paramName].value,
           unit: ana.parameters[paramName].unit || "",
@@ -52,7 +61,8 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
         }));
 
       const lastPoint = dataPoints[dataPoints.length - 1];
-      const prevPoint = dataPoints.length > 1 ? dataPoints[dataPoints.length - 2] : null;
+      const prevPoint =
+        dataPoints.length > 1 ? dataPoints[dataPoints.length - 2] : null;
 
       // Calcular cambio
       let changeType: "up" | "down" | "stable" = "stable";
@@ -82,7 +92,9 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
       <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
         <Activity className="h-12 w-12 mb-4 text-muted-foreground" />
         <h3 className="text-xl font-medium">No hay datos suficientes</h3>
-        <p className="text-sm">Sube tu primer análisis para empezar a ver tendencias.</p>
+        <p className="text-sm">
+          Sube tu primer análisis para empezar a ver tendencias.
+        </p>
       </div>
     );
   }
@@ -93,10 +105,16 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
       const data = payload[0].payload;
       return (
         <div className="bg-background/95 backdrop-blur-md border border-border p-3 rounded-xl shadow-2xl">
-          <p className="text-xs font-bold text-muted-foreground mb-1">{data.fullDate}</p>
+          <p className="text-xs font-bold text-muted-foreground mb-1">
+            {data.fullDate}
+          </p>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-black gradient-text">{payload[0].value}</span>
-            <span className="text-xs text-muted-foreground font-medium">{data.unit}</span>
+            <span className="text-xl font-black gradient-text">
+              {payload[0].value}
+            </span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {data.unit}
+            </span>
           </div>
           {data.refMin !== null && (
             <p className="text-[10px] mt-1 text-muted-foreground italic">
@@ -128,12 +146,18 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
                       <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
                     )}
                   </CardTitle>
-                  <CardDescription className="text-xs">Evolución en el tiempo</CardDescription>
+                  <CardDescription className="text-xs">
+                    Evolución en el tiempo
+                  </CardDescription>
                 </div>
                 <div className="text-right">
                   <div className="flex items-baseline justify-end gap-1">
-                    <span className="text-2xl font-black">{trend.lastValue}</span>
-                    <span className="text-xs text-muted-foreground font-medium">{trend.unit}</span>
+                    <span className="text-2xl font-black">
+                      {trend.lastValue}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {trend.unit}
+                    </span>
                   </div>
                   <div className="flex items-center justify-end mt-1">
                     {trend.changeType === "up" ? (
@@ -145,7 +169,9 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
                     )}
                     <span
                       className={`text-[10px] font-bold uppercase tracking-wider ${
-                        trend.status === "normal" ? "text-green-500" : "text-orange-500"
+                        trend.status === "normal"
+                          ? "text-green-500"
+                          : "text-orange-500"
                       }`}
                     >
                       {trend.status}
@@ -159,9 +185,23 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trend.data}>
                     <defs>
-                      <linearGradient id={`gradient-${trend.name}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                      <linearGradient
+                        id={`gradient-${trend.name}`}
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#8b5cf6"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#8b5cf6"
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
                     <CartesianGrid
@@ -180,7 +220,11 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
                     <YAxis hide domain={["auto", "auto"]} />
                     <Tooltip
                       content={<CustomTooltip />}
-                      cursor={{ stroke: "#8b5cf6", strokeWidth: 1, strokeDasharray: "4 4" }}
+                      cursor={{
+                        stroke: "#8b5cf6",
+                        strokeWidth: 1,
+                        strokeDasharray: "4 4",
+                      }}
                     />
 
                     {/* Líneas de referencia para rango normal */}
@@ -218,15 +262,18 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
         ))}
       </div>
 
-      {/* Nota informativa premium */}
+      {/* Nota informativa */}
       <div className="bg-primary/5 border border-primary/10 p-4 rounded-2xl flex gap-3 items-start">
         <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-primary">Interpretación de Tendencias</p>
+          <p className="text-sm font-semibold text-primary">
+            Interpretación de Tendencias
+          </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Los gráficos muestran la evolución de tus biomarcadores basándose en los análisis
-            cargados. Las líneas punteadas indican los límites de referencia estándar. Recuerda que
-            estas tendencias son orientativas y deben ser validadas por un especialista.
+            Los gráficos muestran la evolución de tus biomarcadores basándose en
+            los análisis cargados. Las líneas punteadas indican los límites de
+            referencia estándar. Recuerda que estas tendencias son orientativas
+            y deben ser validadas por un especialista.
           </p>
         </div>
       </div>

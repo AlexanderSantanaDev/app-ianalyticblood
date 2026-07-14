@@ -168,7 +168,7 @@ export default function HistoryPage() {
   /** Descarga el análisis como PDF. */
   const handleDownload = useCallback(
     async (id: string, date: string) => {
-      const loadingToast = toast.loading("Generando informe premium...");
+      const loadingToast = toast.loading("Generando informe...");
       try {
         const res = await getAnalysis(apiFetch, id);
         await downloadAnalysisAsPDF(res.data);
