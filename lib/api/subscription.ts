@@ -9,9 +9,12 @@ export function useSubscriptionApi() {
   // Métodos
   /** Inicia el flujo de Stripe Checkout */
   const createCheckoutSession = async (plan: string) => {
-    return await apiFetch<{ url: string }>(`/subscription/create-checkout?plan=${plan}`, {
-      method: "POST",
-    });
+    return await apiFetch<{ url: string }>(
+      `/subscription/create-checkout?plan=${plan}`,
+      {
+        method: "POST",
+      },
+    );
   };
 
   /** Inicia el flujo del Portal del Cliente de Stripe */
@@ -23,9 +26,13 @@ export function useSubscriptionApi() {
 
   /** Sincroniza el estado de la suscripción con Stripe */
   const syncSubscription = async () => {
-    return await apiFetch<{ status: string }>("/subscription/sync", {
-      method: "GET",
-    });
+    // Ahora el backend devuelve { status, plan? } para detectar degradación
+    return await apiFetch<{ status: string; plan?: string }>(
+      "/subscription/sync",
+      {
+        method: "GET",
+      },
+    );
   };
 
   /***********************************************************************************************************************/

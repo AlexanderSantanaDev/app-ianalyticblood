@@ -37,6 +37,8 @@ export interface User {
   terms_accepted_at?: string;
   plan?: "free" | "premium" | "enterprise";
   subscription_status?: "active" | "inactive" | "pending" | "canceled";
+  cancel_at_period_end?: boolean;
+  current_period_end?: number;
   analysis_count?: number;
 }
 

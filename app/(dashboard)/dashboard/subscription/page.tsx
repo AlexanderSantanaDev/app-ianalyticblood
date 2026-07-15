@@ -17,6 +17,7 @@ import {
   Sparkles,
   AlertCircle,
   Crown,
+  RefreshCcw,
 } from "lucide-react";
 import { useUserApi } from "@/lib/api/user";
 import { useSubscriptionApi } from "@/lib/api/subscription";
@@ -67,42 +68,40 @@ function SubscriptionContent() {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const searchParams = useSearchParams();
   const [isSyncing, setIsSyncing] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(
+    searchParams.get("success") === "true",
+  );
   /***********************************************************************************************************************/
-  // Métodos
-  /** Función maestra de sincronización con motor de reintentos inteligente */
+  // Método  /** Función maestra de sincronización: detecta tanto upgrades (premium) como downgrades (free) */
   const performSync = async (isManual = false) => {
-    if (isSyncing || authStatus !== "authenticated") return; // No sincronizar si no hay sesión lista
+    if (isSyncing || authStatus !== "authenticated") return;
     setIsSyncing(true);
 
-    //  Motor de reintentos más potente (Stripe)
+    // Motor de reintentos solo para upgrades (cuando esperamos pago de Stripe)
     const MAX_RETRIES = isManual ? 1 : 5;
     let currentRetry = 0;
 
-    const promise = new Promise(async (resolve, reject) => {
+    const promise = new Promise<{ plan: string }>(async (resolve, reject) => {
       const attemptSync = async () => {
         try {
-          // Si es automático, esperamos un poco más para que los webhooks terminen de dispararse
           if (currentRetry === 0 && !isManual) {
             await new Promise((r) => setTimeout(r, 1500));
           }
 
           console.log(
-            `🛰️ Intento de sincronización ${currentRetry + 1}/${MAX_RETRIES}...`,
+            `😰️ Intento de sincronización ${currentRetry + 1}/${MAX_RETRIES}...`,
           );
           const data = await syncSubscription();
           console.log("✅ Respuesta del backend:", data);
 
           if (data.status === "success") {
-            // ¡Éxito total! Activamos visuales y forzamos recarga
-            setShowSuccess(true);
-
-            // Obtenemos el perfil fresco del backend para sincronizar datos reales
+            // El backend ahora siempre devuelve success con el plan resultante
+            // Si el plan es 'premium' mostramos animación de bienvenida
+            // Si el plan es 'free' redirigimos limpiamente al plan básico
             const freshProfile = await getMe();
             setProfile(freshProfile);
 
-            // Forzamos la actualización atómica del JWT de NextAuth
-            // Pasamos el plan en múltiples niveles para asegurar que el callback jwt lo capture
+            // Actualizar el JWT de NextAuth con el nuevo plan
             await updateSession({
               ...session,
               plan: freshProfile.plan,
@@ -112,18 +111,24 @@ function SubscriptionContent() {
               },
             });
 
-            console.log("💎 Sesión actualizada a:", freshProfile.plan);
+            console.log("📊 Sesión actualizada a:", freshProfile.plan);
 
-            // Delay controlado para que la rotación de cookies de NextAuth termine
-            setTimeout(() => {
-              window.location.href = "/dashboard/subscription";
-            }, 2500);
+            if (data.plan === "premium") {
+              // Mantener la pantalla de bienvenida un poco más y luego quitarla suavemente
+              setShowSuccess(true);
+              setTimeout(() => {
+                setShowSuccess(false);
+              }, 3500);
+            } else {
+              setShowSuccess(false);
+            }
 
-            resolve(data);
+            resolve({ plan: data.plan || freshProfile.plan || "free" });
             return true;
           } else if (
             data.status === "no_change" &&
-            currentRetry < MAX_RETRIES - 1
+            currentRetry < MAX_RETRIES - 1 &&
+            !isManual
           ) {
             currentRetry++;
             console.log("⏳ No detectado aún. Reintentando en 3s...");
@@ -137,13 +142,14 @@ function SubscriptionContent() {
                 ),
               );
             } else {
-              resolve(data);
+              resolve({ plan: "free" });
             }
             return false;
           }
-        } catch (err: any) {
-          console.error("❌ Error en sincronización:", err);
-          reject(err);
+        } catch (err: unknown) {
+          const error = err as Error;
+          console.error("❌ Error en sincronización:", error);
+          reject(error);
           return false;
         }
       };
@@ -151,11 +157,15 @@ function SubscriptionContent() {
       await attemptSync();
     });
 
+    // Mensajes descriptivos diferenciados según el contexto
     toast.promise(promise, {
       loading: isManual
-        ? "Sincronizando pago..."
+        ? "Sincronizando con Stripe..."
         : "Verificando tu membresía Premium...",
-      success: "¡Membresía Premium activada! Refrescando... 💎",
+      success: (result) =>
+        result.plan === "premium"
+          ? "¡Membersía Premium activada! Refrescando... 💎"
+          : "Plan sincronizado. Redirigiendo al plan Básico...",
       error: (err) => `Sincronización: ${err.message || "Inténtalo de nuevo"}`,
     });
 
@@ -212,6 +222,15 @@ function SubscriptionContent() {
   const currentUsage = profile?.analysis_count ?? 0;
   const progressValue =
     usageLimit === Infinity ? 100 : (currentUsage / usageLimit) * 100;
+
+  const isPendingCancellation = profile?.cancel_at_period_end === true;
+  const endDate = profile?.current_period_end
+    ? new Date(profile.current_period_end * 1000).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "24 de Abril, 2026";
 
   /***********************************************************************************************************************/
   // Métodos de Pago
@@ -322,16 +341,34 @@ function SubscriptionContent() {
                 <CardHeader className="pb-2">
                   <Badge
                     variant="outline"
-                    className="w-fit mb-2 bg-primary/10 text-primary border-primary/20 uppercase tracking-widest text-[10px]"
+                    className={
+                      isPendingCancellation
+                        ? "w-fit mb-2 bg-amber-500/10 text-amber-500 border-amber-500/20 uppercase tracking-widest text-[10px]"
+                        : "w-fit mb-2 bg-primary/10 text-primary border-primary/20 uppercase tracking-widest text-[10px]"
+                    }
                   >
-                    Plan Activo
+                    {isPendingCancellation
+                      ? "Cancelación Pendiente"
+                      : "Plan Activo"}
                   </Badge>
                   <CardTitle className="text-3xl font-black gradient-text uppercase">
                     {currentPlan === "free" ? "Básico" : currentPlan}
                   </CardTitle>
-                  <CardDescription className="flex items-center gap-2 mt-1">
-                    <Clock className="w-4 h-4" />
-                    Renovación el 24 de Abril, 2026
+                  <CardDescription
+                    className={
+                      isPendingCancellation
+                        ? "flex items-center gap-2 mt-1 text-amber-500/80 font-medium"
+                        : "flex items-center gap-2 mt-1"
+                    }
+                  >
+                    {isPendingCancellation ? (
+                      <AlertCircle className="w-4 h-4" />
+                    ) : (
+                      <Clock className="w-4 h-4" />
+                    )}
+                    {isPendingCancellation
+                      ? `Disponible hasta el ${endDate}`
+                      : `Renovación el ${endDate}`}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-4">
@@ -374,7 +411,9 @@ function SubscriptionContent() {
                       />
                     </Progress>
                     <p className="text-[11px] text-muted-foreground text-center">
-                      Tu límite se reiniciará el próximo periodo de facturación.
+                      {isPendingCancellation
+                        ? "Tras esta fecha tu cuenta volverá al plan Básico."
+                        : "Tu límite se reiniciará el próximo periodo de facturación."}
                     </p>
                   </div>
                 </CardContent>
@@ -384,14 +423,32 @@ function SubscriptionContent() {
                     Pagos seguros gestionados por Stripe
                   </div>
                   {currentPlan !== "free" && (
-                    <Button
-                      variant="outline"
-                      className="w-full text-xs hover:bg-primary/10"
-                      onClick={handleManageSubscription}
-                    >
-                      Gestionar Facturación
-                      <ArrowRight className="w-3 h-3 ml-2" />
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full text-xs hover:bg-primary/10"
+                        onClick={handleManageSubscription}
+                      >
+                        Gestionar Facturación
+                        <ArrowRight className="w-3 h-3 ml-2" />
+                      </Button>
+                      {/* Botón de sincronización — útil en local (sin webhook) y como fallback en producción */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 h-8"
+                        onClick={() => performSync(true)}
+                        disabled={isSyncing}
+                        title="Si tu plan en la app no refleja los cambios recientes en Stripe, usa este botón para forzar una sincronización inmediata."
+                      >
+                        <RefreshCcw
+                          className={`w-3 h-3 mr-1.5 ${isSyncing ? "animate-spin" : ""}`}
+                        />
+                        {isSyncing
+                          ? "Sincronizando..."
+                          : "Sincronizar con Stripe"}
+                      </Button>
+                    </>
                   )}
                   {currentPlan === "free" && (
                     <Button
