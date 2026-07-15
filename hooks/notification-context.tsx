@@ -102,11 +102,13 @@ export function NotificationProvider({
   // Sistema de seguridad dinámico (detecta OS real y ubicación, solo si hace login)
   useEffect(() => {
     if (isLoaded && status === "authenticated" && !alertScheduledRef.current) {
-      const hasSessionAlert = sessionStorage.getItem("ianalytic_session_alert");
-      if (!hasSessionAlert) {
+      // Usar localStorage en lugar de sessionStorage para que no salte al recargar la pestaña
+      // si el usuario ya inició sesión previamente en este mismo navegador.
+      const isDeviceKnown = localStorage.getItem("ianalytic_device_known");
+      if (!isDeviceKnown) {
         alertScheduledRef.current = true;
-        // Marca inmediatamente en sessionStorage para evitar múltiples ejecuciones
-        sessionStorage.setItem("ianalytic_session_alert", "true");
+        // Marca inmediatamente en localStorage para evitar múltiples ejecuciones
+        localStorage.setItem("ianalytic_device_known", "true");
 
         // Detección dinámica del entorno en lugar de mocks
         const ua = navigator.userAgent;

@@ -21,7 +21,8 @@ import { useRouter } from "next/navigation";
 import { useToast } from "hooks/use-toast";
 import { signIn, useSession } from "next-auth/react";
 import { z } from "zod"; // Validación con zod antes de enviar al back
-
+import { cn } from "lib/utils";
+/***********************************************************************************************************************/
 // Esquema de validación para el login
 const loginSchema = z.object({
   email: z
@@ -43,6 +44,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevenir doble submit
+  const [hasError, setHasError] = useState(false); // Estado para marcar inputs en rojo
 
   // Hooks
   const router = useRouter();
@@ -58,6 +60,7 @@ export default function LoginPage() {
   /** Maneja el envío del formulario de login. */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setHasError(false); // Limpiar error al reintentar
 
     // Validación con zod ANTES de enviar al backend
     const validation = loginSchema.safeParse({ email, password });
@@ -68,6 +71,7 @@ export default function LoginPage() {
         description: firstError,
         variant: "destructive",
       });
+      setHasError(true);
       return;
     }
 
@@ -102,6 +106,7 @@ export default function LoginPage() {
           variant: "destructive",
         });
         setIsSubmitting(false);
+        setHasError(true); // Marcar inputs con error visual
       } else {
         // Feedback visual, el toast se ve antes de redirigir
         toast({
@@ -159,14 +164,26 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <Label htmlFor="email">Correo electrónico</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Mail
+                      className={cn(
+                        "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4",
+                        hasError ? "text-destructive" : "text-muted-foreground",
+                      )}
+                    />
                     <Input
                       id="email"
                       type="email"
                       placeholder="tu@ejemplo.com"
-                      className="pl-10"
+                      className={cn(
+                        "pl-10",
+                        hasError &&
+                          "border-destructive focus-visible:ring-destructive",
+                      )}
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (hasError) setHasError(false);
+                      }}
                       required
                       autoComplete="email"
                     />
@@ -183,14 +200,26 @@ export default function LoginPage() {
                     </Link>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Lock
+                      className={cn(
+                        "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4",
+                        hasError ? "text-destructive" : "text-muted-foreground",
+                      )}
+                    />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className="pl-10"
+                      className={cn(
+                        "pl-10",
+                        hasError &&
+                          "border-destructive focus-visible:ring-destructive",
+                      )}
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (hasError) setHasError(false);
+                      }}
                       required
                       autoComplete="current-password"
                     />
