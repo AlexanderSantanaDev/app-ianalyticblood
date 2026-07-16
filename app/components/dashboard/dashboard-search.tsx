@@ -18,6 +18,7 @@ import {
   Zap,
   ArrowRight,
   Clock,
+  Command,
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -367,11 +368,17 @@ export default function DashboardSearch({
           {/* Atajo de teclado — Estilo unificado y posicionado a la izquierda de la 'X' para evitar solapamiento */}
           <div className="hidden sm:flex items-center gap-1 pr-8">
             <kbd
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/80 text-muted-foreground/70 text-[10px] 
+              className="inline-flex items-center gap-[2px] px-1.5 py-0.5 rounded-md bg-muted/80 text-muted-foreground/70 text-[10px] 
             font-mono border border-border/50 shadow-sm"
             >
-              {/* Muestra ⌘K en Mac y Ctrl K en Windows/Linux */}
-              {isMac ? "⌘K" : "Ctrl K"}
+              {isMac ? (
+                <>
+                  <Command className="w-[10px] h-[10px]" />
+                  <span>K</span>
+                </>
+              ) : (
+                "Ctrl K"
+              )}
             </kbd>
           </div>
         </div>

@@ -9,6 +9,7 @@ import {
   Menu,
   Search,
   LogOut,
+  Command,
   FileText,
   Activity,
   ShieldCheck,
@@ -202,12 +203,18 @@ function DashboardNavbarComponent() {
               >
                 Buscar...
               </span>
-              {/* Hint dinámico según plataforma: ⌘K en Mac, Ctrl K en Windows/Linux (Estilo Unificado) */}
               <kbd
-                className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/80 text-muted-foreground/70 
+                className="hidden lg:inline-flex items-center gap-[2px] px-1.5 py-0.5 rounded-md bg-muted/80 text-muted-foreground/70 
               text-[10px] font-mono border border-border/50 shadow-sm transition-colors group-hover:border-primary/30"
               >
-                {isMac ? "\u2318K" : "Ctrl K"}
+                {isMac ? (
+                  <>
+                    <Command className="w-[10px] h-[10px]" />
+                    <span>K</span>
+                  </>
+                ) : (
+                  "Ctrl K"
+                )}
               </kbd>
             </button>
           )}
