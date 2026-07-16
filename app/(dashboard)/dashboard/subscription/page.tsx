@@ -89,10 +89,10 @@ function SubscriptionContent() {
           }
 
           console.log(
-            `😰️ Intento de sincronización ${currentRetry + 1}/${MAX_RETRIES}...`,
+            `Intento de sincronización ${currentRetry + 1}/${MAX_RETRIES}...`,
           );
           const data = await syncSubscription();
-          console.log("✅ Respuesta del backend:", data);
+          console.log("Respuesta del backend:", data);
 
           if (data.status === "success") {
             // El backend ahora siempre devuelve success con el plan resultante
@@ -111,14 +111,14 @@ function SubscriptionContent() {
               },
             });
 
-            console.log("📊 Sesión actualizada a:", freshProfile.plan);
+            console.log("Sesión actualizada a:", freshProfile.plan);
 
+            // Solo cerramos el overlay suavemente. El contenido ya está actualizado en
+            // estado (setProfile + updateSession se llamaron arriba), sin necesidad de reload.
+            // El parpadeo/skeleton desaparece porque no forzamos recarga de página.
             if (data.plan === "premium") {
-              // Mostramos éxito y tras 4s hacemos redirect limpio
-              setShowSuccess(true);
               setTimeout(() => {
-                // Reload limpio para reflejar Premium en toda la UI (sidebar, header, etc.)
-                window.location.replace("/dashboard/subscription");
+                setShowSuccess(false);
               }, 4000);
             } else {
               setShowSuccess(false);
@@ -136,7 +136,7 @@ function SubscriptionContent() {
             await new Promise((r) => setTimeout(r, 3000));
             return await attemptSync();
           } else {
-            // 🛡️ Cerramos el overlay para que el usuario no se quede bloqueado
+            // Cerramos el overlay para que el usuario no se quede bloqueado
             setShowSuccess(false);
             if (isManual || currentRetry >= MAX_RETRIES - 1) {
               reject(
@@ -152,7 +152,7 @@ function SubscriptionContent() {
         } catch (err: unknown) {
           const error = err as Error;
           console.error("❌ Error en sincronización:", error);
-          // 🛡️ Cerramos el overlay para que el usuario no se quede bloqueado
+          // Cerramos el overlay para que el usuario no se quede bloqueado
           setShowSuccess(false);
           reject(error);
           return false;
@@ -220,7 +220,9 @@ function SubscriptionContent() {
     fetchProfile();
   }, [authStatus]); // Recargar si la sesión cambia
 
-  if (isLoading || authStatus === "loading") {
+  // Si el overlay de bienvenida está activo, nunca mostramos el skeleton
+  // Esto evita el parpadeo cuando isLoading es true pero el overlay ya cubre la pantalla
+  if ((isLoading || authStatus === "loading") && !showSuccess) {
     return <SubscriptionSkeleton />;
   }
 
