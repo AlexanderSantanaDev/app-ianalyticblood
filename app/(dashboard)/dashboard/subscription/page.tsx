@@ -18,6 +18,9 @@ import {
   AlertCircle,
   Crown,
   RefreshCcw,
+  XCircle,
+  RotateCcw,
+  CalendarX,
 } from "lucide-react";
 import { useUserApi } from "@/lib/api/user";
 import { useSubscriptionApi } from "@/lib/api/subscription";
@@ -56,8 +59,13 @@ function SubscriptionContent() {
     update: updateSession,
   } = useSession();
   const { getMe } = useUserApi();
-  const { createCheckoutSession, createCustomerPortal, syncSubscription } =
-    useSubscriptionApi();
+  const {
+    createCheckoutSession,
+    createCustomerPortal,
+    syncSubscription,
+    cancelSubscription,
+    reactivateSubscription,
+  } = useSubscriptionApi();
   const [profile, setProfile] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
@@ -71,6 +79,11 @@ function SubscriptionContent() {
   // showSuccess controla SOLO la UI, syncFiredRef evita que se dispare dos veces
   const [showSuccess, setShowSuccess] = useState(false);
   const syncFiredRef = React.useRef(false);
+  // Estados para el flujo de cancelación y reactivación
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [showReactivateDialog, setShowReactivateDialog] = useState(false);
+  const [isReactivating, setIsReactivating] = useState(false);
   /***********************************************************************************************************************/
   // Método  /** Función maestra de sincronización: detecta tanto upgrades (premium) como downgrades (free) */
   const performSync = async (isManual = false) => {
@@ -278,6 +291,50 @@ function SubscriptionContent() {
     }
   };
 
+  /** Confirmar cancelación. */
+  const confirmCancel = async () => {
+    setIsCancelling(true);
+    try {
+      const res = await cancelSubscription();
+      if (res.status === "success") {
+        // ✨ Actualización optimista del perfil local sin reload
+        setProfile((prev) =>
+          prev ? { ...prev, cancel_at_period_end: true } : prev,
+        );
+        toast.success(
+          "Cancelación confirmada. Seguirás con Premium hasta el final del periodo. 💙",
+        );
+        setShowCancelDialog(false);
+      }
+    } catch (error) {
+      toast.error("No se pudo procesar la cancelación. Inténtalo de nuevo.");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  /** Confirmar reactivación. */
+  const confirmReactivate = async () => {
+    setIsReactivating(true);
+    try {
+      const res = await reactivateSubscription();
+      if (res.status === "success") {
+        // ✨ Actualización optimista del perfil local sin reload
+        setProfile((prev) =>
+          prev ? { ...prev, cancel_at_period_end: false } : prev,
+        );
+        toast.success(
+          "¡Suscripción Premium reactivada! Seguirás disfrutando de todos los beneficios. 🎉",
+        );
+        setShowReactivateDialog(false);
+      }
+    } catch (error) {
+      toast.error("No se pudo reactivar la suscripción. Inténtalo de nuevo.");
+    } finally {
+      setIsReactivating(false);
+    }
+  };
+
   /***********************************************************************************************************************/
   //JSX
   return (
@@ -458,6 +515,30 @@ function SubscriptionContent() {
                           ? "Sincronizando..."
                           : "Sincronizar con Stripe"}
                       </Button>
+                      {/* Botón de cancelación o reactivación según estado */}
+                      {isPendingCancellation ? (
+                        // Estado cancelación pendiente: mostrar opción de reactivar
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-[11px] text-emerald-600 hover:text-emerald-500 hover:bg-emerald-500/10 h-8 border border-emerald-500/20"
+                          onClick={() => setShowReactivateDialog(true)}
+                        >
+                          <RotateCcw className="w-3 h-3 mr-1.5" />
+                          Reactivar suscripción
+                        </Button>
+                      ) : (
+                        // Estado activo: mostrar opción de cancelar
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-[11px] text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8"
+                          onClick={() => setShowCancelDialog(true)}
+                        >
+                          <XCircle className="w-3 h-3 mr-1.5" />
+                          Cancelar suscripción
+                        </Button>
+                      )}
                     </>
                   )}
                   {currentPlan === "free" && (
@@ -547,7 +628,6 @@ function SubscriptionContent() {
 
             {/* Plan Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Plan Card */}
               <motion.div
                 whileHover={{ y: -5 }}
                 className={`relative p-6 rounded-3xl border-2 transition-all ${
@@ -746,6 +826,194 @@ function SubscriptionContent() {
                 </div>
               ) : (
                 "Ir a Pagar"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de Cancelación de Suscripción */}
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <DialogContent className="sm:max-w-md rounded-2xl border border-border/50 bg-card shadow-2xl p-0 overflow-hidden">
+          <div className="p-6 pb-0">
+            <DialogHeader>
+              {/* Header con icono de advertencia sutil */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
+                  <XCircle className="w-6 h-6 text-destructive" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-bold text-foreground">
+                    Cancelar suscripción
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-muted-foreground">
+                    Esto no es inmediato — leerás los detalles abajo.
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+          </div>
+
+          <div className="px-6 pb-4 space-y-4">
+            {/* Info card: acceso hasta fecha de vencimiento */}
+            <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-2">
+              <div className="flex items-center gap-2 text-amber-500 font-semibold text-sm">
+                <CalendarX className="w-4 h-4 shrink-0" />
+                <span>Seguirás con Premium hasta el {endDate}</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed pl-6">
+                Tu acceso no se cancela ahora mismo. Podrás usar todas las
+                funciones Premium hasta que finalice el periodo de facturación
+                actual. Después, tu cuenta volverá automáticamente al plan
+                Básico.
+              </p>
+            </div>
+
+            {/* Qué perderás */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Al pasar al plan Básico perderás:
+              </p>
+              <ul className="space-y-1.5">
+                {[
+                  "Análisis ilimitados de informes de sangre",
+                  "Interpretación avanzada con IA",
+                  "Historial completo de salud",
+                  "Recomendaciones nutricionales personalizadas",
+                  "Soporte prioritario 24/7",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-xs text-muted-foreground"
+                  >
+                    <span className="text-destructive/60 mt-0.5 shrink-0">
+                      ✕
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Nota de seguridad */}
+            <p className="text-[11px] text-muted-foreground text-center pt-1">
+              Puedes reactivar tu suscripción en cualquier momento antes de que
+              expire el periodo.
+            </p>
+          </div>
+
+          <DialogFooter className="px-6 pb-6 flex !flex-col sm:!flex-row gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl h-11"
+              onClick={() => setShowCancelDialog(false)}
+              disabled={isCancelling}
+            >
+              Mantener Premium
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1 rounded-xl h-11 font-semibold"
+              onClick={confirmCancel}
+              disabled={isCancelling}
+            >
+              {isCancelling ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Cancelando...
+                </div>
+              ) : (
+                "Confirmar cancelación"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de Reactivación de Suscripción */}
+      <Dialog
+        open={showReactivateDialog}
+        onOpenChange={setShowReactivateDialog}
+      >
+        <DialogContent className="sm:max-w-md rounded-2xl border border-border/50 bg-card shadow-2xl p-0 overflow-hidden">
+          <div className="p-6 pb-0">
+            <DialogHeader>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-6 h-6 text-emerald-500" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-bold text-foreground">
+                    Reactivar suscripción
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-muted-foreground">
+                    Cancela la cancelación pendiente y sigue con Premium.
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+          </div>
+
+          <div className="px-6 pb-4 space-y-4">
+            {/* Info card positiva */}
+            <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-2">
+              <div className="flex items-center gap-2 text-emerald-500 font-semibold text-sm">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>¡Todo vuelve a la normalidad!</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed pl-6">
+                Si reactivás ahora, tu suscripción seguirá renovándose
+                automáticamente en la fecha habitual. No se realiza ningún cargo
+                adicional por reactivar.
+              </p>
+            </div>
+
+            {/* Qué recuperas */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Seguirás disfrutando de:
+              </p>
+              <ul className="space-y-1.5">
+                {[
+                  "Análisis ilimitados de informes de sangre",
+                  "Interpretación avanzada con IA",
+                  "Historial completo de salud",
+                  "Recomendaciones nutricionales personalizadas",
+                  "Soporte prioritario 24/7",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-xs text-muted-foreground"
+                  >
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500 mt-0.5 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter className="px-6 pb-6 flex !flex-col sm:!flex-row gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl h-11"
+              onClick={() => setShowReactivateDialog(false)}
+              disabled={isReactivating}
+            >
+              Ahora no
+            </Button>
+            <Button
+              className="flex-1 rounded-xl h-11 font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
+              onClick={confirmReactivate}
+              disabled={isReactivating}
+            >
+              {isReactivating ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Reactivando...
+                </div>
+              ) : (
+                "¡Sí, reactivar Premium!"
               )}
             </Button>
           </DialogFooter>
