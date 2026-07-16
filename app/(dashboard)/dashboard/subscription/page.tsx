@@ -547,21 +547,23 @@ function SubscriptionContent() {
                   {currentPlan === "free" && (
                     <>
                       {/* 'Sincronizar con Stripe' solo visible para usuarios en plan FREE */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 h-8 mb-2"
-                        onClick={() => performSync(true)}
-                        disabled={isSyncing}
-                        title="Si tu plan no refleja los cambios recientes en Stripe, usa este botón."
-                      >
-                        <RefreshCcw
-                          className={`w-3 h-3 mr-1.5 ${isSyncing ? "animate-spin" : ""}`}
-                        />
-                        {isSyncing
-                          ? "Sincronizando..."
-                          : "Sincronizar con Stripe"}
-                      </Button>
+                      {searchParams.get("canceled") === "true" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 h-8 mb-2"
+                          onClick={() => performSync(true)}
+                          disabled={isSyncing}
+                          title="Si tu plan no refleja los cambios recientes en Stripe, usa este botón."
+                        >
+                          <RefreshCcw
+                            className={`w-3 h-3 mr-1.5 ${isSyncing ? "animate-spin" : ""}`}
+                          />
+                          {isSyncing
+                            ? "Sincronizando..."
+                            : "Sincronizar con Stripe"}
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         className="w-full text-xs hover:bg-primary/10"
