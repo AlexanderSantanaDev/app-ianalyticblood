@@ -68,9 +68,9 @@ function SubscriptionContent() {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const searchParams = useSearchParams();
   const [isSyncing, setIsSyncing] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(
-    searchParams.get("success") === "true",
-  );
+  // showSuccess controla SOLO la UI, syncFiredRef evita que se dispare dos veces
+  const [showSuccess, setShowSuccess] = useState(false);
+  const syncFiredRef = React.useRef(false);
   /***********************************************************************************************************************/
   // Método  /** Función maestra de sincronización: detecta tanto upgrades (premium) como downgrades (free) */
   const performSync = async (isManual = false) => {
@@ -114,11 +114,12 @@ function SubscriptionContent() {
             console.log("📊 Sesión actualizada a:", freshProfile.plan);
 
             if (data.plan === "premium") {
-              // Mantener la pantalla de bienvenida un poco más y luego quitarla suavemente
+              // Mostramos éxito y tras 4s hacemos redirect limpio
               setShowSuccess(true);
               setTimeout(() => {
-                setShowSuccess(false);
-              }, 3500);
+                // Reload limpio para reflejar Premium en toda la UI (sidebar, header, etc.)
+                window.location.replace("/dashboard/subscription");
+              }, 4000);
             } else {
               setShowSuccess(false);
             }
@@ -135,6 +136,8 @@ function SubscriptionContent() {
             await new Promise((r) => setTimeout(r, 3000));
             return await attemptSync();
           } else {
+            // 🛡️ Cerramos el overlay para que el usuario no se quede bloqueado
+            setShowSuccess(false);
             if (isManual || currentRetry >= MAX_RETRIES - 1) {
               reject(
                 new Error(
@@ -149,6 +152,8 @@ function SubscriptionContent() {
         } catch (err: unknown) {
           const error = err as Error;
           console.error("❌ Error en sincronización:", error);
+          // 🛡️ Cerramos el overlay para que el usuario no se quede bloqueado
+          setShowSuccess(false);
           reject(error);
           return false;
         }
@@ -180,20 +185,23 @@ function SubscriptionContent() {
 
   /***********************************************************************************************************************/
   // Sincronización automática al volver de Stripe
+  // Usamos syncFiredRef (ref) para que no se dispare dos veces aunque React re-renderice
   useEffect(() => {
     const success = searchParams.get("success");
-    // Solo disparamos si la sesión está cargada y validada
     if (
       success === "true" &&
       authStatus === "authenticated" &&
-      !isSyncing &&
-      !showSuccess
+      !syncFiredRef.current
     ) {
-      performSync(false);
-      // Limpiamos la URL para evitar re-fuegos al recargar manualmente
+      syncFiredRef.current = true;
+      // Mostramos el overlay de bienvenida inmediatamente
+      setShowSuccess(true);
+      // Limpiamos la URL YA para evitar que un refresh vuelva a disparar esto
       window.history.replaceState({}, "", window.location.pathname);
+      // Iniciamos la sincronización con el backend de Stripe
+      performSync(false);
     }
-  }, [searchParams, authStatus]);
+  }, [authStatus]);
 
   // Hooks para cargar datos iniciales
   const fetchProfile = async () => {
