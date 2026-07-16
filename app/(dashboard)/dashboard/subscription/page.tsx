@@ -3,7 +3,6 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-
 import { motion } from "framer-motion";
 import {
   CreditCard,
@@ -26,7 +25,7 @@ import { useUserApi } from "@/lib/api/user";
 import { useSubscriptionApi } from "@/lib/api/subscription";
 import { User as UserType } from "@/lib/api/types";
 import { toast } from "sonner";
-
+import { usePlan } from "@/hooks/plan-context";
 import {
   Card,
   CardContent,
@@ -48,7 +47,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
 /***********************************************************************************************************************/
 /** Componente de Contenido de Suscripción (Separado para poder usar Suspense) */
 function SubscriptionContent() {
@@ -66,6 +64,8 @@ function SubscriptionContent() {
     cancelSubscription,
     reactivateSubscription,
   } = useSubscriptionApi();
+  // Contexto global del plan para sincronizar sidebar instantáneamente
+  const { setPlan } = usePlan();
   const [profile, setProfile] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
@@ -113,6 +113,12 @@ function SubscriptionContent() {
             // Si el plan es 'free' redirigimos limpiamente al plan básico
             const freshProfile = await getMe();
             setProfile(freshProfile);
+            // Actualizamos el contexto global para que el sidebar refleje el plan de inmediato
+            if (freshProfile?.plan) {
+              setPlan(
+                freshProfile.plan as import("@/hooks/plan-context").PlanType,
+              );
+            }
 
             // Actualizar el JWT de NextAuth con el nuevo plan
             await updateSession({
@@ -216,12 +222,16 @@ function SubscriptionContent() {
     }
   }, [authStatus]);
 
-  // Hooks para cargar datos iniciales
+  /** Hooks para cargar datos iniciales. */
   const fetchProfile = async () => {
     if (authStatus !== "authenticated") return;
     try {
       const data = await getMe();
       setProfile(data);
+      // Publicamos el plan al contexto global al cargar el perfil
+      if (data?.plan) {
+        setPlan(data.plan as import("@/hooks/plan-context").PlanType);
+      }
     } catch (error) {
       console.error("Error al cargar suscripción:", error);
     } finally {
@@ -297,10 +307,12 @@ function SubscriptionContent() {
     try {
       const res = await cancelSubscription();
       if (res.status === "success") {
-        // ✨ Actualización optimista del perfil local sin reload
+        // Actualización optimista del perfil local sin reload
         setProfile((prev) =>
           prev ? { ...prev, cancel_at_period_end: true } : prev,
         );
+        // NO cambiamos el plan a 'free' aqui: el usuario SIGUE siendo premium hasta que expire.
+        // El plan se actualizará a 'free' solo cuando el webhook de Stripe dispare y fetchProfile lo refleje.
         toast.success(
           "Cancelación confirmada. Seguirás con Premium hasta el final del periodo. 💙",
         );
@@ -319,10 +331,12 @@ function SubscriptionContent() {
     try {
       const res = await reactivateSubscription();
       if (res.status === "success") {
-        // ✨ Actualización optimista del perfil local sin reload
+        // Actualización optimista del perfil local sin reload
         setProfile((prev) =>
           prev ? { ...prev, cancel_at_period_end: false } : prev,
         );
+        // Actualizar contexto global
+        setPlan("premium");
         toast.success(
           "¡Suscripción Premium reactivada! Seguirás disfrutando de todos los beneficios. 🎉",
         );
@@ -439,25 +453,30 @@ function SubscriptionContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-4">
-                  {/* Banner de ayuda si el usuario cree que pagó pero sigue en Básico */}
-                  {currentPlan === "free" && (
-                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl mb-2">
-                      <p className="text-[10px] text-amber-600 font-medium mb-2 leading-tight">
-                        ¿Has pagado pero sigues viendo el plan Básico?
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full h-8 text-[10px] border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
-                        onClick={() => performSync(true)}
-                        disabled={isSyncing}
-                      >
-                        {isSyncing
-                          ? "Sincronizando..."
-                          : "Sincronizar Pago Manualmente"}
-                      </Button>
-                    </div>
-                  )}
+                  {/* El banner '¿Has pagado pero sigues en Básico?' se muestra SOLO cuando
+                    el usuario viene de ?canceled=true (Stripe canceló el checkout) y sigue en free,
+                    o cuando viene de un flujo de sync fallido. NO se muestra en la navegación normal,
+                    ya que los webhooks y la sincronización automática gestionan los cambios de plan.
+                  */}
+                  {currentPlan === "free" &&
+                    searchParams.get("canceled") === "true" && (
+                      <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl mb-2">
+                        <p className="text-[10px] text-amber-600 font-medium mb-2 leading-tight">
+                          El pago fue cancelado. ¿Quieres intentarlo de nuevo?
+                        </p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full h-8 text-[10px] border-amber-500/30 text-amber-700 hover:bg-amber-500/10"
+                          onClick={() => performSync(true)}
+                          disabled={isSyncing}
+                        >
+                          {isSyncing
+                            ? "Sincronizando..."
+                            : "Sincronizar Pago Manualmente"}
+                        </Button>
+                      </div>
+                    )}
 
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm items-end">
@@ -499,22 +518,6 @@ function SubscriptionContent() {
                         Gestionar Facturación
                         <ArrowRight className="w-3 h-3 ml-2" />
                       </Button>
-                      {/* Botón de sincronización — útil en local (sin webhook) y como fallback en producción */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 h-8"
-                        onClick={() => performSync(true)}
-                        disabled={isSyncing}
-                        title="Si tu plan en la app no refleja los cambios recientes en Stripe, usa este botón para forzar una sincronización inmediata."
-                      >
-                        <RefreshCcw
-                          className={`w-3 h-3 mr-1.5 ${isSyncing ? "animate-spin" : ""}`}
-                        />
-                        {isSyncing
-                          ? "Sincronizando..."
-                          : "Sincronizar con Stripe"}
-                      </Button>
                       {/* Botón de cancelación o reactivación según estado */}
                       {isPendingCancellation ? (
                         // Estado cancelación pendiente: mostrar opción de reactivar
@@ -542,22 +545,40 @@ function SubscriptionContent() {
                     </>
                   )}
                   {currentPlan === "free" && (
-                    <Button
-                      variant="ghost"
-                      className="w-full text-xs hover:bg-primary/10"
-                      onClick={() =>
-                        (
-                          document.getElementById(
-                            "plan-selection",
-                          ) as HTMLElement
-                        ).scrollIntoView({
-                          behavior: "smooth",
-                        })
-                      }
-                    >
-                      Ver beneficios de otros planes
-                      <ArrowRight className="w-3 h-3 ml-2" />
-                    </Button>
+                    <>
+                      {/* 'Sincronizar con Stripe' solo visible para usuarios en plan FREE */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 h-8 mb-2"
+                        onClick={() => performSync(true)}
+                        disabled={isSyncing}
+                        title="Si tu plan no refleja los cambios recientes en Stripe, usa este botón."
+                      >
+                        <RefreshCcw
+                          className={`w-3 h-3 mr-1.5 ${isSyncing ? "animate-spin" : ""}`}
+                        />
+                        {isSyncing
+                          ? "Sincronizando..."
+                          : "Sincronizar con Stripe"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full text-xs hover:bg-primary/10"
+                        onClick={() =>
+                          (
+                            document.getElementById(
+                              "plan-selection",
+                            ) as HTMLElement
+                          ).scrollIntoView({
+                            behavior: "smooth",
+                          })
+                        }
+                      >
+                        Ver beneficios de otros planes
+                        <ArrowRight className="w-3 h-3 ml-2" />
+                      </Button>
+                    </>
                   )}
                 </CardFooter>
               </Card>

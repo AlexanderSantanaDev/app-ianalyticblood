@@ -10,16 +10,16 @@ import { useEffect, useState } from "react"; // hooks para sincronización
 import { getDashboardStats } from "@/lib/api/analysis"; // Importada función de stats
 import { useApiFetch } from "@/lib/api/client"; // Hook para peticiones autenticadas
 import { useAnalysis } from "@/hooks/analysis-context"; // Hook de análisis reactivo
+import { usePlan } from "@/hooks/plan-context"; // Plan global reactivo (no depende del JWT)
 /***********************************************************************************************************************/
 export function PlanStatusCard({ className }: { className?: string }) {
   // Hooks
   const { data: session, status, update: updateSession } = useSession();
   const apiFetch = useApiFetch(); // Hook para peticiones autenticadas
   const { analysisCount: reactiveAnalysisCount } = useAnalysis(); // Contador reactivo instantáneo
-
-  const plan = session?.user?.plan || "free";
+  // Leemos el plan del contexto global (se actualiza al instante tras cambios de suscripción)
+  const { plan } = usePlan();
   const isPremium = plan === "premium" || plan === "enterprise";
-
   // El contador prioritario es el reactivo del contexto
   const currentCount = reactiveAnalysisCount;
   const [isSyncing, setIsSyncing] = useState(false);
@@ -29,7 +29,7 @@ export function PlanStatusCard({ className }: { className?: string }) {
     // 1. Sincronización inicial silenciosa solo si no tenemos datos
     const syncInitial = async () => {
       if (status === "loading") return;
-      
+
       if (session?.user?.email && currentCount === 0) {
         try {
           const stats = await getDashboardStats(apiFetch);
