@@ -20,6 +20,8 @@ import {
   XCircle,
   RotateCcw,
   CalendarX,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useUserApi } from "@/lib/api/user";
 import { useSubscriptionApi } from "@/lib/api/subscription";
@@ -775,25 +777,25 @@ function SubscriptionContent() {
 
       {/* Upgrade Confirmation Dialog */}
       <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
-        <DialogContent className="sm:max-w-[440px] rounded-3xl overflow-hidden border-none shadow-2xl">
+        <DialogContent className="w-[95vw] sm:max-w-[440px] max-h-[90dvh] overflow-y-auto scrollbar-none rounded-3xl border-none shadow-2xl p-4 sm:p-6">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-card -z-10" />
-          <DialogHeader className="pt-4">
+          <DialogHeader className="pt-2 sm:pt-4">
             <div
               className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 
             border border-primary/20"
             >
               <Sparkles className="w-8 h-8 text-primary" />
             </div>
-            <DialogTitle className="text-2xl font-bold text-center">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-center">
               Confirmar suscripción {selectedPlan?.toUpperCase()}
             </DialogTitle>
-            <DialogDescription className="text-center text-muted-foreground pt-1">
+            <DialogDescription className="text-center text-xs sm:text-sm text-muted-foreground pt-1 px-2">
               Estás a punto de desbloquear todo el potencial de tu salud con
               IAnalytic Blood.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-6 px-4 space-y-4">
+          <div className="py-4 sm:py-6 px-1 sm:px-4 space-y-3 sm:space-y-4">
             <div className="bg-muted/40 p-4 rounded-2xl border border-border/50">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-muted-foreground">Plan seleccionado</span>
@@ -811,34 +813,39 @@ function SubscriptionContent() {
                 </span>
               </div>
               <div className="border-t border-border/50 my-2 pt-2 flex justify-between items-center">
-                <span className="font-bold">Total a pagar ahora</span>
-                <span className="text-xl font-black text-primary">
+                <span className="font-bold text-sm sm:text-base">
+                  Total a pagar ahora
+                </span>
+                <span className="text-lg sm:text-xl font-black text-primary">
                   {billingPeriod === "monthly" ? "€9.99" : "€95.90"}
                 </span>
               </div>
             </div>
             <div
-              className="flex items-center gap-3 py-2 px-3 bg-amber-500/5 text-amber-500 rounded-xl border 
+              className="flex items-center gap-2 sm:gap-3 py-2 px-2 sm:px-3 bg-amber-500/5 text-amber-500 rounded-xl border 
             border-amber-500/10"
             >
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <p className="text-[10px] leading-tight text-amber-600 font-medium">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+              <p className="text-[9px] sm:text-[10px] leading-tight text-amber-600 font-medium">
                 Al confirmar, serás redirigido a Stripe para completar el pago
                 de forma segura.
               </p>
             </div>
+
+            {/* Bloque de tarjeta de prueba de Stripe para entorno de test */}
+            <StripeTestCardBadge />
           </div>
 
-          <DialogFooter className="px-4 pb-6 flex !flex-col sm:!flex-row gap-3">
+          <DialogFooter className="px-1 sm:px-4 pb-2 sm:pb-6 flex !flex-col sm:!flex-row gap-2 sm:gap-3">
             <Button
               variant="ghost"
-              className="flex-1 rounded-xl h-12"
+              className="flex-1 rounded-xl h-11 sm:h-12 text-sm"
               onClick={() => setShowUpgradeDialog(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="flex-1 gradient-bg rounded-xl h-12 shadow-md shadow-primary/20 font-bold"
+              className="flex-1 gradient-bg rounded-xl h-11 sm:h-12 shadow-md shadow-primary/20 font-bold text-sm"
               onClick={confirmUpgrade}
               disabled={isUpgrading}
             >
@@ -1042,6 +1049,91 @@ function SubscriptionContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+/** Componente tarjeta de prueba Stripe — solo visible en modo test */
+function StripeTestCardBadge() {
+  const [copied, setCopied] = React.useState(false);
+  const CARD_NUMBER = "4242 4242 4242 4242";
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(CARD_NUMBER.replace(/\s/g, ""));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback para entornos sin clipboard API
+      const el = document.createElement("textarea");
+      el.value = CARD_NUMBER;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-3 sm:p-4 space-y-2">
+      <div className="flex items-center gap-2 mb-1">
+        <span
+          className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/15 text-blue-400 text-[9px] sm:text-[10px] 
+        font-bold uppercase tracking-widest rounded-full border border-blue-500/20"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shrink-0" />
+          Modo de Pruebas Stripe
+        </span>
+      </div>
+      <p className="text-[10px] sm:text-[11px] text-muted-foreground leading-relaxed">
+        Usa esta tarjeta de prueba para simular el pago en Stripe. Cualquier
+        fecha de caducidad y CVC son válidos.
+      </p>
+      <div className="flex items-center justify-between gap-2 sm:gap-3 rounded-xl bg-background/60 border border-blue-500/15 px-3 sm:px-4 py-2 sm:py-3 mt-1">
+        <div className="flex flex-col">
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-widest mb-0.5">
+            Número de tarjeta
+          </span>
+          <span className="text-xs sm:text-sm font-mono font-bold text-foreground tracking-[0.1em] sm:tracking-[0.2em]">
+            {CARD_NUMBER}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 border border-blue-500/20 bg-blue-500/10
+           hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all duration-200 hover:scale-105 active:scale-95"
+          title="Copiar n\u00famero de tarjeta"
+          aria-label="Copiar n\u00famero de tarjeta de prueba"
+        >
+          {copied ? (
+            <Check size={15} className="text-green-400" />
+          ) : (
+            <Copy size={15} />
+          )}
+        </button>
+      </div>
+      <div className="flex gap-3 sm:gap-4 mt-1">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-widest">
+            Caducidad
+          </span>
+          <span className="text-[10px] sm:text-xs font-mono text-foreground/80 font-semibold">
+            Cualquiera
+          </span>
+        </div>
+        <div className="w-px bg-border/50" />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-widest">
+            CVC
+          </span>
+          <span className="text-[10px] sm:text-xs font-mono text-foreground/80 font-semibold">
+            Cualquiera
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

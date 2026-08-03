@@ -392,9 +392,9 @@ export default function DashboardSearch({
           {!hasResults && query.trim() && (
             <div className="flex flex-col items-center justify-center py-12 text-center px-6">
               <div className="w-12 h-12 rounded-2xl bg-muted/50 flex items-center justify-center mb-3">
-                <Search className="h-5 w-5 text-muted-foreground/40" />
+                <Search className="h-5 w-5 text-muted-foreground/60" />
               </div>
-              <p className="text-sm font-semibold text-foreground/60">
+              <p className="text-sm font-semibold text-foreground/80">
                 Sin resultados
               </p>
               <p className="text-xs text-muted-foreground mt-1">
@@ -470,26 +470,26 @@ export default function DashboardSearch({
         <div className="hidden sm:flex items-center justify-between px-4 py-2.5 border-t border-border/40 bg-muted/20">
           <div className="flex items-center gap-2">
             <kbd
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/60 text-[10px] 
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/80 text-[10px] 
             font-mono border border-border/60"
             >
               ↑↓ navegar
             </kbd>
             <kbd
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/60 text-[10px] 
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/80 text-[10px] 
             font-mono border border-border/60"
             >
               ↵ abrir
             </kbd>
             <kbd
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/60 text-[10px] 
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/80 text-[10px] 
             font-mono border border-border/60"
             >
               esc cerrar
             </kbd>
           </div>
-          <p className="text-[10px] text-muted-foreground/50 font-medium tracking-tight">
-            iAnalytic<span className="text-primary/60">Blood</span>
+          <p className="text-[10px] text-muted-foreground/80 font-medium tracking-tight">
+            iAnalytic<span className="text-primary/80">Blood</span>
           </p>
         </div>
       </DialogContent>
@@ -511,8 +511,8 @@ function SearchSection({
   return (
     <div className="mb-1">
       <div className="flex items-center gap-2 px-4 py-1.5 mb-0.5">
-        <Icon className="h-3 w-3 text-muted-foreground/40" />
-        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+        <Icon className="h-3 w-3 text-muted-foreground/70" />
+        <span className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">
           {title}
         </span>
       </div>
@@ -562,8 +562,8 @@ const SearchResultItem = forwardRef<
           className={cn(
             "h-4 w-4 transition-colors duration-150",
             isFocused
-              ? "text-primary/70"
-              : "text-muted-foreground/60 group-hover:text-primary/70",
+              ? "text-primary/90"
+              : "text-muted-foreground/80 group-hover:text-primary/80",
           )}
         />
       </div>
@@ -595,8 +595,8 @@ const SearchResultItem = forwardRef<
             className={cn(
               "text-xs truncate mt-0.5 transition-colors",
               isFocused
-                ? "text-muted-foreground/70"
-                : "text-muted-foreground/50 group-hover:text-muted-foreground/70",
+                ? "text-muted-foreground"
+                : "text-muted-foreground/70 group-hover:text-muted-foreground",
             )}
           >
             {item.description}
