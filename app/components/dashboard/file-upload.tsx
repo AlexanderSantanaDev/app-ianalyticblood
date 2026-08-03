@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useApiFetch } from "@/lib/api/client";
 import { useAnalysis } from "@/hooks/analysis-context";
+import { usePlan } from "@/hooks/plan-context";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -17,7 +18,11 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const apiFetch = useApiFetch();
-  const { startAnalysis, isAnalyzing, progress, currentStep } = useAnalysis();
+  const { startAnalysis, isAnalyzing, progress, currentStep, analysisCount } = useAnalysis();
+  const { plan } = usePlan();
+  
+  const isFree = plan === "free";
+  const isLimitReached = isFree && analysisCount >= 5;
   // Referencia al input de archivo para evitar document.getElementById
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Límite de 20MB para archivos subidos
@@ -81,6 +86,7 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       setIsDragging(false);
+      if (isLimitReached) return; // 🔒 Bloqueo si el límite está alcanzado
       const files = e.dataTransfer.files;
       if (files && files.length > 0) {
         const droppedFile = files[0];
@@ -95,7 +101,7 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
         }
       }
     },
-    [handleChange],
+    [handleChange, isLimitReached],
   );
 
   /** Maneja el cambio de archivo */
@@ -218,12 +224,18 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
         <Upload className="w-full h-full" />
       </div>
       <h3 className="text-lg font-medium mb-2">
-        {file ? file.name : "Arrastra y suelta tu PDF o imagen aquí"}
+        {file 
+          ? file.name 
+          : isLimitReached 
+            ? "Límite de análisis alcanzado" 
+            : "Arrastra y suelta tu PDF o imagen aquí"}
       </h3>
       <p className="text-muted-foreground mb-4">
         {file
           ? `${(file.size / 1024 / 1024).toFixed(2)} MB`
-          : "o haz clic para seleccionar un archivo"}
+          : isLimitReached
+            ? "Has agotado tus 5 análisis de este mes."
+            : "o haz clic para seleccionar un archivo"}
       </p>
       {/* Usar ref en lugar de id para acceso directo al input */}
       <input
@@ -233,20 +245,30 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
         className="hidden"
         accept=".pdf,image/*"
         onChange={handleFileChange}
+        disabled={isLimitReached}
       />
       <label htmlFor="file-upload">
-        <Button
-          variant={file ? "outline" : "default"}
-          onClick={(e) => {
-            e.preventDefault();
-            // Usar fileInputRef en lugar de document.getElementById
-            fileInputRef.current?.click();
-          }}
-          className={file ? "" : "gradient-bg"}
-          disabled={isAnalyzing}
-        >
-          {file ? "Cambiar archivo" : "Seleccionar archivo"}
-        </Button>
+        {isLimitReached ? (
+          <Button
+            asChild
+            className="bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-md shadow-amber-500/20"
+          >
+            <a href="/dashboard/subscription">Mejorar a Premium</a>
+          </Button>
+        ) : (
+          <Button
+            variant={file ? "outline" : "default"}
+            onClick={(e) => {
+              e.preventDefault();
+              // Usar fileInputRef en lugar de document.getElementById
+              fileInputRef.current?.click();
+            }}
+            className={file ? "" : "gradient-bg"}
+            disabled={isAnalyzing}
+          >
+            {file ? "Cambiar archivo" : "Seleccionar archivo"}
+          </Button>
+        )}
       </label>
       {previewUrl && (
         <div className="mt-4">

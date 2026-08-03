@@ -178,12 +178,12 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
           const stats = await getDashboardStats(apiFetch);
           // ✨ Removed debug console.log for production cleanliness
 
-          // Actualización instantánea del estado local para reactividad total
-          setAnalysisCount(stats.analyses_total);
+          // Actualización instantánea del estado local para reactividad total (mes actual)
+          setAnalysisCount(stats.analyses_this_month);
 
           // Forma simplificada de update para mayor compatibilidad
           await updateSession({
-            analysis_count: stats.analyses_total,
+            analysis_count: stats.analyses_this_month,
             plan: session?.user?.plan,
           });
 
@@ -192,7 +192,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
           // Disparar evento personalizado para notificar a otros componentes (Sidebar)
           window.dispatchEvent(
             new CustomEvent("ianalytic:analysis-completed", {
-              detail: { count: stats.analyses_total },
+              detail: { count: stats.analyses_this_month },
             }),
           );
         } catch (syncErr) {

@@ -33,8 +33,8 @@ export function PlanStatusCard({ className }: { className?: string }) {
       if (session?.user?.email && currentCount === 0) {
         try {
           const stats = await getDashboardStats(apiFetch);
-          if (stats.analyses_total > 0) {
-            await updateSession({ analysis_count: stats.analyses_total });
+          if (stats.analyses_this_month > 0) {
+            await updateSession({ analysis_count: stats.analyses_this_month });
           }
         } catch (e) {
           console.error("[SIDEBAR] Error en sincronización inicial:", e);

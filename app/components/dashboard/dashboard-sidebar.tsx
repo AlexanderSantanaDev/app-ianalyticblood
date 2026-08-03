@@ -15,10 +15,12 @@ import {
   HelpCircle,
   Lock,
   ShieldCheck, // Icono para el acceso admin
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlanStatusCard } from "./plan-status-card";
 import { useSession } from "next-auth/react"; // Necesario para leer el role del usuario
+import { usePlan } from "@/hooks/plan-context";
 import {
   Sidebar,
   SidebarContent,
@@ -49,7 +51,7 @@ interface MenuItem {
 const MENU_ITEMS: MenuItem[] = [
   { title: "Panel", icon: Home, href: "/dashboard", disabled: false },
   {
-    title: "Subir análisis",
+    title: "Subir",
     icon: Upload,
     href: "/dashboard/upload",
     disabled: false,
@@ -100,6 +102,8 @@ function DashboardSidebarComponent() {
   // Obtenemos el role del usuario para mostrar la opción de admin solo a los administradores
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "admin";
+  const { plan } = usePlan();
+  const isFree = plan === "free";
 
   /** Verifica si la ruta está activa */
   const isActive = (path: string) => {
@@ -171,13 +175,18 @@ function DashboardSidebarComponent() {
             }
 
             // Item activo refinado + ripple ring sutil
+            const isPremiumFeature =
+              isFree &&
+              (item.href === "/dashboard/history" ||
+                item.href === "/dashboard/stats");
+
             return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
                   isActive={active}
                   tooltip={item.title}
-                  className="h-11 rounded-xl transition-all duration-200"
+                  className="h-11 rounded-xl transition-all duration-200 relative"
                 >
                   <Link
                     href={item.href}
@@ -199,15 +208,19 @@ function DashboardSidebarComponent() {
                           : "text-sidebar-foreground/60 dark:text-sidebar-foreground/40 group-hover:text-sidebar-foreground/90 dark:group-hover:text-sidebar-foreground/70 group-hover:scale-110",
                       )}
                     />
-                    <span
-                      className={cn(
-                        "tracking-tight text-sm",
-                        active && "font-semibold",
+                    <div className="relative flex items-center">
+                      <span
+                        className={cn(
+                          "tracking-tight text-sm",
+                          active && "font-semibold",
+                        )}
+                      >
+                        {item.title}
+                      </span>
+                      {isPremiumFeature && (
+                        <Crown className="absolute -top-1.5 -right-3.5 h-2.5 w-2.5 text-amber-500 fill-amber-500 opacity-90 drop-shadow-sm" />
                       )}
-                    >
-                      {item.title}
-                    </span>
-                    {/* Indicador dinámico vinculado al estado real */}
+                    </div>
                     {item.href === "/dashboard/notifications" &&
                       unreadCount > 0 && (
                         <span className="ml-auto flex h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary))] animate-pulse" />
@@ -219,7 +232,6 @@ function DashboardSidebarComponent() {
           })}
         </SidebarMenu>
 
-        {/* Sección de administrador — solo visible para usuarios con role=admin */}
         {isAdmin && (
           <>
             <SidebarSeparator className="my-2 bg-amber-500/20 border-0 h-px" />

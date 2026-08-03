@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, Mail, MessageCircle, Phone, ArrowUpRight } from "lucide-react";
+import { Search, Mail, MessageCircle, Phone, ArrowUpRight, Crown, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import HelpCategories from "@/components/dashboard/help-categories";
@@ -14,9 +14,12 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { useChat } from "@/hooks/use-chat";
+import { usePlan } from "@/hooks/plan-context";
 /***********************************************************************************************************************/
 export default function HelpPage() {
   const { setIsOpen } = useChat();
+  const { plan } = usePlan();
+  const isPremium = plan === "premium" || plan === "enterprise";
   /***********************************************************************************************************************/
   //JSX
   return (
@@ -135,25 +138,44 @@ export default function HelpPage() {
             <span className="font-semibold text-sm">Enviar Email</span>
           </Button>
 
-          <Button
-            variant="outline"
-            className="h-14 px-8 rounded-2xl gap-3 border-border/60 hover:bg-muted/50 hover:border-primary/30 group"
-          >
-            <div className="p-1.5 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
-              <MessageCircle className="h-4 w-4 text-green-500" />
-            </div>
-            <span className="font-semibold text-sm">WhatsApp Soporte</span>
-          </Button>
+          {isPremium ? (
+            <>
+              <Button
+                variant="outline"
+                className="h-14 px-8 rounded-2xl gap-3 border-amber-500/30 hover:bg-amber-500/5 hover:border-amber-500/50 group"
+              >
+                <div className="p-1.5 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
+                  <MessageCircle className="h-4 w-4 text-green-500" />
+                </div>
+                <span className="font-semibold text-sm">WhatsApp Prioritario</span>
+                <Crown className="h-3.5 w-3.5 text-amber-500 ml-1" />
+              </Button>
 
-          <Button
-            variant="outline"
-            className="h-14 px-8 rounded-2xl gap-3 border-border/60 hover:bg-muted/50 hover:border-primary/30 group"
-          >
-            <div className="p-1.5 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-              <Phone className="h-4 w-4 text-blue-500" />
-            </div>
-            <span className="font-semibold text-sm">Llamada</span>
-          </Button>
+              <Button
+                variant="outline"
+                className="h-14 px-8 rounded-2xl gap-3 border-amber-500/30 hover:bg-amber-500/5 hover:border-amber-500/50 group"
+              >
+                <div className="p-1.5 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                  <Phone className="h-4 w-4 text-blue-500" />
+                </div>
+                <span className="font-semibold text-sm">Llamada Directa</span>
+                <Crown className="h-3.5 w-3.5 text-amber-500 ml-1" />
+              </Button>
+            </>
+          ) : (
+            <Button
+              asChild
+              variant="outline"
+              className="h-14 px-8 rounded-2xl gap-3 border-amber-500/30 hover:bg-amber-500/5 hover:border-amber-500/50 group"
+            >
+              <a href="/dashboard/subscription">
+                <div className="p-1.5 rounded-lg bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors">
+                  <Crown className="h-4 w-4 text-amber-500" />
+                </div>
+                <span className="font-semibold text-sm text-amber-600 dark:text-amber-500">Desbloquear Soporte Prioritario</span>
+              </a>
+            </Button>
+          )}
         </div>
       </section>
     </div>

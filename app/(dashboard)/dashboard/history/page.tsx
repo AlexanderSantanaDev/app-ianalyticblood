@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { usePlan } from "@/hooks/plan-context";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,6 +18,8 @@ import {
   Inbox,
   ArrowUpDown,
   CalendarDays,
+  Crown,
+  Sparkles,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -138,6 +141,8 @@ export default function HistoryPage() {
   // Hooks
   const apiFetch = useApiFetch();
   const { status } = useSession();
+  const { plan } = usePlan();
+  const isFree = plan === "free";
 
   // Fetch data
   const fetchData = async () => {
@@ -248,6 +253,49 @@ export default function HistoryPage() {
   // Solo skeleton si no hay datos en cache y está en primera carga
   if (loading && data.length === 0) {
     return <HistorySkeleton />;
+  }
+
+  // Paywall para usuarios Free
+  if (isFree) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          className="max-w-md w-full relative overflow-hidden rounded-3xl border border-amber-500/20 bg-card shadow-2xl p-8 sm:p-10 text-center"
+        >
+          {/* Background effects */}
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-amber-500/5 pointer-events-none" />
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 blur-3xl rounded-full pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-amber-500/20 blur-3xl rounded-full pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30 mb-6">
+              <Crown className="w-8 h-8 text-white fill-white/20" />
+            </div>
+            
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-3">
+              Tu historial clínico, siempre disponible
+            </h2>
+            
+            <p className="text-muted-foreground mb-8 text-sm sm:text-base">
+              El seguimiento de tu evolución en el tiempo es clave. Actualiza a 
+              <strong className="text-foreground ml-1">Premium</strong> para desbloquear acceso ilimitado a todos tus análisis pasados.
+            </p>
+            
+            <Button
+              asChild
+              className="w-full h-12 sm:h-14 rounded-xl text-base font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0 text-white shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02]"
+            >
+              <a href="/dashboard/subscription" className="flex items-center justify-center gap-2">
+                Desbloquear Historial
+                <Sparkles className="w-5 h-5" />
+              </a>
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
   }
   /***********************************************************************************************************************/
   //JSX

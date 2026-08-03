@@ -27,6 +27,7 @@ import { getAnalysis } from "@/lib/api/analysis";
 import { useApiFetch } from "@/lib/api/client";
 import type { AnalysisDoc } from "@/lib/api/types";
 import { downloadAnalysisAsPDF } from "@/lib/api/download-analysis";
+import { usePlan } from "@/hooks/plan-context";
 /****************************************************************************************************************************/
 /** Tipado de props del dialog */
 interface AnalysisDetailDialogProps {
@@ -100,6 +101,8 @@ export function AnalysisDetailDialog({
   const [data, setData] = useState<AnalysisDoc | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { plan } = usePlan();
+  const isFree = plan === "free";
   /****************************************************************************************************************************/
   // Hooks
   // Hook para fetch de API
@@ -305,21 +308,42 @@ export function AnalysisDetailDialog({
                 {data.recommendations && data.recommendations.length > 0 && (
                   <>
                     <Separator />
-                    <div className="space-y-3">
+                    <div className="space-y-3 relative">
                       <div className="flex items-center gap-2 text-sm font-semibold">
                         <Lightbulb className="h-4 w-4 text-yellow-500" />
                         Recomendaciones
                       </div>
-                      <ul className="space-y-2">
-                        {data.recommendations.map((rec, i) => (
-                          <li
-                            key={i}
-                            className="text-sm text-muted-foreground leading-relaxed pl-4 border-l-2 border-yellow-500/30"
+                      
+                      {isFree ? (
+                        <div className="relative rounded-xl border border-amber-500/20 bg-amber-500/5 p-6 text-center overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent pointer-events-none" />
+                          <Lightbulb className="w-8 h-8 text-amber-500 mx-auto mb-3 opacity-80" />
+                          <h4 className="font-bold text-amber-600 dark:text-amber-500 mb-1">
+                            Recomendaciones Avanzadas
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Sube a Premium para obtener un plan de acción personalizado.
+                          </p>
+                          <Button
+                            asChild
+                            size="sm"
+                            className="bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-md shadow-amber-500/20 rounded-lg"
                           >
-                            {rec}
-                          </li>
-                        ))}
-                      </ul>
+                            <a href="/dashboard/subscription">Mejorar Plan</a>
+                          </Button>
+                        </div>
+                      ) : (
+                        <ul className="space-y-2">
+                          {data.recommendations.map((rec, i) => (
+                            <li
+                              key={i}
+                              className="text-sm text-muted-foreground leading-relaxed pl-4 border-l-2 border-yellow-500/30"
+                            >
+                              {rec}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   </>
                 )}
