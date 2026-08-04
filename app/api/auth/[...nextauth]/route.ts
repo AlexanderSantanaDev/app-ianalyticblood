@@ -124,7 +124,10 @@ const authOptions: NextAuthOptions = {
     }),
   ],
 
-  session: { strategy: "jwt" },
+  // MaxAge de 30 días — la sesión no expira tras unas pocas horas.
+  // El JWT de NextAuth dura 30 días; el token del backend se renueva con refreshToken.
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+
   secret: process.env.NEXTAUTH_SECRET, // Se añade secret explícito para producción
   useSecureCookies: process.env.NODE_ENV === "production",
 

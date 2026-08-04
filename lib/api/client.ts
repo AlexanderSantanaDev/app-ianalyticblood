@@ -4,11 +4,16 @@ import { toast } from "sonner";
 /****************************************************************************************************************************/
 const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
 
-//  Mutex para evitar race conditions en token refresh concurrente
+// Mutex para evitar race conditions en token refresh concurrente
 let refreshPromise: Promise<{
   access_token: string;
   refresh_token: string;
 }> | null = null;
+
+// lag global de deduplicación para el toast de sesión expirada.
+// Cuando múltiples peticiones concurrentes fallan a la vez (fetchMetrics + fetchHealth + fetchUsers),
+// solo se muestra UN toast y se ejecuta UN signOut, no 3.
+let sessionExpiredHandled = false;
 /****************************************************************************************************************************/
 /** Función para rutas públicas (sin autenticación). */
 export async function publicApiFetch<T = unknown>(
@@ -64,13 +69,17 @@ export function useApiFetch() {
       // console.log("Estado de la sesión:", status);
       // console.log("Access Token usado:", accessToken);
 
-      // Si no hay access token pero la sesión está autenticada, cerrar sesión
+      // 🛡️ Si no hay access token pero la sesión está autenticada, cerrar sesión (deduplicado)
       if (!accessToken && status === "authenticated") {
         console.error(
           "No access token available despite authenticated session",
         );
-        toast.error("Sesión inválida. Por favor, inicia sesión nuevamente.");
-        await signOut({ callbackUrl: "/login" });
+        if (!sessionExpiredHandled) {
+          sessionExpiredHandled = true;
+          toast.error("Sesión inválida. Por favor, inicia sesión nuevamente.");
+          // Pequeño delay para que el toast sea visible antes del redirect
+          setTimeout(() => signOut({ callbackUrl: "/login" }), 800);
+        }
         throw new Error("No access token available");
       }
 
@@ -117,8 +126,20 @@ export function useApiFetch() {
           headers.Authorization = `Bearer ${data.access_token}`;
           res = await fetch(`${API_BASE}${path}`, { ...options, headers });
         } catch {
-          toast.error("Sesión expirada. Por favor, inicia sesión nuevamente.");
-          await signOut({ callbackUrl: "/login" });
+          // Deduplicación del toast de sesión expirada.
+          // fetchMetrics, fetchHealth y fetchUsers se lanzan en paralelo → sin este guard
+          // se mostrarían 3 toasts idénticos y se llamaría a signOut 3 veces.
+          if (!sessionExpiredHandled) {
+            sessionExpiredHandled = true;
+            toast.error(
+              "Sesión expirada. Por favor, inicia sesión nuevamente.",
+              {
+                id: "session-expired", // sonner deduplica por id: mismo toast no se repite
+              },
+            );
+            // Delay mínimo para que el toast sea legible antes de redirigir
+            setTimeout(() => signOut({ callbackUrl: "/login" }), 800);
+          }
           throw new Error(
             "Sesión expirada. Por favor, inicia sesión nuevamente.",
           );
