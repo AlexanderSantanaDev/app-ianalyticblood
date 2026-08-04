@@ -234,6 +234,8 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
             description: err.message || "No se pudo analizar el informe.",
           });
         }
+
+        throw err;
       }
     },
     [isAnalyzing, resetAnalysis, addNotification, updateSession, session], // 🚀 Fixed dependency array to avoid stale closures
