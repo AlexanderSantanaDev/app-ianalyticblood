@@ -218,3 +218,15 @@
     scrollbar-width: none; /* Firefox */
   }
 }
+
+@media (max-width: 639px) {
+  html {
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  html {
+    font-size: 14px;
+  }
+}

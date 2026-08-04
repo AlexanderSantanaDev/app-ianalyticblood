@@ -255,12 +255,22 @@ function DashboardNavbarComponent() {
               >
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
-                  <Badge
-                    className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px] bg-primary
-                   text-white border-2 border-background animate-in zoom-in duration-300"
+                  <span
+                    className={`
+                      absolute -top-1.5 -right-1.5
+                      flex items-center justify-center
+                      min-w-[18px] h-[18px] px-[3px]
+                      rounded-full
+                      bg-gradient-to-br from-primary to-secondary
+                      text-white !text-[9px] font-extrabold leading-none tracking-tight
+                      ring-2 ring-background
+                      shadow-[0_2px_8px_rgba(139,92,246,0.5)]
+                      animate-in zoom-in duration-300
+                      select-none pointer-events-none
+                    `}
                   >
-                    {unreadCount}
-                  </Badge>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
                 )}
                 <span className="sr-only">Notificaciones</span>
               </Button>
