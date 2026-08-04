@@ -40,6 +40,7 @@ import StatsCharts from "@/components/dashboard/stats-charts";
 import { toast } from "sonner";
 import { downloadAnalysisAsPDF } from "@/lib/api/download-analysis";
 import { getCached, setCached, CACHE_KEYS } from "@/lib/dashboard-cache";
+import { parseUTCDate } from "@/lib/utils";
 
 // Tipo del snapshot de cache del dashboard
 interface DashboardSnapshot {
@@ -167,6 +168,30 @@ export default function DashboardPage() {
       fetchCalledRef.current = true;
       fetchData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
+
+  // Refrescar el dashboard automáticamente cuando se complete un análisis.
+  // El evento `ianalytic:analysis-completed` es disparado por analysis-context.tsx
+  // justo después de confirmar el éxito del backend. Esto actualiza "Análisis recientes"
+  // sin que el usuario tenga que recargar la página manualmente.
+  useEffect(() => {
+    const handleAnalysisCompleted = () => {
+      // Invalidamos el cache del dashboard para que fetchData traiga datos frescos
+      setCached(CACHE_KEYS.DASHBOARD, null as any);
+      fetchData();
+    };
+
+    window.addEventListener(
+      "ianalytic:analysis-completed",
+      handleAnalysisCompleted,
+    );
+    return () => {
+      window.removeEventListener(
+        "ianalytic:analysis-completed",
+        handleAnalysisCompleted,
+      );
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
   /***********************************************************************************************************************/
@@ -440,24 +465,23 @@ export default function DashboardPage() {
                                 <div className="min-w-0">
                                   <CardTitle className="text-base">
                                     Análisis{" "}
-                                    {new Date(analysis.date).toLocaleDateString(
-                                      "es-ES",
-                                      {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric",
-                                      },
-                                    )}
+                                    {/* parseUTCDate para corregir hora UTC */}
+                                    {parseUTCDate(
+                                      analysis.date,
+                                    ).toLocaleDateString("es-ES", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
                                   </CardTitle>
                                   {/* Fecha relativa */}
                                   <CardDescription className="text-xs mt-0.5">
-                                    {new Date(analysis.date).toLocaleTimeString(
-                                      "es-ES",
-                                      {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      },
-                                    )}
+                                    {parseUTCDate(
+                                      analysis.date,
+                                    ).toLocaleTimeString("es-ES", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
                                   </CardDescription>
                                 </div>
                               </div>
@@ -554,7 +578,8 @@ export default function DashboardPage() {
                                   <div className="flex justify-between sm:justify-start items-center gap-3">
                                     <h4 className="font-bold text-base sm:text-lg group-hover:text-primary transition-colors">
                                       Análisis{" "}
-                                      {new Date(
+                                      {/* parseUTCDate para corregir hora UTC */}
+                                      {parseUTCDate(
                                         analysis.date,
                                       ).toLocaleDateString("es-ES", {
                                         day: "numeric",
@@ -573,13 +598,13 @@ export default function DashboardPage() {
 
                                   <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1 sm:mt-0.5">
                                     <Clock className="h-3 w-3" />
-                                    {new Date(analysis.date).toLocaleTimeString(
-                                      "es-ES",
-                                      {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      },
-                                    )}
+                                    {/* parseUTCDate para corregir hora UTC */}
+                                    {parseUTCDate(
+                                      analysis.date,
+                                    ).toLocaleTimeString("es-ES", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
                                   </p>
                                 </div>
 

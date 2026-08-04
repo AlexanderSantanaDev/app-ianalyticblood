@@ -3,8 +3,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { usePlan } from "@/hooks/plan-context";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { parseUTCDate } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText,
@@ -175,6 +174,31 @@ export default function HistoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
+  // Escuchar el evento de análisis completado para refrescar el historial
+  // automáticamente sin que el usuario tenga que recargar la página manualmente.
+  // El evento `ianalytic:analysis-completed` es disparado por analysis-context.tsx
+  // justo después de que el backend confirma el análisis exitoso.
+  useEffect(() => {
+    const handleAnalysisCompleted = () => {
+      // Invalidamos el cache para que el siguiente fetchData traiga datos frescos
+      setCached(CACHE_KEYS.HISTORY, null as any);
+      // Re-fetch silencioso — el usuario verá aparecer el nuevo informe
+      fetchData();
+    };
+
+    window.addEventListener(
+      "ianalytic:analysis-completed",
+      handleAnalysisCompleted,
+    );
+    return () => {
+      window.removeEventListener(
+        "ianalytic:analysis-completed",
+        handleAnalysisCompleted,
+      );
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
+
   /***********************************************************************************************************************/
   // Métodos
   /** Abre el diálogo de detalle. */
@@ -209,7 +233,14 @@ export default function HistoryPage() {
       result = result.filter(
         (item) =>
           item.summary.toLowerCase().includes(lowerSearch) ||
-          format(new Date(item.date), "dd MMMM yyyy", { locale: es })
+          // parseUTCDate garantiza que la fecha UTC del backend se convierte
+          // correctamente a hora local antes de formatear para la búsqueda
+          new Intl.DateTimeFormat("es-ES", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })
+            .format(parseUTCDate(item.date))
             .toLowerCase()
             .includes(lowerSearch),
       );
@@ -259,7 +290,7 @@ export default function HistoryPage() {
   if (isFree) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center p-4">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           className="max-w-md w-full relative overflow-hidden rounded-3xl border border-amber-500/20 bg-card shadow-2xl p-8 sm:p-10 text-center"
@@ -268,26 +299,33 @@ export default function HistoryPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-amber-500/5 pointer-events-none" />
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 blur-3xl rounded-full pointer-events-none" />
           <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-amber-500/20 blur-3xl rounded-full pointer-events-none" />
-          
+
           <div className="relative z-10 flex flex-col items-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30 mb-6">
+            <div
+              className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center 
+            shadow-lg shadow-amber-500/30 mb-6"
+            >
               <Crown className="w-8 h-8 text-white fill-white/20" />
             </div>
-            
+
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-3">
               Tu historial clínico, siempre disponible
             </h2>
-            
+
             <p className="text-muted-foreground mb-8 text-sm sm:text-base">
-              El seguimiento de tu evolución en el tiempo es clave. Actualiza a 
-              <strong className="text-foreground ml-1">Premium</strong> para desbloquear acceso ilimitado a todos tus análisis pasados.
+              El seguimiento de tu evolución en el tiempo es clave. Actualiza a
+              <strong className="text-foreground ml-1">Premium</strong> para
+              desbloquear acceso ilimitado a todos tus análisis pasados.
             </p>
-            
+
             <Button
               asChild
               className="w-full h-12 sm:h-14 rounded-xl text-base font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0 text-white shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02]"
             >
-              <a href="/dashboard/subscription" className="flex items-center justify-center gap-2">
+              <a
+                href="/dashboard/subscription"
+                className="flex items-center justify-center gap-2"
+              >
                 Desbloquear Historial
                 <Sparkles className="w-5 h-5" />
               </a>
@@ -410,14 +448,17 @@ export default function HistoryPage() {
               {filteredAndSortedData.map((item, index) => {
                 const Icon = getAlertIcon(item.alert_level);
                 const badgeStyle = getAlertBadgeClasses(item.alert_level);
-                const formattedDate = format(
-                  new Date(item.date),
-                  "dd MMMM yyyy",
-                  { locale: es },
-                );
-                const formattedTime = format(new Date(item.date), "HH:mm", {
-                  locale: es,
-                });
+                const dateObj = parseUTCDate(item.date);
+                const formattedDate = new Intl.DateTimeFormat("es-ES", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                }).format(dateObj);
+                const formattedTime = new Intl.DateTimeFormat("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }).format(dateObj);
 
                 return (
                   <motion.div
