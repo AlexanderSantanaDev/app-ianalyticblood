@@ -10,7 +10,89 @@ import { usePlan } from "@/hooks/plan-context";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { ShieldCheck, Database, Sparkles, CheckCircle2 } from "lucide-react";
+import {
+  ShieldCheck,
+  Database,
+  Sparkles,
+  CheckCircle2,
+  ServerCrash,
+} from "lucide-react";
+
+// Compresor de imagen client-side usando Canvas API (sin dependencias nuevas).
+// Reduce fotos iPhone/Android de alta resolución a máx 1600px y calidad 85% antes de enviar.
+// Esto evita el OOM en Render Free Tier (512MB) sin perder calidad para OCR de texto.
+const MAX_IMAGE_PX = 1600;
+const JPEG_QUALITY = 0.85;
+
+async function compressImageIfNeeded(file: File): Promise<File> {
+  // Solo comprimimos imágenes — PDFs van intactos
+  if (!file.type.startsWith("image/")) return file;
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const { width, height } = img;
+      const longest = Math.max(width, height);
+
+      // Si ya es pequeña no hace falta comprimir
+      if (longest <= MAX_IMAGE_PX) {
+        resolve(file);
+        return;
+      }
+
+      // Calcular nuevas dimensiones manteniendo aspect ratio
+      const scale = MAX_IMAGE_PX / longest;
+      const newW = Math.round(width * scale);
+      const newH = Math.round(height * scale);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = newW;
+      canvas.height = newH;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, newW, newH);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          // Creamos un nuevo File con el nombre original pero comprimido
+          const compressed = new File(
+            [blob],
+            file.name.replace(/\.[^.]+$/, ".jpg"),
+            {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            },
+          );
+          console.info(
+            `[file-upload] Imagen comprimida: ${(file.size / 1024).toFixed(0)}KB → ` +
+              `${(compressed.size / 1024).toFixed(0)}KB (${newW}x${newH}px)`,
+          );
+          resolve(compressed);
+        },
+        "image/jpeg",
+        JPEG_QUALITY,
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file); // fallback: enviamos el original
+    };
+
+    img.src = objectUrl;
+  });
+}
 /****************************************************************************************************************************/
 export const FileUpload = ({ onUpload }: FileUploadProps) => {
   // Estados
@@ -18,9 +100,10 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const apiFetch = useApiFetch();
-  const { startAnalysis, isAnalyzing, progress, currentStep, analysisCount } = useAnalysis();
+  const { startAnalysis, isAnalyzing, progress, currentStep, analysisCount } =
+    useAnalysis();
   const { plan } = usePlan();
-  
+
   const isFree = plan === "free";
   const isLimitReached = isFree && analysisCount >= 5;
   // Referencia al input de archivo para evitar document.getElementById
@@ -59,10 +142,34 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
   const handleProcess = useCallback(async () => {
     if (!file) return;
     try {
-      await startAnalysis(file, apiFetch);
-      onUpload(file);
+      // Vomprimimos la imagen ANTES de enviar al backend.
+      // Esto protege contra OOM en Render Free Tier (512MB):
+      // una foto iPhone 12MP puede superar los 400MB en RAM al procesarse con OCR.
+      // La compresión es transparente para el usuario y no afecta la calidad del OCR.
+      const fileToUpload = await compressImageIfNeeded(file);
+      await startAnalysis(fileToUpload, apiFetch);
+      onUpload(file); // pasamos el file original para el display
     } catch (err: any) {
-      // El error ya se maneja en el context, pero podemos limpiar estado local aquí si hace falta
+      // Detección específica de errores de servicio (502/503/OOM en Render).
+      // El error ya se muestra via toast en analysis-context, pero si es un error
+      // de infraestructura mostramos un mensaje adicional más informativo.
+      const isServiceError =
+        err?.status === 502 ||
+        err?.status === 503 ||
+        err?.message?.includes("502") ||
+        err?.message?.includes("503") ||
+        err?.message?.includes("Bad Gateway") ||
+        err?.message?.includes("fetch");
+
+      if (isServiceError) {
+        toast.error("Servicio temporalmente saturado", {
+          description:
+            "El servidor de análisis está procesando muchas solicitudes. " +
+            "Espera unos segundos e inténtalo de nuevo.",
+          icon: <ServerCrash className="h-5 w-5 text-white" />,
+          duration: 8000,
+        });
+      }
     } finally {
       setFile(null);
       setPreviewUrl(null);
@@ -224,10 +331,10 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
         <Upload className="w-full h-full" />
       </div>
       <h3 className="text-lg font-medium mb-2">
-        {file 
-          ? file.name 
-          : isLimitReached 
-            ? "Límite de análisis alcanzado" 
+        {file
+          ? file.name
+          : isLimitReached
+            ? "Límite de análisis alcanzado"
             : "Arrastra y suelta tu PDF o imagen aquí"}
       </h3>
       <p className="text-muted-foreground mb-4">
