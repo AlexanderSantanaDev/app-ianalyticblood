@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMobile as useIsMobile } from "@/hooks/use-mobile";
+
 import {
   Users,
   Activity,
@@ -23,7 +25,10 @@ import {
   Calendar,
   Zap,
   Server,
+  LayoutGrid,
+  LayoutList,
 } from "lucide-react";
+
 import {
   Card,
   CardContent,
@@ -441,14 +446,205 @@ function UserRow({
   );
 }
 
+/** UserCard — vista de tarjeta premium para el modo grid en móvil y desktop.
+    Muestra toda la información del usuario con diseño glassmorphism coherente con la app.
+*/
+function UserCard({
+  user,
+  token,
+  onUpdate,
+}: {
+  user: AdminUser;
+  token: string;
+  onUpdate: () => void;
+}) {
+  const [loadingPlan, setLoadingPlan] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState(false);
+  const statusCfg = STATUS_CONFIG[user.status] ?? STATUS_CONFIG.active;
+  const StatusIcon = statusCfg.icon;
+
+  /** Maneja el cambio de plan del usuario */
+  const handlePlanChange = async (plan: string) => {
+    setLoadingPlan(true);
+    try {
+      await updateUserPlan(
+        token,
+        user.id,
+        plan as "free" | "premium" | "enterprise",
+      );
+      toast.success(`Plan de ${user.name} actualizado a ${PLAN_LABELS[plan]}`);
+      onUpdate();
+    } catch {
+      toast.error("No se pudo actualizar el plan. Inténtalo de nuevo.");
+    } finally {
+      setLoadingPlan(false);
+    }
+  };
+
+  /** Maneja el cambio de estado del usuario */
+  const handleStatusToggle = async () => {
+    const newStatus = user.status === "active" ? "suspended" : "active";
+    setLoadingStatus(true);
+    try {
+      await updateUserStatus(token, user.id, newStatus);
+      toast.success(
+        `Usuario ${newStatus === "active" ? "reactivado" : "suspendido"} correctamente.`,
+      );
+      onUpdate();
+    } catch {
+      toast.error("No se pudo actualizar el estado. Inténtalo de nuevo.");
+    } finally {
+      setLoadingStatus(false);
+    }
+  };
+
+  // Render
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.2 }}
+      className="group relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-5 
+        hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+    >
+      {/* Dot indicador de estado */}
+      <span
+        className={cn(
+          "absolute top-4 right-4 w-2.5 h-2.5 rounded-full",
+          user.status === "active"
+            ? "bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.4)]"
+            : user.status === "suspended"
+              ? "bg-red-400 shadow-[0_0_6px_2px_rgba(248,113,113,0.4)]"
+              : "bg-gray-400",
+        )}
+      />
+
+      {/* Avatar + nombre + email */}
+      <div className="flex items-start gap-3 mb-4">
+        <div
+          className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center 
+          justify-center text-white text-sm font-extrabold shrink-0 shadow-md"
+        >
+          {user.name.charAt(0).toUpperCase()}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-bold text-foreground truncate">
+            {user.name}
+          </div>
+          <div className="text-xs text-muted-foreground truncate">
+            {user.email}
+          </div>
+          <div className="flex items-center gap-1 mt-1">
+            <StatusIcon className={cn("h-3 w-3", statusCfg.color)} />
+            <span className={cn("text-[10px] font-semibold", statusCfg.color)}>
+              {statusCfg.label}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Métricas rápidas */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-muted/40 rounded-xl p-2 text-center">
+          <div className="text-lg font-black text-foreground">
+            {user.analysis_count}
+          </div>
+          <div className="text-[9px] text-muted-foreground uppercase tracking-wide">
+            Análisis
+          </div>
+        </div>
+        <div className="bg-muted/40 rounded-xl p-2 text-center">
+          <div
+            className="text-xs font-bold truncate"
+            style={{ color: PLAN_COLORS[user.plan] ?? "currentColor" }}
+          >
+            {PLAN_LABELS[user.plan] ?? user.plan}
+          </div>
+          <div className="text-[9px] text-muted-foreground uppercase tracking-wide">
+            Plan
+          </div>
+        </div>
+        <div className="bg-muted/40 rounded-xl p-2 text-center">
+          <div className="text-[10px] font-semibold text-foreground">
+            {user.provider === "google" ? "Google" : "Manual"}
+          </div>
+          <div className="text-[9px] text-muted-foreground uppercase tracking-wide">
+            Auth
+          </div>
+        </div>
+      </div>
+
+      {/* Fecha */}
+      <div className="text-[10px] text-muted-foreground mb-4">
+        Registrado:{" "}
+        <span className="font-medium text-foreground">
+          {format(parseISO(user.created_at), "dd MMM yyyy", { locale: es })}
+        </span>
+      </div>
+
+      {/* Acciones */}
+      <div className="flex items-center gap-2">
+        {/* Cambiar plan */}
+        <Select
+          value={user.plan}
+          onValueChange={handlePlanChange}
+          disabled={loadingPlan}
+        >
+          <SelectTrigger className="h-8 text-xs flex-1 border-border/50 bg-background/50 rounded-xl">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(PLAN_LABELS).map(([key, label]) => (
+              <SelectItem key={key} value={key} className="text-xs">
+                <span style={{ color: PLAN_COLORS[key] }}>●</span> {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Toggle estado */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              className={cn(
+                "h-8 w-8 p-0 rounded-xl shrink-0 border border-border/40",
+                user.status === "active"
+                  ? "hover:text-red-400 hover:bg-red-400/10 hover:border-red-400/30"
+                  : "hover:text-emerald-400 hover:bg-emerald-400/10 hover:border-emerald-400/30",
+              )}
+              onClick={handleStatusToggle}
+              disabled={loadingStatus}
+            >
+              {loadingStatus ? (
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              ) : user.status === "active" ? (
+                <XCircle className="h-3.5 w-3.5" />
+              ) : (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="left" sideOffset={6} className="z-[9999]">
+            {user.status === "active"
+              ? "Suspender usuario"
+              : "Reactivar usuario"}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </motion.div>
+  );
+}
+
 /** Página principal de Admin */
 export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   // doble verificación de seguridad en cliente
   const isAdmin = session?.user?.role === "admin";
-
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -462,6 +658,14 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<
     "overview" | "users" | "analytics"
   >("overview");
+  // Siempre empieza en tabla; el useEffect lo corrige a grid en cuanto
+  // isMobile se resuelve realmente tras la hidratación (evita SSR mismatch)
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+
+  // sincronizar viewMode con el tamaño real de pantalla post-hidratación
+  useEffect(() => {
+    setViewMode(isMobile ? "grid" : "table");
+  }, [isMobile]);
 
   const PAGE_SIZE = 20;
   const token = session?.accessToken ?? "";
@@ -473,6 +677,7 @@ export default function AdminPage() {
     }
   }, [status, isAdmin, router]);
 
+  /** Carga métricas del dashboard */
   const fetchMetrics = useCallback(async () => {
     if (!token) return;
     setLoadingMetrics(true);
@@ -486,6 +691,7 @@ export default function AdminPage() {
     }
   }, [token]);
 
+  /** Carga estado del sistema */
   const fetchHealth = useCallback(async () => {
     if (!token) return;
     setLoadingHealth(true);
@@ -499,6 +705,7 @@ export default function AdminPage() {
     }
   }, [token]);
 
+  /** Carga usuarios */
   const fetchUsers = useCallback(async () => {
     if (!token) return;
     setLoadingUsers(true);
@@ -558,7 +765,6 @@ export default function AdminPage() {
   return (
     <div className="space-y-8 py-6">
       {/* Header del panel de admin */}
-      {/*  header con gradiente amber exclusivo de admin para diferenciarlo visualmente */}
       <div
         className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-transparent border 
       border-amber-500/20 px-6 py-7"
@@ -809,7 +1015,8 @@ export default function AdminPage() {
                   la plataforma
                 </p>
               </div>
-              <div className="flex gap-2">
+              {/* Toggle tabla / grid — se muestra junto al buscador */}
+              <div className="flex items-center gap-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
@@ -819,6 +1026,47 @@ export default function AdminPage() {
                     className="pl-8 h-9 text-sm w-52 bg-background/50 border-border/50"
                   />
                 </div>
+
+                {/* Toggle vista tabla/grid */}
+                <div className="flex items-center bg-muted/40 border border-border/40 rounded-xl p-0.5 gap-0.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setViewMode("table")}
+                        className={cn(
+                          "h-8 w-8 flex items-center justify-center rounded-lg transition-all duration-200",
+                          viewMode === "table"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                        aria-label="Vista de tabla"
+                      >
+                        <LayoutList className="h-3.5 w-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Vista tabla</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setViewMode("grid")}
+                        className={cn(
+                          "h-8 w-8 flex items-center justify-center rounded-lg transition-all duration-200",
+                          viewMode === "grid"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                        aria-label="Vista de tarjetas"
+                      >
+                        <LayoutGrid className="h-3.5 w-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      Vista tarjetas
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -830,82 +1078,154 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Tabla de usuarios */}
-            <Card className="border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-border/50 bg-muted/30">
-                      {[
-                        "Usuario",
-                        "Plan",
-                        "Estado",
-                        "Análisis",
-                        "Proveedor",
-                        "Registro",
-                        "Acciones",
-                      ].map((h) => (
-                        <th
-                          key={h}
-                          className="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loadingUsers
-                      ? [...Array(8)].map((_, i) => (
-                          <tr key={i} className="border-b border-border/20">
-                            {[...Array(7)].map((_, j) => (
-                              <td key={j} className="px-4 py-3">
-                                <Skeleton className="h-5 w-full max-w-[100px]" />
-                              </td>
-                            ))}
-                          </tr>
-                        ))
-                      : users.map((user) => (
-                          <UserRow
-                            key={user.id}
-                            user={user}
-                            token={token}
-                            onUpdate={fetchUsers}
-                          />
+            {/* Vista tabla (desktop por defecto) */}
+            {viewMode === "table" && (
+              <Card className="border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-border/50 bg-muted/30">
+                        {[
+                          "Usuario",
+                          "Plan",
+                          "Estado",
+                          "Análisis",
+                          "Proveedor",
+                          "Registro",
+                          "Acciones",
+                        ].map((h) => (
+                          <th
+                            key={h}
+                            className="px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+                          >
+                            {h}
+                          </th>
                         ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Paginación */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-border/30">
-                  <span className="text-xs text-muted-foreground">
-                    Página {page} de {totalPages} · {totalUsers} usuarios
-                  </span>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={page === 1}
-                      onClick={() => setPage((p) => p - 1)}
-                      className="h-7 w-7 p-0"
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={page >= totalPages}
-                      onClick={() => setPage((p) => p + 1)}
-                      className="h-7 w-7 p-0"
-                    >
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loadingUsers
+                        ? [...Array(8)].map((_, i) => (
+                            <tr key={i} className="border-b border-border/20">
+                              {[...Array(7)].map((_, j) => (
+                                <td key={j} className="px-4 py-3">
+                                  <Skeleton className="h-5 w-full max-w-[100px]" />
+                                </td>
+                              ))}
+                            </tr>
+                          ))
+                        : users.map((user) => (
+                            <UserRow
+                              key={user.id}
+                              user={user}
+                              token={token}
+                              onUpdate={fetchUsers}
+                            />
+                          ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </Card>
+
+                {/* Paginación */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-border/30">
+                    <span className="text-xs text-muted-foreground">
+                      Página {page} de {totalPages} · {totalUsers} usuarios
+                    </span>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={page === 1}
+                        onClick={() => setPage((p) => p - 1)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <ChevronLeft className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={page >= totalPages}
+                        onClick={() => setPage((p) => p + 1)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            )}
+
+            {/* Vista grid de tarjetas — por defecto en móvil */}
+            {viewMode === "grid" && (
+              <>
+                {loadingUsers ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {[...Array(8)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-card/80 border border-border/50 rounded-2xl p-5 space-y-3"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="w-11 h-11 rounded-xl shrink-0" />
+                          <div className="flex-1 space-y-1.5">
+                            <Skeleton className="h-3.5 w-24" />
+                            <Skeleton className="h-3 w-32" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <Skeleton className="h-14 rounded-xl" />
+                          <Skeleton className="h-14 rounded-xl" />
+                          <Skeleton className="h-14 rounded-xl" />
+                        </div>
+                        <Skeleton className="h-8 w-full rounded-xl" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {users.map((user) => (
+                      <UserCard
+                        key={user.id}
+                        user={user}
+                        token={token}
+                        onUpdate={fetchUsers}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Paginación bajo el grid */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-2">
+                    <span className="text-xs text-muted-foreground">
+                      Página {page} de {totalPages} · {totalUsers} usuarios
+                    </span>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={page === 1}
+                        onClick={() => setPage((p) => p - 1)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <ChevronLeft className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={page >= totalPages}
+                        onClick={() => setPage((p) => p + 1)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </motion.div>
         )}
 

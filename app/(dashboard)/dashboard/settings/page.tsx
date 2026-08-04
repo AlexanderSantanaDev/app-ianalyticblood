@@ -81,6 +81,36 @@ const passwordSchema = z
 
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
+// Configuración inicial de notificaciones
+const INITIAL_CONFIGS = {
+  notifications: {
+    emailAnalysis: true,
+    emailWeekly: false,
+    pushDesktop: true,
+    pushSecurity: true,
+  },
+  security: {
+    twoFactor: false,
+    loginAlerts: true,
+  },
+  preferences: {
+    language: "es",
+    units: "metric",
+  },
+} as const;
+
+// Tipo derivado del objeto para tipado fuerte
+type Configs = {
+  notifications: {
+    emailAnalysis: boolean;
+    emailWeekly: boolean;
+    pushDesktop: boolean;
+    pushSecurity: boolean;
+  };
+  security: { twoFactor: boolean; loginAlerts: boolean };
+  preferences: { language: string; units: string };
+};
+
 export default function SettingsPage() {
   // Estados
   const { theme, setTheme } = useTheme();
@@ -118,24 +148,21 @@ export default function SettingsPage() {
     "confirmPassword",
   ]);
   const allFieldsFilled = watchedFields.every((f) => !!f && f.length > 0);
+  // Estado de configuración actual (tipado fuerte)
+  const [configs, setConfigs] = useState<Configs>(INITIAL_CONFIGS as Configs);
+  // Snapshot de lo que está guardado — se actualiza tras cada save exitoso
+  const [savedConfigs, setSavedConfigs] = useState<Configs>(
+    INITIAL_CONFIGS as Configs,
+  );
+  // Dirty-state — true SOLO cuando hay cambios reales respecto al último save
+  const isDirtyNotifications =
+    JSON.stringify(configs.notifications) !==
+    JSON.stringify(savedConfigs.notifications);
 
-  // Estados de configuración
-  const [configs, setConfigs] = useState({
-    notifications: {
-      emailAnalysis: true,
-      emailWeekly: false,
-      pushDesktop: true,
-      pushSecurity: true,
-    },
-    security: {
-      twoFactor: false,
-      loginAlerts: true,
-    },
-    preferences: {
-      language: "es",
-      units: "metric",
-    },
-  });
+  const isDirtyPreferences =
+    JSON.stringify(configs.preferences) !==
+    JSON.stringify(savedConfigs.preferences);
+
   /***********************************************************************************************************************/
   // Métodos
   /** Alternar el estado de una configuración. */
@@ -149,12 +176,14 @@ export default function SettingsPage() {
     }));
   };
 
-  /** Guardar configuración. */
+  /** Guardar configuración — sincroniza savedConfigs tras éxito para resetear dirty-state */
   const handleSave = () => {
     setIsSaving(true);
     setTimeout(() => {
+      // Marcamos los configs actuales como "guardados" — el botón vuelve a deshabilitarse
+      setSavedConfigs(configs);
       setIsSaving(false);
-      toast.success("Configuración guardada correctamente ✨", {
+      toast.success("Configuración guardada correctamente", {
         description:
           "Tus cambios se han sincronizado en todos tus dispositivos.",
       });
@@ -170,7 +199,7 @@ export default function SettingsPage() {
         current_password: data.currentPassword,
         new_password: data.newPassword,
       });
-      toast.success("Contraseña actualizada con éxito 🔒", {
+      toast.success("Contraseña actualizada con éxito", {
         description:
           "Tu nueva contraseña ya está activa. La sesión sigue abierta.",
       });
@@ -661,11 +690,19 @@ export default function SettingsPage() {
                   </p>
                   <Button
                     onClick={handleSave}
-                    className="rounded-xl px-8 font-bold gap-2"
-                    disabled={isSaving}
+                    className={cn(
+                      "rounded-xl px-8 font-bold gap-2 transition-all duration-200",
+                      isDirtyNotifications && !isSaving
+                        ? "gradient-bg shadow-md hover:shadow-lg hover:shadow-primary/20"
+                        : "opacity-40 cursor-not-allowed",
+                    )}
+                    disabled={isSaving || !isDirtyNotifications}
                   >
                     {isSaving ? (
-                      "Guardando..."
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Guardando...
+                      </div>
                     ) : (
                       <>
                         <Save className="w-4 h-4" /> Guardar Cambios
@@ -793,10 +830,22 @@ export default function SettingsPage() {
 
                     <Button
                       onClick={handleSave}
-                      className="w-full rounded-xl h-12 font-bold"
-                      variant="default"
+                      className={cn(
+                        "w-full rounded-xl h-12 font-bold transition-all duration-200",
+                        isDirtyPreferences && !isSaving
+                          ? "gradient-bg shadow-md hover:shadow-lg hover:shadow-primary/20"
+                          : "opacity-40 cursor-not-allowed",
+                      )}
+                      disabled={isSaving || !isDirtyPreferences}
                     >
-                      Aplicar Preferencias
+                      {isSaving ? (
+                        <div className="flex items-center gap-2 justify-center">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Aplicando...
+                        </div>
+                      ) : (
+                        "Aplicar Preferencias"
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
