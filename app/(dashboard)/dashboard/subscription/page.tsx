@@ -652,7 +652,7 @@ function SubscriptionContent() {
             </motion.div>
 
             {/* Plan Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 max-w-md">
               <motion.div
                 whileHover={{ y: -5 }}
                 className={`relative p-6 rounded-3xl border-2 transition-all ${
@@ -721,7 +721,8 @@ function SubscriptionContent() {
                 </Button>
               </motion.div>
 
-              {/* Enterprise / Clínicas Plan Card */}
+              {/* Plan Enterprise deshabilitado temporalmente y modificado el grid a 1 columna. */}
+              {/*
               <motion.div
                 whileHover={{ y: -5 }}
                 className="p-6 rounded-3xl border border-border/60 border-dashed bg-card hover:border-secondary/40 
@@ -770,6 +771,7 @@ function SubscriptionContent() {
                   Contactar Ventas
                 </Button>
               </motion.div>
+              */}
             </div>
           </div>
         </div>
