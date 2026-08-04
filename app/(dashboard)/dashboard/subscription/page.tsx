@@ -721,7 +721,7 @@ function SubscriptionContent() {
                 </Button>
               </motion.div>
 
-              {/* Plan Enterprise deshabilitado temporalmente y modificado el grid a 1 columna. */}
+              {/* Plan Enterprise — deshabilitado por ahora, se activará en próximas versiones */}
               {/*
               <motion.div
                 whileHover={{ y: -5 }}

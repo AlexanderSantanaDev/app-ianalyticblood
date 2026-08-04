@@ -114,7 +114,7 @@ type Configs = {
 export default function SettingsPage() {
   // Estados
   const { theme, setTheme } = useTheme();
-  const { data: session } = useSession(); // 🔒 Para acceder al accessToken en exportación
+  const { data: session } = useSession();
   // Estados para mostrar contraseñas
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);

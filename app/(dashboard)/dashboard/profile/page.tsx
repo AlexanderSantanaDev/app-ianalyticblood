@@ -505,8 +505,8 @@ function HealthTab({
             <Info className="w-5 h-5 shrink-0 mt-0.5" />
             <p>
               Tus datos clínicos están encriptados y se utilizan única y
-              exclusivamente como contexto adicional para el motor de IA de
-              DeepSeek durante el resumen.
+              exclusivamente como contexto adicional para el motor de IA durante
+              el resumen.
             </p>
           </div>
         </CardHeader>

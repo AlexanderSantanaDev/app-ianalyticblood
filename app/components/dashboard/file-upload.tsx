@@ -193,7 +193,7 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       setIsDragging(false);
-      if (isLimitReached) return; // 🔒 Bloqueo si el límite está alcanzado
+      if (isLimitReached) return;
       const files = e.dataTransfer.files;
       if (files && files.length > 0) {
         const droppedFile = files[0];

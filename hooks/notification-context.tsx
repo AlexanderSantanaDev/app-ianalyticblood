@@ -66,7 +66,7 @@ export function NotificationProvider({
 }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const { status } = useSession(); // 🛡️ Verificamos si realmente tiene sesión activa
+  const { status } = useSession();
 
   // Carga inicial de datos desde localStorage
   useEffect(() => {
@@ -203,7 +203,7 @@ export function NotificationProvider({
       value={{
         notifications,
         unreadCount,
-        addNotification, // ✨ Nueva funcionalidad inyectada
+        addNotification,
         markAsRead,
         toggleRead,
         deleteNotification,

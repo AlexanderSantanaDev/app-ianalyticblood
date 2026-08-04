@@ -69,7 +69,7 @@ export function useApiFetch() {
       // console.log("Estado de la sesión:", status);
       // console.log("Access Token usado:", accessToken);
 
-      // 🛡️ Si no hay access token pero la sesión está autenticada, cerrar sesión (deduplicado)
+      // Si no hay access token pero la sesión está autenticada, cerrar sesión (deduplicado)
       if (!accessToken && status === "authenticated") {
         console.error(
           "No access token available despite authenticated session",

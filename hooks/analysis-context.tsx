@@ -58,7 +58,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
     setFileName(null);
   }, []);
 
-  // 🛡️ Cleanup all timers on unmount to prevent memory leaks
+  // Cleanup de timers al desmontar el componente para evitar fugas de memoria
   useEffect(() => {
     return () => {
       if (progressIntervalRef.current)
@@ -87,8 +87,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
 
       // Simulación de progreso escalonado
       progressIntervalRef.current = setInterval(() => {
-        // 🚀 Store in ref for cleanup
-        setProgress((prev) => {
+      setProgress((prev) => {
           if (prev < 20) {
             setCurrentStep("Subiendo archivo...");
             return prev + 2;
@@ -118,7 +117,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
           icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
         });
 
-        // 🛡️ Clear interval via ref and nullify
+        // Limpiar intervalo de progreso al recibir respuesta
         if (progressIntervalRef.current) {
           clearInterval(progressIntervalRef.current);
           progressIntervalRef.current = null;
@@ -144,7 +143,6 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
 
         // Alerta de salud reactiva extraída en base a la información procesada.
         healthTimeoutRef.current = setTimeout(() => {
-          // 🛡️ Store health timeout in ref
           const isBloodFile = file.name.toLowerCase().includes("sangre");
           const variableDesc = isBloodFile
             ? "el conteo de leucocitos"
@@ -176,7 +174,6 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
           await new Promise((resolve) => setTimeout(resolve, 1000));
 
           const stats = await getDashboardStats(apiFetch);
-          // ✨ Removed debug console.log for production cleanliness
 
           // Actualización instantánea del estado local para reactividad total (mes actual)
           setAnalysisCount(stats.analyses_this_month);
@@ -187,7 +184,6 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
             plan: session?.user?.plan,
           });
 
-          // ✨ Removed debug console.log for production cleanliness
 
           // Disparar evento personalizado para notificar a otros componentes (Sidebar)
           window.dispatchEvent(
@@ -238,10 +234,10 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
         throw err;
       }
     },
-    [isAnalyzing, resetAnalysis, addNotification, updateSession, session], // 🚀 Fixed dependency array to avoid stale closures
+    [isAnalyzing, resetAnalysis, addNotification, updateSession, session],
   );
   /****************************************************************************************************************************/
-  // ✨ Memoize context value to prevent unnecessary re-renders of consumers
+  // Memoizar el valor del contexto para evitar re-renders innecesarios en consumidores
   const contextValue = useMemo(
     () => ({
       isAnalyzing,

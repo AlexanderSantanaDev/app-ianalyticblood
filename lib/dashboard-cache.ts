@@ -1,5 +1,5 @@
 /**
- * ✨ Cache a nivel de módulo para datos del dashboard.
+ * Cache a nivel de módulo para datos del dashboard.
  *
  * Por qué aquí y no en useState/useRef:
  * - PageTransition usa key={pathname} → AnimatePresence desmonta/remonta cada página en cada navegación.
@@ -10,7 +10,7 @@
  * TTL de 5 minutos por entrada para evitar datos obsoletos.
  */
 
-// ✨ TTL en ms: 5 minutos
+// TTL en ms: 5 minutos
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 interface CacheEntry<T> {
@@ -18,7 +18,7 @@ interface CacheEntry<T> {
   timestamp: number;
 }
 
-// ✨ Store global de módulo — persiste entre mounts de React en la misma sesión del navegador
+// Store global de módulo: persiste entre mounts de React en la misma sesión del navegador
 const store = new Map<string, CacheEntry<unknown>>();
 
 /**
@@ -61,7 +61,7 @@ export function invalidateCacheByPrefix(prefix: string): void {
   }
 }
 
-// ✨ Claves de cache estandarizadas para cada sección del dashboard
+// Claves de cache estandarizadas para cada sección del dashboard
 export const CACHE_KEYS = {
   DASHBOARD: "dashboard:main",
   HISTORY: "dashboard:history",

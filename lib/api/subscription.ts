@@ -75,7 +75,7 @@ export function useSubscriptionApi() {
     createCheckoutSession,
     createCustomerPortal,
     syncSubscription,
-    cancelSubscription, // ✨ Nuevo
-    reactivateSubscription, // ✨ Nuevo
+    cancelSubscription,
+    reactivateSubscription,
   };
 }
