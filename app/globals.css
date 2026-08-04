@@ -230,3 +230,31 @@
     font-size: 14px;
   }
 }
+
+/* prevención de zoom automático en pantalla móviles, etc...*/
+@media (max-width: 767px) {
+  input,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  input[type="time"],
+  input[type="color"],
+  select,
+  textarea,
+  [contenteditable="true"],
+  [cmdk-input],
+  [data-radix-select-trigger],
+  [data-vaul-drawer] input,
+  [data-vaul-drawer] select,
+  [data-vaul-drawer] textarea {
+    font-size: 16px !important;
+  }
+}
