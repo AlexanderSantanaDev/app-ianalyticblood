@@ -159,18 +159,21 @@ export default function ChatWidget() {
               opacity: 1,
               scale: 1,
               y: 0,
-              height: isMinimized ? "80px" : isMobile ? "500px" : "600px",
+              height: isMinimized ? "auto" : isMobile ? "500px" : "600px",
               width: isMobile ? "100%" : "400px",
             }}
             exit={{ opacity: 0, scale: 0.8, y: 40 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
             className={cn(
-              "overflow-hidden rounded-[2.5rem] bg-background/90 backdrop-blur-3xl border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] flex flex-col w-full",
-              isMinimized ? "h-20" : "h-[600px]",
+              "overflow-hidden bg-background/90 backdrop-blur-3xl border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] flex flex-col w-full",
+              isMinimized ? "rounded-full" : "rounded-[2.5rem]"
             )}
           >
             {/* Header del Chat */}
-            <div className="pl-5 pr-3 py-4 bg-primary/5 border-b border-white/5 flex items-center justify-between">
+            <div className={cn(
+              "pl-5 pr-3 py-4 bg-primary/5 flex items-center justify-between transition-colors",
+              !isMinimized && "border-b border-white/5"
+            )}>
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary via-secondary to-primary flex items-center 
@@ -380,39 +383,30 @@ export default function ChatWidget() {
       </AnimatePresence>
 
       {/* Lanzador con Tecnología "Liquid Glass" y Núcleo Neural Vivo */}
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ scale: 1.05, y: -2 }}
-        whileTap={{ scale: 0.95 }}
-        className={cn(
-          "pointer-events-auto h-14 w-14 sm:h-16 sm:w-16 rounded-[2rem] flex items-center justify-center text-white relative group",
-          "bg-gradient-to-br from-primary to-secondary shadow-[0_20px_50px_-12px_rgba(var(--primary-rgb),0.6)]",
-          "border border-white/20 transition-all duration-500 hover:shadow-primary/50",
-          isOpen && "rounded-full rotate-90",
-        )}
-      >
-        <div
-          className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 
-          rounded-full transition-opacity duration-500"
-        />
+      {!isOpen && (
+        <motion.button
+          onClick={() => setIsOpen(!isOpen)}
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+          className={cn(
+            "pointer-events-auto h-14 w-14 sm:h-16 sm:w-16 rounded-[2rem] flex items-center justify-center text-white relative group",
+            "bg-gradient-to-br from-primary to-secondary shadow-[0_20px_50px_-12px_rgba(var(--primary-rgb),0.6)]",
+            "border border-white/20 transition-all duration-500 hover:shadow-primary/50",
+            isOpen && "rounded-full rotate-90",
+          )}
+        >
+          <div
+            className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 
+            rounded-full transition-opacity duration-500"
+          />
 
-        {/* Anillo de energía pulsátil perimetral */}
-        <div
-          className="absolute -inset-[1.5px] bg-gradient-to-r from-primary/60 via-secondary/60 to-primary/60 rounded-[inherit] 
-          opacity-20 group-hover:opacity-60 blur-sm animate-pulse-slow"
-        />
+          {/* Anillo de energía pulsátil perimetral */}
+          <div
+            className="absolute -inset-[1.5px] bg-gradient-to-r from-primary/60 via-secondary/60 to-primary/60 rounded-[inherit] 
+            opacity-20 group-hover:opacity-60 blur-sm animate-pulse-slow"
+          />
 
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.div
-              key="close"
-              initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
-              animate={{ rotate: 0, opacity: 1, scale: 1 }}
-              exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
-            >
-              <X size={28} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-            </motion.div>
-          ) : (
+          <AnimatePresence mode="wait">
             <motion.div
               key="open"
               initial={{ scale: 0.5, opacity: 0 }}
@@ -422,17 +416,15 @@ export default function ChatWidget() {
             >
               <RobotIcon size={isMobile ? 46 : 56} />
             </motion.div>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
 
-        {/* Indicador de Actividad "Neural" */}
-        {!isOpen && (
+          {/* Indicador de Actividad "Neural" */}
           <span
             className="absolute top-4 right-4 h-2.5 w-2.5 bg-primary rounded-full shadow-[0_0_15px_4px_rgba(var(--primary-rgb),1)] 
-          animate-ping"
+            animate-ping"
           />
-        )}
-      </motion.button>
+        </motion.button>
+      )}
     </div>
   );
 }
