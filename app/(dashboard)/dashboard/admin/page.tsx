@@ -706,9 +706,9 @@ export default function AdminPage() {
   }, [token]);
 
   /** Carga usuarios */
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (silent: boolean = false) => {
     if (!token) return;
-    setLoadingUsers(true);
+    if (silent !== true) setLoadingUsers(true);
     try {
       const data = await getAdminUsers(token, page, PAGE_SIZE, search);
       setUsers(data.users);
@@ -716,7 +716,7 @@ export default function AdminPage() {
     } catch {
       toast.error("No se pudieron cargar los usuarios.");
     } finally {
-      setLoadingUsers(false);
+      if (silent !== true) setLoadingUsers(false);
     }
   }, [token, page, search]);
 
@@ -1071,7 +1071,7 @@ export default function AdminPage() {
                   variant="ghost"
                   size="sm"
                   className="h-9 gap-1.5 text-muted-foreground"
-                  onClick={fetchUsers}
+                  onClick={() => fetchUsers()}
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                 </Button>
@@ -1119,7 +1119,7 @@ export default function AdminPage() {
                               key={user.id}
                               user={user}
                               token={token}
-                              onUpdate={fetchUsers}
+                              onUpdate={() => fetchUsers(true)}
                             />
                           ))}
                     </tbody>
@@ -1190,7 +1190,7 @@ export default function AdminPage() {
                         key={user.id}
                         user={user}
                         token={token}
-                        onUpdate={fetchUsers}
+                        onUpdate={() => fetchUsers(true)}
                       />
                     ))}
                   </div>
