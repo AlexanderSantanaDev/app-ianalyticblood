@@ -1,16 +1,18 @@
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
-
+/****************************************************************************************************************************/
 export default function Footer() {
   return (
     <footer className="bg-muted py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4 gradient-text">IAnalyticBlood</h3>
+            <h3 className="text-xl font-bold mb-4 gradient-text">
+              IAnalyticBlood
+            </h3>
             <p className="text-muted-foreground">
-              Transformando la manera en que entiendes tus análisis de sangre con la potencia de la
-              inteligencia artificial.
+              Transformando la manera en que entiendes tus análisis de sangre
+              con la potencia de la inteligencia artificial.
             </p>
           </div>
 
@@ -49,6 +51,14 @@ export default function Footer() {
                   Contacto
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/help"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Ayuda / FAQ
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -85,19 +95,31 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Síguenos</h4>
             <div className="flex space-x-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
                 <Facebook size={20} />
                 <span className="sr-only">Facebook</span>
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
                 <Twitter size={20} />
                 <span className="sr-only">Twitter</span>
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
                 <Instagram size={20} />
                 <span className="sr-only">Instagram</span>
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
                 <Linkedin size={20} />
                 <span className="sr-only">LinkedIn</span>
               </a>
@@ -106,7 +128,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} IAnalyticBlood. Todos los derechos reservados.</p>
+          <p>
+            &copy; {new Date().getFullYear()} IAnalyticBlood. Todos los derechos
+            reservados.
+          </p>
         </div>
       </div>
     </footer>

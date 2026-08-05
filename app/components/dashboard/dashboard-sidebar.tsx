@@ -292,7 +292,7 @@ function DashboardSidebarComponent() {
               hover:bg-sidebar-accent/40 transition-all duration-200"
             >
               <Link
-                href="/dashboard/help"
+                href="/help"
                 onClick={() => {
                   if (isMobile) setOpenMobile(false);
                 }}

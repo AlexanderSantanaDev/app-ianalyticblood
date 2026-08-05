@@ -14,15 +14,22 @@ export const metadata = {
   },
 };
 import ChatWidget from "@/components/dashboard/chat/chat-widget";
+import { CookieBanner } from "@/components/cookie-banner";
 /****************************************************************************************************************************/
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers>
           {children}
-          {/* 🤖 Asistente IA Global - Visible en toda la plataforma */}
+          {/* Asistente IA Global - Visible en toda la plataforma */}
           <ChatWidget />
+          {/* Banner de Cookies Global */}
+          <CookieBanner />
         </Providers>
       </body>
     </html>
