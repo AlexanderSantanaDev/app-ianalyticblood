@@ -24,6 +24,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TourGuide } from "@/components/dashboard/tour-guide";
+import { notificationsSteps } from "@/lib/tour-steps";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +37,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
 import { formatTimeAgo } from "@/lib/utils";
 import {
   useNotifications,
@@ -77,9 +78,11 @@ export default function NotificationsPage() {
   //JSX
   return (
     <div className="pt-8 pb-12 min-h-[calc(100dvh-4rem)]">
+      <TourGuide steps={notificationsSteps} pageId="notifications" />
       <div className="container mx-auto px-4 max-w-5xl w-full">
         {/* Header */}
         <motion.div
+          id="tour-notifications-header"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10"
@@ -151,7 +154,7 @@ export default function NotificationsPage() {
 
         {/* Categories & Listing */}
         <div className="space-y-6">
-          <div className="w-full">
+          <div className="w-full" id="tour-notifications-tabs">
             <Tabs value={filter} onValueChange={setFilter} className="w-full">
               <TabsList
                 className="bg-transparent border-none p-0 h-auto w-full grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-2 

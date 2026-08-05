@@ -40,6 +40,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TourGuide } from "@/components/dashboard/tour-guide";
+import { adminSteps } from "@/lib/tour-steps";
 import {
   Select,
   SelectContent,
@@ -764,6 +766,7 @@ export default function AdminPage() {
   // JSX
   return (
     <div className="space-y-8 py-6">
+      <TourGuide steps={adminSteps} pageId="admin" />
       {/* Header del panel de admin */}
       <div
         className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-transparent border 
@@ -803,7 +806,7 @@ export default function AdminPage() {
       </div>
 
       {/* Tabs de navegación interna */}
-      <div className="flex gap-1 p-1 bg-muted/40 rounded-xl w-fit border border-border/40">
+      <div id="tour-admin-tabs" className="flex gap-1 p-1 bg-muted/40 rounded-xl w-fit border border-border/40">
         {(
           [
             { key: "overview", label: "Resumen", icon: BarChart3 },
@@ -840,7 +843,7 @@ export default function AdminPage() {
           >
             {/* KPI Cards */}
             {/* Métricas clave de la plataforma — diseño con cards de glassmorphism */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div id="tour-admin-stats" className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               <MetricCard
                 title="Usuarios totales"
                 value={metrics?.total_users ?? 0}

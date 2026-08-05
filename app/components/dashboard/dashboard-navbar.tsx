@@ -27,6 +27,7 @@ import {
   Info,
   Zap,
   Crown,
+  PlayCircle,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -486,6 +487,22 @@ function DashboardNavbarComponent() {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/subscription">Suscripción</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  let tourId = "home";
+                  const lastSegment = pathname.split("/").pop();
+                  if (lastSegment && lastSegment !== "dashboard") {
+                    tourId = lastSegment;
+                  }
+                  const event = new CustomEvent(`start_tour_${tourId}`);
+                  window.dispatchEvent(event);
+                }}
+                className="cursor-pointer text-primary"
+              >
+                <PlayCircle className="h-4 w-4 mr-2" />
+                Repetir Tutorial
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} className="cursor-pointer">

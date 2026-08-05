@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { TourGuide } from "@/components/dashboard/tour-guide";
+import { calendarSteps } from "@/lib/tour-steps";
 import { useApiFetch } from "@/lib/api/client";
 import {
   getAnalyses,
@@ -178,6 +180,7 @@ export default function CalendarPage() {
   //JSX
   return (
     <div className="pt-12 pb-12 min-h-screen">
+      <TourGuide steps={calendarSteps} pageId="calendar" />
       <div className="container mx-auto px-4 max-w-7xl w-full">
         {/* Header */}
         <motion.div
@@ -202,6 +205,7 @@ export default function CalendarPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
           {/* LADO IZQUIERDO: EL CALENDARIO MAIN */}
           <motion.div
+            id="tour-calendar-main"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
@@ -258,6 +262,7 @@ export default function CalendarPage() {
 
           {/* LADO DERECHO: DETALLES DEL DÍA */}
           <motion.div
+            id="tour-calendar-details"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}

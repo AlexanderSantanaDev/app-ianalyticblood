@@ -35,6 +35,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { TourGuide } from "@/components/dashboard/tour-guide";
+import { profileSteps } from "@/lib/tour-steps";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Select,
@@ -128,9 +130,9 @@ export default function ProfilePage() {
     { id: "health", label: "Datos Clínicos", icon: HeartPulse },
   ];
   /***********************************************************************************************************************/
-  //JSX
   return (
     <div className="pt-8 md:pt-12 pb-12 min-h-[calc(100vh-4rem)]">
+      <TourGuide steps={profileSteps} pageId="profile" />
       <div className="container mx-auto px-4 max-w-6xl w-full">
         {/* Header */}
         <motion.div
@@ -156,6 +158,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           {/* Navegación Lateral */}
           <motion.div
+            id="tour-profile-menu"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="md:col-span-4 lg:col-span-3 flex flex-col gap-2"
@@ -228,6 +231,7 @@ export default function ProfilePage() {
 
           {/* Área de Contenido Dinámico */}
           <motion.div
+            id="tour-profile-content"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="md:col-span-8 lg:col-span-9"

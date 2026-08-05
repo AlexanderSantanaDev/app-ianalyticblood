@@ -30,6 +30,8 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
+import { TourGuide } from "@/components/dashboard/tour-guide";
+import { statsSteps } from "@/lib/tour-steps";
 /***********************************************************************************************************************/
 // Helpers
 /** Helper para obtener el color del score de salud. */
@@ -189,7 +191,10 @@ export default function StatsPage() {
           <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-amber-500/20 blur-3xl rounded-full pointer-events-none" />
 
           <div className="relative z-10 flex flex-col items-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30 mb-6">
+            <div
+              className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center 
+            shadow-lg shadow-amber-500/30 mb-6"
+            >
               <Crown className="w-8 h-8 text-white fill-white/20" />
             </div>
 
@@ -206,7 +211,8 @@ export default function StatsPage() {
 
             <Button
               asChild
-              className="w-full h-12 sm:h-14 rounded-xl text-base font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0 text-white shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02]"
+              className="w-full h-12 sm:h-14 rounded-xl text-base font-bold bg-gradient-to-r from-amber-500 to-orange-500 
+              hover:from-amber-600 hover:to-orange-600 border-0 text-white shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02]"
             >
               <a
                 href="/dashboard/subscription"
@@ -251,9 +257,11 @@ export default function StatsPage() {
   //JSX
   return (
     <div className="pt-8 md:pt-12 pb-12 min-h-screen">
+      <TourGuide steps={statsSteps} pageId="stats" />
       <div className="container mx-auto px-4 max-w-7xl w-full">
         {/* Header */}
         <motion.div
+          id="tour-stats-header"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-10"
@@ -279,6 +287,7 @@ export default function StatsPage() {
         {/* Global Performance Cards */}
         {metrics && (
           <motion.div
+            id="tour-stats-cards"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
@@ -396,6 +405,7 @@ export default function StatsPage() {
 
         {/* Gráficos Detallados (Reutiliza el super componente de Recharts) */}
         <motion.div
+          id="tour-stats-charts"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}

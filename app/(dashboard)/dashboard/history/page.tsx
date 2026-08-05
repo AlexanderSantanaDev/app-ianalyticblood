@@ -38,6 +38,8 @@ import { AnalysisDetailDialog } from "@/components/dashboard/analysis-detail-dia
 import { downloadAnalysisAsPDF } from "@/lib/api/download-analysis";
 import { toast } from "sonner";
 import { getCached, setCached, CACHE_KEYS } from "@/lib/dashboard-cache";
+import { TourGuide } from "@/components/dashboard/tour-guide";
+import { historySteps } from "@/lib/tour-steps";
 
 /***********************************************************************************************************************/
 // Helpers
@@ -320,7 +322,8 @@ export default function HistoryPage() {
 
             <Button
               asChild
-              className="w-full h-12 sm:h-14 rounded-xl text-base font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0 text-white shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02]"
+              className="w-full h-12 sm:h-14 rounded-xl text-base font-bold bg-gradient-to-r from-amber-500 to-orange-500 
+              hover:from-amber-600 hover:to-orange-600 border-0 text-white shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02]"
             >
               <a
                 href="/dashboard/subscription"
@@ -339,6 +342,7 @@ export default function HistoryPage() {
   //JSX
   return (
     <div className="pt-12 pb-12 min-h-screen">
+      <TourGuide steps={historySteps} pageId="history" />
       <div className="container mx-auto px-4 max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -361,6 +365,7 @@ export default function HistoryPage() {
 
         {/* Zona de Filtros */}
         <motion.div
+          id="tour-history-controls"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -443,7 +448,7 @@ export default function HistoryPage() {
 
         {/* Lista animada */}
         {filteredAndSortedData.length > 0 ? (
-          <div className="space-y-4">
+          <div id="tour-history-table" className="space-y-4">
             <AnimatePresence>
               {filteredAndSortedData.map((item, index) => {
                 const Icon = getAlertIcon(item.alert_level);

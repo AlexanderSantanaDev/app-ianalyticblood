@@ -46,6 +46,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { TourGuide } from "@/components/dashboard/tour-guide";
+import { settingsSteps } from "@/lib/tour-steps";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -267,9 +269,11 @@ export default function SettingsPage() {
   //JSX
   return (
     <div className="pt-8 pb-20 min-h-[calc(100dvh-4rem)]">
+      <TourGuide steps={settingsSteps} pageId="settings" />
       <div className="container mx-auto px-4 max-w-5xl w-full">
         {/* Header */}
         <motion.div
+          id="tour-settings-header"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col gap-2 mb-10"
@@ -290,7 +294,7 @@ export default function SettingsPage() {
 
         <Tabs defaultValue="security" className="space-y-8">
           {/* Navegación de Pestañas: Smart Grid para móviles sin desbordamientos */}
-          <div className="w-full">
+          <div className="w-full" id="tour-settings-tabs">
             <TabsList className="bg-transparent border-none p-0 h-auto w-full grid grid-cols-2 lg:flex lg:flex-row gap-2 sm:gap-3 mb-2">
               {[
                 {
@@ -853,7 +857,6 @@ export default function SettingsPage() {
             </motion.div>
           </TabsContent>
 
-          {/***********************************************************************************************************************/}
           {/* CONTENIDO: CUENTA */}
           <TabsContent value="account" className="space-y-6">
             <motion.div

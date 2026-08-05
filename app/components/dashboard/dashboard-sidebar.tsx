@@ -141,7 +141,7 @@ function DashboardSidebarComponent() {
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 pt-6 md:pt-20">
+      <SidebarContent id="tour-sidebar" className="px-3 pt-6 md:pt-20">
         <SidebarMenu className="gap-1">
           {menuItems.map((item) => {
             const active = isActive(item.href);

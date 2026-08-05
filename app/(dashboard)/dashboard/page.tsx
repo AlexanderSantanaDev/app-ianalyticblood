@@ -41,6 +41,8 @@ import { toast } from "sonner";
 import { downloadAnalysisAsPDF } from "@/lib/api/download-analysis";
 import { getCached, setCached, CACHE_KEYS } from "@/lib/dashboard-cache";
 import { parseUTCDate } from "@/lib/utils";
+import { TourGuide } from "@/components/dashboard/tour-guide";
+import { dashboardSteps } from "@/lib/tour-steps";
 
 // Tipo del snapshot de cache del dashboard
 interface DashboardSnapshot {
@@ -277,6 +279,7 @@ export default function DashboardPage() {
   //JSX
   return (
     <div className="pt-8 md:pt-12 pb-2">
+      <TourGuide steps={dashboardSteps} pageId="home" />
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -291,7 +294,7 @@ export default function DashboardPage() {
           </p>
 
           {/* Stats cards con animación */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div id="tour-stats-overview" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -427,8 +430,8 @@ export default function DashboardPage() {
             </TabsList>
 
             {/* TAB: Subir análisis */}
-            <TabsContent value="upload" className="space-y-8">
-              <Card>
+            <TabsContent value="upload" className="space-y-8 animate-in fade-in-50 duration-500">
+              <Card id="tour-upload-box" className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
                 <CardHeader>
                   <CardTitle>Subir nuevo análisis</CardTitle>
                   <CardDescription>
@@ -441,7 +444,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Análisis recientes mejorados con más info y botones funcionales */}
-              <div>
+              <div id="tour-recent-analysis" className="mt-8">
                 <h3 className="text-xl font-bold mb-4">Análisis recientes</h3>
                 {recent.length ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">

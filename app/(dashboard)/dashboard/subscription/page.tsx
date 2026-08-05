@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   Zap,
   ShieldCheck,
-  Building2,
   ArrowRight,
   TrendingUp,
   Clock,
@@ -41,6 +40,8 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TourGuide } from "@/components/dashboard/tour-guide";
+import { subscriptionSteps } from "@/lib/tour-steps";
 import {
   Dialog,
   DialogContent,
@@ -387,6 +388,7 @@ function SubscriptionContent() {
 
       <div className="container mx-auto px-4 max-w-6xl w-full">
         {/* Header Section */}
+        <TourGuide steps={subscriptionSteps} pageId="subscription" />
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -415,6 +417,7 @@ function SubscriptionContent() {
               transition={{ delay: 0.1 }}
             >
               <Card
+                id="tour-subscription-plan"
                 className="border-primary/20 bg-gradient-to-br from-card to-primary/5 shadow-xl relative overflow-hidden 
               group"
               >
