@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
 import {
   FileText,
   Brain,
@@ -12,16 +11,14 @@ import {
   ArrowRight,
   ChevronRight,
 } from "lucide-react";
-
 import { AnimateOnScroll } from "@/components/marketing/animated-sections";
 import FeatureCard from "@/components/marketing/feature-card";
 import ProcessStep from "@/components/marketing/process-step";
 import Testimonial from "@/components/marketing/testimonial";
-
+/****************************************************************************************************************************/
 export default function MarketingHome() {
   return (
     <div className="overflow-hidden">
-      {/* ───────── Hero ───────── */}
       <section className="pt-24 pb-20 md:pt-32 md:pb-32 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-accent/10 to-transparent -z-10" />
 
@@ -32,18 +29,22 @@ export default function MarketingHome() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Comprende tus <span className="gradient-text">análisis de sangre</span> con
+              Comprende tus{" "}
+              <span className="gradient-text">análisis de sangre</span> con
               inteligencia artificial
             </h1>
 
             <p className="text-xl text-muted-foreground mb-8">
-              Sube tu PDF o imagen de análisis de sangre y obtén un estudio detallado, personalizado
-              y fácil de entender en segundos.
+              Sube tu PDF o imagen de análisis de sangre y obtén un estudio
+              detallado, personalizado y fácil de entender en segundos.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/register">
-                <Button size="lg" className="gradient-bg hover:opacity-90 transition-opacity">
+                <Button
+                  size="lg"
+                  className="gradient-bg hover:opacity-90 transition-opacity"
+                >
                   Comenzar ahora <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -69,7 +70,9 @@ export default function MarketingHome() {
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="font-bold text-lg">Análisis de Sangre</h3>
-                    <span className="text-sm text-muted-foreground">Hace 2 minutos</span>
+                    <span className="text-sm text-muted-foreground">
+                      Hace 2 minutos
+                    </span>
                   </div>
                   <div className="space-y-4">
                     <div className="h-8 bg-muted rounded-md w-3/4 animate-pulse"></div>
@@ -79,7 +82,9 @@ export default function MarketingHome() {
                   </div>
                   <div className="mt-6 pt-6 border-t border-border">
                     <div className="flex justify-between items-center">
-                      <div className="text-sm text-muted-foreground">Resultado:</div>
+                      <div className="text-sm text-muted-foreground">
+                        Resultado:
+                      </div>
                       <div className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs font-medium">
                         Normal
                       </div>
@@ -100,7 +105,10 @@ export default function MarketingHome() {
               </div>
             </div>
 
-            <div className="absolute -top-6 -left-6 animate-float" style={{ animationDelay: "1s" }}>
+            <div
+              className="absolute -top-6 -left-6 animate-float"
+              style={{ animationDelay: "1s" }}
+            >
               <div className="bg-card rounded-2xl shadow-xl p-4 border border-border">
                 <div className="flex items-center space-x-3">
                   <div className="rounded-full w-8 h-8 flex items-center justify-center bg-primary/20 text-primary">
@@ -114,17 +122,18 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* ───────── Features ───────── */}
+      {/* Features */}
       <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
           <AnimateOnScroll>
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Características <span className="gradient-text">principales</span>
+                Características{" "}
+                <span className="gradient-text">principales</span>
               </h2>
               <p className="text-xl text-muted-foreground">
-                Descubre cómo IAnalyticBlood transforma la manera en que entiendes tus análisis de
-                sangre.
+                Descubre cómo IAnalyticBlood transforma la manera en que
+                entiendes tus análisis de sangre.
               </p>
             </div>
           </AnimateOnScroll>
@@ -170,7 +179,7 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* ───────── How-it-works ───────── */}
+      {/* How-it-works */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <AnimateOnScroll>
@@ -211,8 +220,7 @@ export default function MarketingHome() {
                 delay={0.4}
               />
             </div>
-
-            {/* mock del uploader (estático) */}
+            {/* Preview */}
             <AnimateOnScroll delay={0.5}>
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur-3xl -z-10" />
@@ -220,11 +228,21 @@ export default function MarketingHome() {
                   <div className="flex items-center justify-center h-64 border-2 border-dashed border-muted rounded-xl">
                     <div className="text-center">
                       <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <p className="font-medium">Arrastra tu PDF o imagen aquí</p>
+                      <p className="font-medium">
+                        Arrastra tu PDF o imagen aquí
+                      </p>
                       <p className="text-sm text-muted-foreground mt-1">
                         o haz clic para seleccionar
                       </p>
-                      <Button className="mt-4">Seleccionar archivo</Button>
+                      <Link
+                        href="/preview"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button className="mt-4 gradient-bg">
+                          Probar Análisis Gratis
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                   <div className="mt-6 pt-6 border-t border-border">
@@ -241,23 +259,26 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* ───────── Testimonials ───────── */}
+      {/* Testimonials */}
       <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
           <AnimateOnScroll>
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Lo que dicen nuestros <span className="gradient-text">usuarios</span>
+                Lo que dicen nuestros{" "}
+                <span className="gradient-text">usuarios</span>
               </h2>
               <p className="text-xl text-muted-foreground">
-                Miles de personas ya confían en IAnalyticBlood para entender sus análisis de sangre.
+                Miles de personas ya confían en IAnalyticBlood para entender sus
+                análisis de sangre.
               </p>
             </div>
           </AnimateOnScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Testimonial
-              quote="IAnalyticBlood me ha ayudado a entender mis análisis de sangre de una manera que nunca antes había experimentado. Las explicaciones son claras y las recomendaciones muy útiles."
+              quote="IAnalyticBlood me ha ayudado a entender mis análisis de sangre de una manera que nunca antes había experimentado. Las explicaciones son 
+              claras y las recomendaciones muy útiles."
               author="María González"
               role="Usuaria desde 2023"
               delay={0.1}
@@ -269,7 +290,8 @@ export default function MarketingHome() {
               delay={0.2}
             />
             <Testimonial
-              quote="La precisión y rapidez con la que IAnalyticBlood analiza mis resultados es impresionante. Ya no tengo que esperar días para entender qué significan mis análisis."
+              quote="La precisión y rapidez con la que IAnalyticBlood analiza mis resultados es impresionante. Ya no tengo que esperar días para entender qué 
+              significan mis análisis."
               author="Carlos Rodríguez"
               role="Usuario Premium"
               delay={0.3}
@@ -278,7 +300,7 @@ export default function MarketingHome() {
         </div>
       </section>
 
-      {/* ───────── Call-to-action ───────── */}
+      {/* Call-to-action */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <AnimateOnScroll>
@@ -287,17 +309,21 @@ export default function MarketingHome() {
 
               <div className="p-8 md:p-12 text-center max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  ¿Listo para entender tus análisis <span className="gradient-text">hoy</span>?
+                  ¿Listo para entender tus análisis{" "}
+                  <span className="gradient-text">hoy</span>?
                 </h2>
 
                 <p className="text-xl text-muted-foreground mb-8">
-                  Únete a miles de personas que ya han transformado la manera en que entienden su
-                  salud.
+                  Únete a miles de personas que ya han transformado la manera en
+                  que entienden su salud.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/register">
-                    <Button size="lg" className="gradient-bg hover:opacity-90 transition-opacity">
+                    <Button
+                      size="lg"
+                      className="gradient-bg hover:opacity-90 transition-opacity"
+                    >
                       Registrarse gratis <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   </Link>

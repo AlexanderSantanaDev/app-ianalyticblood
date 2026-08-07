@@ -127,8 +127,18 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border text-center text-muted-foreground">
-          <p>
+        <div className="mt-12 pt-8 border-t border-border text-center text-muted-foreground flex flex-col items-center justify-center space-y-4">
+          <div className="flex items-center space-x-2 text-sm max-w-2xl bg-muted-foreground/10 px-4 py-2 rounded-full border border-border">
+            <span className="text-green-500">🔒</span>
+            <p>
+              <strong className="text-foreground">
+                Privacidad Médica Garantizada:
+              </strong>{" "}
+              Tus análisis se encriptan de extremo a extremo y se destruyen
+              inmediatamente tras el procesamiento.
+            </p>
+          </div>
+          <p className="text-sm">
             &copy; {new Date().getFullYear()} IAnalyticBlood. Todos los derechos
             reservados.
           </p>

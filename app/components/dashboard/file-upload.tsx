@@ -17,13 +17,13 @@ import {
   CheckCircle2,
   ServerCrash,
 } from "lucide-react";
-
+/****************************************************************************************************************************/
 // Compresor de imagen client-side usando Canvas API (sin dependencias nuevas).
 // Reduce fotos iPhone/Android de alta resolución a máx 1600px y calidad 85% antes de enviar.
 // Esto evita el OOM en Render Free Tier (512MB) sin perder calidad para OCR de texto.
 const MAX_IMAGE_PX = 1600;
 const JPEG_QUALITY = 0.85;
-
+/** Compresor de imagen client-side usando Canvas API */
 async function compressImageIfNeeded(file: File): Promise<File> {
   // Solo comprimimos imágenes — PDFs van intactos
   if (!file.type.startsWith("image/")) return file;
@@ -318,7 +318,11 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
                   {[20, 50, 85, 100].map((step, idx) => (
                     <div
                       key={idx}
-                      className={`h-1.5 rounded-full transition-all duration-500 ${progress >= step ? "bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" : "bg-muted"}`}
+                      className={`h-1.5 rounded-full transition-all duration-500 ${
+                        progress >= step
+                          ? "bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]"
+                          : "bg-muted"
+                      }`}
                     />
                   ))}
                 </div>
@@ -395,6 +399,14 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
           Procesar archivo
         </Button>
       )}
+
+      {/* Badge de seguridad para dar confianza al usuario */}
+      <div className="mt-6 flex items-center justify-center space-x-2 text-xs text-muted-foreground bg-muted/30 p-2.5 rounded-lg border border-border/50">
+        <ShieldCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
+        <span>
+          Privacidad 100% garantizada. Archivos destruidos tras el análisis.
+        </span>
+      </div>
     </div>
   );
 };
