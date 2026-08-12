@@ -110,18 +110,18 @@ export function PlanStatusCard({ className }: { className?: string }) {
               >
                 <span>Usage IA</span>
                 <span className="text-slate-600 dark:text-white/60 font-black tracking-widest text-[9px]">
-                  {currentCount}/5
+                  {currentCount}/1
                 </span>
               </div>
               <div className="h-1 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{
-                    width: `${Math.min((currentCount / 5) * 100, 100)}%`,
+                    width: `${Math.min((currentCount / 1) * 100, 100)}%`,
                   }}
                   className={cn(
                     "h-full transition-all duration-500",
-                    currentCount >= 5
+                    currentCount >= 1
                       ? "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]"
                       : "bg-primary",
                   )}

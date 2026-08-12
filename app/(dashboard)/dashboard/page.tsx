@@ -20,6 +20,8 @@ import {
   Inbox,
   Eye,
   BarChart3,
+  Crown,
+  Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -43,6 +45,7 @@ import { getCached, setCached, CACHE_KEYS } from "@/lib/dashboard-cache";
 import { parseUTCDate } from "@/lib/utils";
 import { TourGuide } from "@/components/dashboard/tour-guide";
 import { dashboardSteps } from "@/lib/tour-steps";
+import { usePlan } from "@/hooks/plan-context";
 
 // Tipo del snapshot de cache del dashboard
 interface DashboardSnapshot {
@@ -163,6 +166,10 @@ export default function DashboardPage() {
   // Hooks
   const apiFetch = useApiFetch();
   const { data: session, status } = useSession();
+  // Detectamos el plan para bloquear la pestaña de Estadísticas
+  const { plan } = usePlan();
+  const isPremium = plan === "premium" || plan === "enterprise";
+  const isFree = plan === "free" || !isPremium;
   // Ref para garantizar un solo fetch por mount
   const fetchCalledRef = useRef(false);
   useEffect(() => {
@@ -294,7 +301,10 @@ export default function DashboardPage() {
           </p>
 
           {/* Stats cards con animación */}
-          <div id="tour-stats-overview" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div
+            id="tour-stats-overview"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+          >
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -424,14 +434,30 @@ export default function DashboardPage() {
               <TabsTrigger
                 value="insights"
                 className="whitespace-nowrap px-4 py-2 text-sm sm:text-base"
+                onClick={(e) => {
+                  if (isFree) {
+                    e.preventDefault();
+                  }
+                }}
               >
-                Estadísticas
+                <span className="flex items-center gap-1.5">
+                  Estadísticas
+                  {isFree && (
+                    <Crown className="h-3 w-3 text-amber-500 fill-amber-500/30" />
+                  )}
+                </span>
               </TabsTrigger>
             </TabsList>
 
             {/* TAB: Subir análisis */}
-            <TabsContent value="upload" className="space-y-8 animate-in fade-in-50 duration-500">
-              <Card id="tour-upload-box" className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+            <TabsContent
+              value="upload"
+              className="space-y-8 animate-in fade-in-50 duration-500"
+            >
+              <Card
+                id="tour-upload-box"
+                className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden"
+              >
                 <CardHeader>
                   <CardTitle>Subir nuevo análisis</CardTitle>
                   <CardDescription>
@@ -666,44 +692,82 @@ export default function DashboardPage() {
               </Card>
             </TabsContent>
 
-            {/* TAB: Estadísticas (placeholder) */}
+            {/* TAB: Estadísticas */}
             <TabsContent value="insights">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Estadísticas y tendencias</CardTitle>
-                  <CardDescription>
-                    Visualiza la evolución de tus valores a lo largo del tiempo.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div
-                    className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-2xl p-5 
-                  sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
-                  >
-                    <div>
-                      <h3 className="text-lg font-bold flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5 text-primary" />
-                        Vista Rápida de Tendencias
-                      </h3>
-                      <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-                        Aquí puedes ver la evolución básica de tus
-                        biomarcadores. Para un desglose completo, cálculo de tu
-                        Índice Vital y estado clínico, visita la sección
-                        dedicada.
+              {isFree ? (
+                <div className="min-h-[50vh] flex items-center justify-center p-4">
+                  <div className="max-w-md w-full relative overflow-hidden rounded-3xl border border-amber-500/20 bg-card shadow-2xl p-8 sm:p-10 text-center">
+                    {/* Fondos decorativos */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-amber-500/5 pointer-events-none rounded-3xl" />
+                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-amber-500/20 blur-3xl rounded-full pointer-events-none" />
+                    <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-amber-500/20 blur-3xl rounded-full pointer-events-none" />
+                    <div className="relative z-10 flex flex-col items-center">
+                      <div
+                        className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center 
+                      justify-center shadow-lg shadow-amber-500/30 mb-6"
+                      >
+                        <Crown className="w-8 h-8 text-white fill-white/20" />
+                      </div>
+                      <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-3">
+                        Estadísticas avanzadas
+                      </h2>
+                      <p className="text-muted-foreground mb-8 text-sm sm:text-base">
+                        Visualiza la evolución de tus biomarcadores en el
+                        tiempo, tu índice vital y tendencias claves. Disponible
+                        solo en{" "}
+                        <strong className="text-foreground">Premium</strong>.
                       </p>
-                    </div>
-                    <Button
-                      asChild
-                      className="shrink-0 gradient-bg border-none shadow-md shadow-primary/20 hover:opacity-90"
-                    >
-                      <Link href="/dashboard/stats">
-                        Ver todas las estadísticas
+                      <Link
+                        href="/dashboard/subscription"
+                        className="w-full h-12 sm:h-14 rounded-xl text-base font-bold bg-gradient-to-r from-amber-500 to-orange-500
+                        hover:from-amber-600 hover:to-orange-600 border-0 text-white shadow-xl shadow-amber-500/25
+                        transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+                      >
+                        Desbloquear Estadísticas
+                        <Sparkles className="w-5 h-5" />
                       </Link>
-                    </Button>
+                    </div>
                   </div>
-                  <StatsCharts analyses={allAnalyses} />
-                </CardContent>
-              </Card>
+                </div>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Estadísticas y tendencias</CardTitle>
+                    <CardDescription>
+                      Visualiza la evolución de tus valores a lo largo del
+                      tiempo.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div
+                      className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-2xl p-5
+                    sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mb-6"
+                    >
+                      <div>
+                        <h3 className="text-lg font-bold flex items-center gap-2">
+                          <BarChart3 className="w-5 h-5 text-primary" />
+                          Vista Rápida de Tendencias
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1 max-w-xl">
+                          Aquí puedes ver la evolución básica de tus
+                          biomarcadores. Para un desglose completo, cálculo de
+                          tu Índice Vital y estado clínico, visita la sección
+                          dedicada.
+                        </p>
+                      </div>
+                      <Button
+                        asChild
+                        className="shrink-0 gradient-bg border-none shadow-md shadow-primary/20 hover:opacity-90"
+                      >
+                        <Link href="/dashboard/stats">
+                          Ver todas las estadísticas
+                        </Link>
+                      </Button>
+                    </div>
+                    <StatsCharts analyses={allAnalyses} />
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </motion.div>

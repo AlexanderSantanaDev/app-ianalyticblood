@@ -105,7 +105,7 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
   const { plan } = usePlan();
 
   const isFree = plan === "free";
-  const isLimitReached = isFree && analysisCount >= 5;
+  const isLimitReached = isFree && analysisCount >= 1;
   // Referencia al input de archivo para evitar document.getElementById
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Límite de 20MB para archivos subidos
@@ -120,7 +120,6 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
   /****************************************************************************************************************************/
   // Métodos
   /** Maneja el cambio de archivo */
-  // Envolver handleChange en useCallback para memoización
   const handleChange = useCallback((f: File) => {
     // Validación de tamaño máximo de archivo (20MB)
     if (f.size > MAX_FILE_SIZE) {
@@ -138,11 +137,10 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
   }, []);
 
   /** Maneja el procesamiento del archivo */
-  // Envolver handleProcess en useCallback para memoización
   const handleProcess = useCallback(async () => {
     if (!file) return;
     try {
-      // Vomprimimos la imagen ANTES de enviar al backend.
+      // Comprimimos la imagen ANTES de enviar al backend.
       // Esto protege contra OOM en Render Free Tier (512MB):
       // una foto iPhone 12MP puede superar los 400MB en RAM al procesarse con OCR.
       // La compresión es transparente para el usuario y no afecta la calidad del OCR.
@@ -345,7 +343,7 @@ export const FileUpload = ({ onUpload }: FileUploadProps) => {
         {file
           ? `${(file.size / 1024 / 1024).toFixed(2)} MB`
           : isLimitReached
-            ? "Has agotado tus 5 análisis de este mes."
+            ? "Has agotado tu análisis gratuito de este mes."
             : "o haz clic para seleccionar un archivo"}
       </p>
       {/* Usar ref en lugar de id para acceso directo al input */}

@@ -18,7 +18,7 @@ export default function SubscriptionBadge({
   //JSX
   if (!isPremium) {
     const analysisCount = session?.user?.analysis_count || 0;
-    const percentage = Math.min((analysisCount / 5) * 100, 100);
+    const percentage = Math.min((analysisCount / 1) * 100, 100);
 
     return (
       <div className={cn("flex items-center justify-center", className)}>

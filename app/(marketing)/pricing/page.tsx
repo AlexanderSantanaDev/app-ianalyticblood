@@ -47,7 +47,9 @@ const PricingCard = ({
         <h3 className="text-2xl font-bold mb-2">{title}</h3>
         <div className="mb-4">
           <span className="text-4xl font-bold">{price}</span>
-          {period && <span className="text-muted-foreground ml-2">{period}</span>}
+          {period && (
+            <span className="text-muted-foreground ml-2">{period}</span>
+          )}
         </div>
         <p className="text-muted-foreground mb-6">{description}</p>
         <ul className="space-y-3 mb-6">
@@ -64,7 +66,9 @@ const PricingCard = ({
           <Button
             variant={buttonVariant}
             className={`w-full ${
-              buttonVariant === "default" ? "gradient-bg hover:opacity-90 transition-opacity" : ""
+              buttonVariant === "default"
+                ? "gradient-bg hover:opacity-90 transition-opacity"
+                : ""
             }`}
           >
             {buttonText}
@@ -91,8 +95,8 @@ export default function PricingPage() {
             Planes y <span className="gradient-text">precios</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
-            Elige el plan que mejor se adapte a tus necesidades y comienza a entender tus análisis
-            de sangre (en PDF o foto) hoy mismo.
+            Elige el plan que mejor se adapte a tus necesidades y comienza a
+            entender tus análisis de sangre (en PDF o foto) hoy mismo.
           </p>
 
           <div className="inline-flex items-center p-1 bg-muted rounded-lg">
@@ -126,7 +130,7 @@ export default function PricingPage() {
             period={billingPeriod === "monthly" ? "/mes" : "/año"}
             description="Perfecto para comenzar a entender tus análisis de sangre."
             features={[
-              "5 análisis de (PDF o imagen) al mes",
+              "1 análisis de (PDF o imagen) al mes",
               "Interpretación básica de resultados",
               "Visualización de datos estándar",
               "Acceso a la aplicación web",
@@ -182,23 +186,30 @@ export default function PricingPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="bg-card rounded-xl shadow-lg border border-border p-8"
           >
-            <h2 className="text-2xl font-bold mb-6 text-center">Preguntas frecuentes</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              Preguntas frecuentes
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <h3 className="font-bold mb-2">¿Cómo funciona el análisis de PDF?</h3>
+                <h3 className="font-bold mb-2">
+                  ¿Cómo funciona el análisis de PDF?
+                </h3>
                 <p className="text-muted-foreground">
-                  Nuestra tecnología de IA extrae automáticamente los datos de tu PDF o fotografía
-                  de análisis de sangre, los interpreta y te proporciona un informe detallado y
-                  fácil de entender.
+                  Nuestra tecnología de IA extrae automáticamente los datos de
+                  tu PDF o fotografía de análisis de sangre, los interpreta y te
+                  proporciona un informe detallado y fácil de entender.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold mb-2">¿Es segura mi información médica?</h3>
+                <h3 className="font-bold mb-2">
+                  ¿Es segura mi información médica?
+                </h3>
                 <p className="text-muted-foreground">
-                  Absolutamente. Utilizamos encriptación de nivel bancario y cumplimos con todas las
-                  normativas de protección de datos. Tu información nunca se comparte con terceros.
+                  Absolutamente. Utilizamos encriptación de nivel bancario y
+                  cumplimos con todas las normativas de protección de datos. Tu
+                  información nunca se comparte con terceros.
                 </p>
               </div>
 
@@ -207,25 +218,32 @@ export default function PricingPage() {
                   ¿Puedo cancelar mi suscripción en cualquier momento?
                 </h3>
                 <p className="text-muted-foreground">
-                  Sí, puedes cancelar tu suscripción en cualquier momento desde tu perfil. No hay
-                  compromisos a largo plazo ni penalizaciones por cancelación.
+                  Sí, puedes cancelar tu suscripción en cualquier momento desde
+                  tu perfil. No hay compromisos a largo plazo ni penalizaciones
+                  por cancelación.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold mb-2">¿Qué tipos de análisis de sangre puedo subir?</h3>
+                <h3 className="font-bold mb-2">
+                  ¿Qué tipos de análisis de sangre puedo subir?
+                </h3>
                 <p className="text-muted-foreground">
-                  Nuestro sistema es compatible con la mayoría de formatos de imagen (png, jpg,
-                  etc.) y archivos PDF. Si tienes algún problema con un formato específico, nuestro
-                  equipo de soporte estará encantado de ayudarte.
+                  Nuestro sistema es compatible con la mayoría de formatos de
+                  imagen (png, jpg, etc.) y archivos PDF. Si tienes algún
+                  problema con un formato específico, nuestro equipo de soporte
+                  estará encantado de ayudarte.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-bold mb-2">¿Cómo puedo contactar con el soporte?</h3>
+                <h3 className="font-bold mb-2">
+                  ¿Cómo puedo contactar con el soporte?
+                </h3>
                 <p className="text-muted-foreground">
-                  Puedes contactar con nuestro equipo de soporte a través del chat en la aplicación
-                  o enviando un email a soporte@ianalyticblood.com.
+                  Puedes contactar con nuestro equipo de soporte a través del
+                  chat en la aplicación o enviando un email a
+                  soporte@ianalyticblood.com.
                 </p>
               </div>
 
@@ -234,9 +252,9 @@ export default function PricingPage() {
                   ¿Ofrecen descuentos para estudiantes o profesionales médicos?
                 </h3>
                 <p className="text-muted-foreground">
-                  Sí, ofrecemos descuentos especiales para estudiantes, profesionales médicos y
-                  organizaciones sin ánimo de lucro. Contacta con nuestro equipo de ventas para más
-                  información.
+                  Sí, ofrecemos descuentos especiales para estudiantes,
+                  profesionales médicos y organizaciones sin ánimo de lucro.
+                  Contacta con nuestro equipo de ventas para más información.
                 </p>
               </div>
             </div>

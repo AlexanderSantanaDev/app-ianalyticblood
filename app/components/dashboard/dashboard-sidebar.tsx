@@ -175,10 +175,7 @@ function DashboardSidebarComponent() {
             }
 
             // Item activo refinado + ripple ring sutil
-            const isPremiumFeature =
-              isFree &&
-              (item.href === "/dashboard/history" ||
-                item.href === "/dashboard/stats");
+            const isPremiumFeature = isFree && item.href === "/dashboard/stats";
 
             return (
               <SidebarMenuItem key={item.href}>

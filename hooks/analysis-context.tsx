@@ -87,7 +87,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
 
       // Simulación de progreso escalonado
       progressIntervalRef.current = setInterval(() => {
-      setProgress((prev) => {
+        setProgress((prev) => {
           if (prev < 20) {
             setCurrentStep("Subiendo archivo...");
             return prev + 2;
@@ -184,7 +184,6 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
             plan: session?.user?.plan,
           });
 
-
           // Disparar evento personalizado para notificar a otros componentes (Sidebar)
           window.dispatchEvent(
             new CustomEvent("ianalytic:analysis-completed", {
@@ -216,10 +215,10 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
         const isLimitError = err.message?.toLowerCase().includes("límite");
 
         if (isLimitError) {
-          toast.error("Límite de análisis", {
+          toast.error("Límite de análisis alcanzado", {
             description:
               err.message ||
-              "Has alcanzado el límite de tu plan básico (5/5). ¡Pásate a Premium para subidas ilimitadas! 🚀",
+              "Has alcanzado el límite de tu plan básico (1/1). ¡Pásate a Premium para análisis ilimitados! 🚀",
             icon: <AlertTriangle className="h-5 w-5 text-white" />,
             className:
               "bg-orange-600 border-none text-white font-bold shadow-[0_10px_40px_rgba(249,115,22,0.4)]",

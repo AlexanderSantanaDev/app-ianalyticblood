@@ -50,6 +50,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { getDashboardStats } from "@/lib/api/analysis";
+import { useApiFetch } from "@/lib/api/client";
 /***********************************************************************************************************************/
 /** Componente de Contenido de Suscripción (Separado para poder usar Suspense) */
 function SubscriptionContent() {
@@ -69,7 +71,9 @@ function SubscriptionContent() {
   } = useSubscriptionApi();
   // Contexto global del plan para sincronizar sidebar instantáneamente
   const { setPlan } = usePlan();
+  const apiFetch = useApiFetch();
   const [profile, setProfile] = useState<UserType | null>(null);
+  const [monthlyUsage, setMonthlyUsage] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "monthly",
@@ -229,8 +233,13 @@ function SubscriptionContent() {
   const fetchProfile = async () => {
     if (authStatus !== "authenticated") return;
     try {
-      const data = await getMe();
+      // Cargamos en paralelo el perfil y las stats del mes actual.
+      const [data, stats] = await Promise.all([
+        getMe(),
+        getDashboardStats(apiFetch),
+      ]);
       setProfile(data);
+      setMonthlyUsage(stats.analyses_this_month ?? 0);
       // Publicamos el plan al contexto global al cargar el perfil
       if (data?.plan) {
         setPlan(data.plan as import("@/hooks/plan-context").PlanType);
@@ -253,12 +262,10 @@ function SubscriptionContent() {
   }
 
   const currentPlan = profile?.plan || "free";
-  const usageLimit = currentPlan === "free" ? 5 : Infinity;
-  // Usar campo analysis_count ahora que está tipado en User
-  const currentUsage = profile?.analysis_count ?? 0;
+  const usageLimit = currentPlan === "free" ? 1 : Infinity;
+  const currentUsage = monthlyUsage;
   const progressValue =
     usageLimit === Infinity ? 100 : (currentUsage / usageLimit) * 100;
-
   const isPendingCancellation = profile?.cancel_at_period_end === true;
   const endDate = profile?.current_period_end
     ? new Date(profile.current_period_end * 1000).toLocaleDateString("es-ES", {
@@ -266,7 +273,7 @@ function SubscriptionContent() {
         month: "long",
         year: "numeric",
       })
-    : "24 de Abril, 2026";
+    : null;
 
   /***********************************************************************************************************************/
   // Métodos de Pago
@@ -454,7 +461,11 @@ function SubscriptionContent() {
                     )}
                     {isPendingCancellation
                       ? `Disponible hasta el ${endDate}`
-                      : `Renovación el ${endDate}`}
+                      : currentPlan === "free"
+                        ? "Sin renovación automática"
+                        : endDate
+                          ? `Renovación el ${endDate}`
+                          : "Sin renovación automática"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-4">

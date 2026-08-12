@@ -142,7 +142,7 @@ function DashboardNavbarComponent() {
   const isPremium = plan === "premium" || plan === "enterprise";
   // Usamos el contador reactivo del contexto para respuesta instantánea
   const analysisCount = reactiveAnalysisCount;
-  const percentage = Math.min((analysisCount / 5) * 100, 100);
+  const percentage = Math.min((analysisCount / 1) * 100, 100);
 
   // Obtiene meta (label + Icon) de la página actual
   const { label: pageLabel, Icon: PageIcon } = getPageMeta();
