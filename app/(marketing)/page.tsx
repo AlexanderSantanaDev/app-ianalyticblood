@@ -10,6 +10,7 @@ import {
   Upload,
   ArrowRight,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { AnimateOnScroll } from "@/components/marketing/animated-sections";
 import FeatureCard from "@/components/marketing/feature-card";
@@ -39,18 +40,43 @@ export default function MarketingHome() {
               detallado, personalizado y fácil de entender en segundos.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-row flex-wrap gap-3">
+              {/* Botón primario: registro */}
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="gradient-bg hover:opacity-90 transition-opacity"
+                  className="gradient-bg hover:opacity-90 transition-opacity whitespace-nowrap"
                 >
                   Comenzar ahora <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
 
+              <Link href="/preview">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="group relative overflow-hidden border-primary/40 hover:border-primary
+                  hover:bg-primary/5 transition-all duration-300 font-semibold whitespace-nowrap"
+                >
+                  <Sparkles className="mr-2 h-4 w-4 text-primary group-hover:scale-110 transition-transform duration-300" />
+                  Probar gratis
+                  {/* Shimmer sutil en hover */}
+                  <span
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-500
+                    -translate-x-full group-hover:translate-x-full"
+                    aria-hidden="true"
+                  />
+                </Button>
+              </Link>
+
               <Link href="/about">
-                <Button size="lg" variant="outline">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-border hover:border-foreground/30 text-muted-foreground
+                  hover:text-foreground transition-all whitespace-nowrap"
+                >
                   Conocer más <ChevronRight className="ml-1 h-5 w-5" />
                 </Button>
               </Link>

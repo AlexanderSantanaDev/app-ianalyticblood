@@ -8,10 +8,18 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Habilitada optimización de imágenes de Next.js (WebP/AVIF, lazy loading, srcset)
+  // Configuración segura de imágenes — solo dominios explícitamente permitidos
   images: {
     unoptimized: false,
     formats: ["image/avif", "image/webp"],
+    // Se usa remotePatterns (más seguro que 'domains') para restringir al path exacto de la API
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        pathname: "/**",
+      },
+    ],
   },
   experimental: {
     // Habilitadas optimizaciones de build en paralelo
