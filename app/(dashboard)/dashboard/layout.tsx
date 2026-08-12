@@ -7,10 +7,16 @@ import NavigationLoader from "@/components/dashboard/navigation-loader";
 import PageTransition from "@/components/dashboard/page-transition";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { LoadingProvider } from "@/hooks/loading-context";
+import { useBrowserGuard } from "@/hooks/use-browser-guard";
 import { ReactNode } from "react";
 /****************************************************************************************************************************/
 /** Contenido del dashboard. */
 const DashboardContent = ({ children }: { children: ReactNode }) => {
+  // Activamos la protección anti-DevTools / anti-click-derecho en TODO el dashboard.
+  const guardDisabled =
+    process.env.NEXT_PUBLIC_DISABLE_BROWSER_GUARD === "true";
+  useBrowserGuard({ enabled: !guardDisabled });
+
   return (
     <div className="flex min-h-[100dvh] w-full bg-background">
       {/* NavigationLoader: barra top + pill flotante en cada cambio de ruta */}

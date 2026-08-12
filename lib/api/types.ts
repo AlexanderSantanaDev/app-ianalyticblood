@@ -55,6 +55,23 @@ export interface Parameter {
   reference_range: [number, number] | null;
 }
 
+// Tipado para las viñetas de cada sección de análisis detallado.
+// is_real=true → visible (dato real del informe).
+// is_real=false → difuminado (incentivo para subir de plan).
+export interface AnalysisSectionItem {
+  text: string;
+  is_real: boolean;
+}
+
+// Tipado para cada sección del análisis detallado (Seguimiento, Conclusión, etc.)
+export interface AnalysisSection {
+  title: string;
+  subtitle: string;
+  icon: string;
+  items: AnalysisSectionItem[];
+  hidden_count: number;
+}
+
 export interface AnalysisDoc {
   _id: string;
   user_id: string;
@@ -63,5 +80,6 @@ export interface AnalysisDoc {
   parameters: Record<string, Parameter>;
   analysis: string[];
   recommendations: string[];
+  analysis_sections?: AnalysisSection[];
   date: string;
 }

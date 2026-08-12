@@ -1,9 +1,7 @@
 import type { NextFetchEvent, NextMiddleware, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// ─────────────────────────────────────────────────────────────
 //  Cabeceras "baseline" que hoy aconseja OWASP / Mozilla
-// ─────────────────────────────────────────────────────────────
 const securityHeaders: Record<string, string> = {
   // Previene click-jacking
   "X-Frame-Options": "DENY",
@@ -43,14 +41,14 @@ const apiOrigin = process.env.NEXT_PUBLIC_API_URL
   ? new URL(process.env.NEXT_PUBLIC_API_URL).origin
   : "http://localhost:8000";
 
-// CSP endurecida — añadidos form-action, base-uri, object-src, worker-src, manifest-src
+// blob: añadido a img-src para permitir previsualización local de archivos.
 const csp = `
   default-src 'self';
   frame-ancestors 'none';
   form-action 'self';
   base-uri 'self';
   object-src 'none';
-  img-src 'self' https: data:;
+  img-src 'self' https: data: blob:;
   script-src 'self' ${isProd ? "'unsafe-inline' 'wasm-unsafe-eval' 'inline-speculation-rules'" : "'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' 'inline-speculation-rules'"};
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
