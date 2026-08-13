@@ -33,6 +33,7 @@ import { getAnalysis } from "@/lib/api/analysis";
 import { useApiFetch } from "@/lib/api/client";
 import type { AnalysisDoc, AnalysisSection } from "@/lib/api/types";
 import { downloadAnalysisAsPDF } from "@/lib/api/download-analysis";
+import { getParameterDescription } from "@/lib/utils";
 import { usePlan } from "@/hooks/plan-context";
 
 /****************************************************************************************************************************/
@@ -395,40 +396,98 @@ export function AnalysisDetailDialog({
                       <Activity className="h-4 w-4 text-primary" />
                       Parámetros analizados
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {Object.entries(data.parameters).map(([name, param]) => (
-                        <div
-                          key={name}
-                          className="rounded-lg border bg-card/50 p-3 space-y-1 hover:bg-card transition-colors"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium truncate max-w-[60%]">
-                              {name}
-                            </span>
-                            <span
-                              className={`text-xs font-semibold ${getParamStatusColor(param.status)}`}
-                            >
-                              {getParamStatusLabel(param.status)}
-                            </span>
-                          </div>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-lg font-bold">
-                              {param.value !== null ? param.value : "—"}
-                            </span>
-                            {param.unit && (
-                              <span className="text-xs text-muted-foreground">
-                                {param.unit}
+                    <div className="grid grid-cols-1 gap-4">
+                      {Object.entries(data.parameters).map(([name, param]) => {
+                        // Lógica para calcular la posición de la barra de progreso
+                        let percent = 50;
+                        const min = param.reference_range?.[0] || 0;
+                        const max = param.reference_range?.[1] || 100;
+                        const val = param.value || 0;
+
+                        if (max > min) {
+                          percent = ((val - min) / (max - min)) * 100;
+                          if (percent < 0) percent = 5;
+                          if (percent > 100) percent = 95;
+                        }
+
+                        const statusColors =
+                          param.status === "muy_alto"
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                            : param.status === "alto" || param.status === "bajo"
+                              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                              : "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400";
+
+                        const statusLabel =
+                          param.status === "muy_alto"
+                            ? "Crítico"
+                            : param.status === "alto"
+                              ? "Alto"
+                              : param.status === "bajo"
+                                ? "Bajo"
+                                : "Normal";
+
+                        return (
+                          <div
+                            key={name}
+                            className="rounded-2xl border bg-card/50 p-5 hover:bg-card transition-all duration-300 shadow-sm flex flex-col"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <h4 className="font-bold text-base text-foreground truncate max-w-[70%]">
+                                {name}
+                              </h4>
+                              <div
+                                className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${statusColors}`}
+                              >
+                                {statusLabel}
+                              </div>
+                            </div>
+
+                            <div className="flex items-baseline gap-1.5 mb-6">
+                              <span className="text-4xl font-black">
+                                {param.value !== null ? param.value : "—"}
                               </span>
+                              {param.unit && (
+                                <span className="text-sm font-medium text-muted-foreground">
+                                  {param.unit}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Bloque visual de rango de referencia y progreso */}
+                            <div className="space-y-2 mb-2 mt-auto">
+                              <div className="relative h-2 w-full rounded-full overflow-hidden flex">
+                                <div className="h-full bg-red-400/80 w-1/4" />
+                                <div className="h-full bg-green-400/80 w-2/4" />
+                                <div className="h-full bg-red-400/80 w-1/4" />
+                                {param.value !== null && (
+                                  <div
+                                    className="absolute top-0 bottom-0 w-1.5 bg-foreground rounded-full transform -translate-x-1/2 z-10 shadow-sm"
+                                    style={{ left: `${percent}%` }}
+                                  />
+                                )}
+                              </div>
+                              {param.reference_range && (
+                                <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-1.5 pt-1">
+                                  <div className="w-3 h-1.5 bg-muted rounded-sm" />{" "}
+                                  Rango de Referencia:{" "}
+                                  {param.reference_range[0]} -{" "}
+                                  {param.reference_range[1]} {param.unit}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Renderizamos la descripción explicativa del parámetro si existe en la API,
+                                o bien usamos nuestro diccionario premium (getParameterDescription) como fallback. */}
+                            {(param.description ||
+                              getParameterDescription(name)) && (
+                              <p className="text-sm text-muted-foreground leading-relaxed mt-4 border-t border-border/50 pt-4">
+                                {param.description ||
+                                  getParameterDescription(name)}
+                              </p>
                             )}
                           </div>
-                          {param.reference_range && (
-                            <p className="text-[11px] text-muted-foreground">
-                              Ref: {param.reference_range[0]} —{" "}
-                              {param.reference_range[1]} {param.unit}
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

@@ -53,17 +53,16 @@ export interface Parameter {
   unit: string | null;
   status: "normal" | "bajo" | "alto" | "muy_alto" | null;
   reference_range: [number, number] | null;
+  description?: string | null;
 }
 
-// Tipado para las viñetas de cada sección de análisis detallado.
-// is_real=true → visible (dato real del informe).
-// is_real=false → difuminado (incentivo para subir de plan).
+/** Tipo para las viñetas de cada sección del análisis detallado. */
 export interface AnalysisSectionItem {
   text: string;
   is_real: boolean;
 }
 
-// Tipado para cada sección del análisis detallado (Seguimiento, Conclusión, etc.)
+/** Tipado para cada sección del análisis detallado (Seguimiento, Conclusión, etc.) */
 export interface AnalysisSection {
   title: string;
   subtitle: string;

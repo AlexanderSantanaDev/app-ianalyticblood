@@ -55,8 +55,9 @@ export default function UploadPage() {
             Sube tu análisis de sangre
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Extraemos de forma inteligente tus biomarcadores empleando IA clínica para ofrecerte
-            métricas claras y comprensibles sobre tu estado de salud.
+            Extraemos de forma inteligente tus biomarcadores empleando IA
+            clínica para ofrecerte métricas claras y comprensibles sobre tu
+            estado de salud.
           </p>
         </motion.div>
 
@@ -74,19 +75,21 @@ export default function UploadPage() {
                 <Card className="border-border/50 shadow-xl shadow-primary/5 bg-background/50 backdrop-blur-sm overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 via-secondary/40 to-primary/40"></div>
                   <CardHeader className="text-center pb-2 pt-8">
-                    <CardTitle className="text-2xl">Archivo de resultados</CardTitle>
+                    <CardTitle className="text-2xl">
+                      Archivo de resultados
+                    </CardTitle>
                     <CardDescription className="text-base mt-2">
                       Formatos soportados: PDF, JPG, PNG (máx. 10MB)
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-6 md:p-10">
+                  <CardContent className="py-6 px-1 sm:p-6 md:p-10">
                     <div className="max-w-2xl mx-auto">
                       <FileUpload onUpload={handleUploadComplete} />
                     </div>
                   </CardContent>
                   <CardFooter className="bg-muted/30 border-t p-6 flex justify-center text-sm text-muted-foreground text-center">
-                    Tus datos médicos se procesan de forma segura y nunca se comparten con terceros
-                    sin tu consentimiento.
+                    Tus datos médicos se procesan de forma segura y nunca se
+                    comparten con terceros sin tu consentimiento.
                   </CardFooter>
                 </Card>
               </motion.div>
@@ -102,7 +105,11 @@ export default function UploadPage() {
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                      transition={{
+                        delay: 0.2,
+                        type: "spring",
+                        stiffness: 200,
+                      }}
                       className="w-20 h-20 bg-green-500/20 text-green-600 rounded-full flex items-center justify-center mb-2"
                     >
                       <CheckCircle2 className="w-10 h-10" />
@@ -114,7 +121,9 @@ export default function UploadPage() {
                       </h2>
                       <p className="text-muted-foreground text-lg">
                         El archivo{" "}
-                        <span className="font-semibold text-foreground">{uploadedFile?.name}</span>{" "}
+                        <span className="font-semibold text-foreground">
+                          {uploadedFile?.name}
+                        </span>{" "}
                         centralizado en tu historial.
                       </p>
                     </div>

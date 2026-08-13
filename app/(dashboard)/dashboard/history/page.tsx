@@ -325,7 +325,7 @@ export default function HistoryPage() {
               id="search-history"
               name="searchHistory"
               placeholder="Buscar por resumen, fecha o estado..."
-              className="pl-10 border-none bg-background/50 focus-visible:ring-1 focus-visible:ring-primary/40 h-12 text-base rounded-xl"
+              className="pl-10 border-none bg-background/50 focus-visible:ring-1 focus-visible:ring-primary/40 h-12 !text-xs sm:text-base rounded-xl"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

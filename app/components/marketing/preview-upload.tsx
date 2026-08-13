@@ -11,15 +11,13 @@ import {
   Lock,
   AlertTriangle,
   AlertCircle,
-  TrendingUp,
-  TrendingDown,
-  Info,
   Activity,
   FileText,
   Heart,
   Microscope,
   Compass,
   CircleDot,
+  Crown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -215,6 +213,23 @@ export default function PreviewUpload() {
     [],
   );
   /****************************************************************************************************************************/
+  // Si el backend devuelve score 0 (o no lo devuelve), calculamos uno basado en los parámetros
+  // para que la interfaz nunca se quede rota (Score = (óptimos*100 + atención*50) / total)
+  const optimalCount = result?.counts?.optimal || 0;
+  const attentionCount = result?.counts?.attention || 0;
+  const criticalCount = result?.counts?.critical || 0;
+  const totalCount = optimalCount + attentionCount + criticalCount;
+
+  const calculatedScore =
+    totalCount > 0
+      ? Math.round(
+          (optimalCount * 100 + attentionCount * 50 + criticalCount * 0) /
+            totalCount,
+        )
+      : 0;
+
+  const displayScore = result?.score || calculatedScore;
+  /****************************************************************************************************************************/
   // Render
   return (
     <div
@@ -223,7 +238,7 @@ export default function PreviewUpload() {
     >
       <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur-3xl -z-10 pointer-events-none" />
 
-      <div className="bg-card rounded-3xl shadow-2xl overflow-hidden border border-border p-6 md:p-8 relative">
+      <div className="bg-card rounded-3xl shadow-2xl overflow-hidden border border-border  p-[6px] sm:p-6 md:p-8 relative">
         {/* Overlay de carga */}
         <AnimatePresence>
           {isAnalyzing && (
@@ -347,37 +362,44 @@ export default function PreviewUpload() {
           >
             <div className="bg-muted/20 border border-border rounded-2xl p-6 md:p-8">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-                {/* Puntuación Circular */}
-                <div className="md:col-span-4 flex flex-col items-center justify-center">
+                <div className="md:col-span-4 flex flex-col items-center justify-center py-2">
                   <div className="relative w-40 h-40 flex items-center justify-center">
-                    <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                    <svg
+                      viewBox="0 0 160 160"
+                      className="absolute inset-0 w-full h-full -rotate-90 overflow-visible"
+                      aria-hidden="true"
+                    >
+                      {/* Pista de fondo */}
                       <circle
                         cx="80"
                         cy="80"
-                        r="72"
+                        r="68"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="8"
                         className="text-muted"
                       />
+                      {/* Arco de progreso */}
                       <circle
                         cx="80"
                         cy="80"
-                        r="72"
+                        r="68"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="8"
-                        strokeDasharray="452"
+                        strokeDasharray={`${2 * Math.PI * 68}`}
                         strokeDashoffset={
-                          452 - (452 * (result.score || 0)) / 100
+                          2 * Math.PI * 68 -
+                          (2 * Math.PI * 68 * displayScore) / 100
                         }
                         className="text-primary transition-all duration-1000 ease-out"
                         strokeLinecap="round"
                       />
                     </svg>
-                    <div className="text-center">
+                    {/* Contenido centrado */}
+                    <div className="relative z-10 text-center">
                       <span className="text-5xl font-black gradient-text">
-                        {result.score || 0}
+                        {displayScore}
                       </span>
                       <p className="text-xs font-medium text-muted-foreground mt-1">
                         Puntuación
@@ -456,8 +478,15 @@ export default function PreviewUpload() {
                   </div>
                 </div>
               </div>
-              <div className="mt-6 flex items-center justify-center space-x-2 text-xs bg-muted/50 py-2 px-4 rounded-full border border-border w-max mx-auto">
-                <Lock size={14} className="text-muted-foreground" />
+              <div
+                className="mt-6 flex items-center justify-center gap-2 text-[8px]
+              bg-muted/50 py-2 px-4 rounded-full border border-border
+              max-w-full mx-auto text-center"
+              >
+                <Lock
+                  size={14}
+                  className="text-muted-foreground flex-shrink-0"
+                />
                 <span className="text-muted-foreground font-medium">
                   Los resultados que definieron tu puntuación se explican abajo
                 </span>
@@ -551,8 +580,13 @@ export default function PreviewUpload() {
                                   </p>
                                 </div>
                               </div>
-                              <div className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
-                                👑 Premium
+                              <div
+                                className="flex-shrink-0 inline-flex items-center gap-1 whitespace-nowrap
+                              bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400
+                              text-xs font-bold px-3 py-1 rounded-full shadow-sm"
+                              >
+                                <Crown size={12} className="flex-shrink-0" />
+                                Premium
                               </div>
                             </div>
 
@@ -562,7 +596,11 @@ export default function PreviewUpload() {
                                 section.items.map((item: any, i: number) => (
                                   <div
                                     key={i}
-                                    className={`flex gap-3 items-start transition-all duration-300 ${!item.is_real ? "blur-[4px] select-none pointer-events-none opacity-50" : ""}`}
+                                    className={`flex gap-3 items-start transition-all duration-300 ${
+                                      !item.is_real
+                                        ? "blur-[4px] select-none pointer-events-none opacity-50"
+                                        : ""
+                                    }`}
                                   >
                                     <CircleDot
                                       className="text-primary mt-1 flex-shrink-0"
@@ -600,7 +638,7 @@ export default function PreviewUpload() {
                 </div>
               )}
 
-            {/* 🩸 PARÁMETROS DE ANÁLISIS DE SANGRE (Reales y Falsos) - MOVILIZADO AL FINAL */}
+            {/* Parámetros de Análisis de Sangre */}
             <div className="space-y-6 pt-10">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold">

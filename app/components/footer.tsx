@@ -5,8 +5,8 @@ export default function Footer() {
   return (
     <footer className="bg-muted py-12">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="col-span-2 md:col-span-1">
             <h3 className="text-xl font-bold mb-4 gradient-text">
               IAnalyticBlood
             </h3>
@@ -16,7 +16,7 @@ export default function Footer() {
             </p>
           </div>
 
-          <div>
+          <div className="col-span-1 md:col-span-1">
             <h4 className="font-semibold mb-4">Enlaces</h4>
             <ul className="space-y-2">
               <li>
@@ -62,7 +62,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="col-span-1 md:col-span-1">
             <h4 className="font-semibold mb-4">Legal</h4>
             <ul className="space-y-2">
               <li>
@@ -92,7 +92,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="col-span-2 md:col-span-1 flex flex-col items-center md:items-start">
             <h4 className="font-semibold mb-4">Síguenos</h4>
             <div className="flex space-x-4">
               <a

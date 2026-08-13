@@ -25,6 +25,17 @@ import type { AnalysisDoc } from "@/lib/api/types";
 interface StatsChartsProps {
   analyses: AnalysisDoc[];
 }
+
+/** Helper para generar IDs de gradiente SVG válidos. */
+function toGradientId(name: string): string {
+  return `grad-${name
+    .normalize("NFD") // descompone acentos: é → e + ́
+    .replace(/[\u0300-\u036f]/g, "") // elimina los diacríticos
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // sustituye espacios y símbolos por "-"
+    .replace(/^-+|-+$/g, "")}`; // limpia guiones iniciales/finales
+}
+/****************************************************************************************************************************/
 /****************************************************************************************************************************/
 /** Componente de gráficos de estadísticas y tendencias */
 export default function StatsCharts({ analyses }: StatsChartsProps) {
@@ -186,7 +197,7 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
                   <AreaChart data={trend.data}>
                     <defs>
                       <linearGradient
-                        id={`gradient-${trend.name}`}
+                        id={toGradientId(trend.name)}
                         x1="0"
                         y1="0"
                         x2="0"
@@ -207,8 +218,8 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
-                      stroke="#e5e7eb"
-                      opacity={0.5}
+                      stroke="currentColor"
+                      strokeOpacity={0.1}
                     />
                     <XAxis
                       dataKey="date"
@@ -251,7 +262,7 @@ export default function StatsCharts({ analyses }: StatsChartsProps) {
                       stroke="#8b5cf6"
                       strokeWidth={3}
                       fillOpacity={1}
-                      fill={`url(#gradient-${trend.name})`}
+                      fill={`url(#${toGradientId(trend.name)})`}
                       animationDuration={1500}
                     />
                   </AreaChart>

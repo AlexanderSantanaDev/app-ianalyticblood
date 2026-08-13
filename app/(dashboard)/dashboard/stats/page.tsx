@@ -274,7 +274,7 @@ export default function StatsPage() {
               Estadísticas
             </h1>
           </div>
-          <p className="text-muted-foreground text-lg ml-[3.5rem] leading-relaxed max-w-3xl">
+          <p className="text-muted-foreground text-lg sm:ml-[3.5rem] leading-relaxed max-w-3xl">
             Panorámica avanzada de salud. Analizamos la tendencia histórica de
             tus{" "}
             <strong className="text-foreground">
