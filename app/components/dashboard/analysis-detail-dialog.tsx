@@ -389,219 +389,212 @@ export function AnalysisDetailDialog({
 
                 <Separator />
 
-                {/* Parámetros */}
-                {data.parameters && Object.keys(data.parameters).length > 0 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-semibold">
-                      <Activity className="h-4 w-4 text-primary" />
-                      Parámetros analizados
+                {/* Secciones de análisis detallado */}
+                {hasSections && (
+                  <div className="space-y-4">
+                    {/* Título del bloque */}
+                    <div className="text-center space-y-1">
+                      <h3 className="text-base font-bold">
+                        Análisis Detallado
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Interpretación impulsada por IA de tus resultados
+                      </p>
+                      {/* Banner upgrade para plan free */}
+                      {isFree && (
+                        <div
+                          className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 
+                        text-xs text-amber-600 dark:text-amber-400"
+                        >
+                          <Crown className="h-3 w-3" />
+                          <span>
+                            Actualiza a Premium para ver el análisis completo
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <div className="grid grid-cols-1 gap-4">
-                      {Object.entries(data.parameters).map(([name, param]) => {
-                        // Lógica para calcular la posición de la barra de progreso
-                        let percent = 50;
-                        const min = param.reference_range?.[0] || 0;
-                        const max = param.reference_range?.[1] || 100;
-                        const val = param.value || 0;
 
-                        if (max > min) {
-                          percent = ((val - min) / (max - min)) * 100;
-                          if (percent < 0) percent = 5;
-                          if (percent > 100) percent = 95;
-                        }
-
-                        const statusColors =
-                          param.status === "muy_alto"
-                            ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
-                            : param.status === "alto" || param.status === "bajo"
-                              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
-                              : "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400";
-
-                        const statusLabel =
-                          param.status === "muy_alto"
-                            ? "Crítico"
-                            : param.status === "alto"
-                              ? "Alto"
-                              : param.status === "bajo"
-                                ? "Bajo"
-                                : "Normal";
-
-                        return (
-                          <div
-                            key={name}
-                            className="rounded-2xl border bg-card/50 p-5 hover:bg-card transition-all duration-300 shadow-sm flex flex-col"
-                          >
-                            <div className="flex items-start justify-between mb-4">
-                              <h4 className="font-bold text-base text-foreground truncate max-w-[70%]">
-                                {name}
-                              </h4>
-                              <div
-                                className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${statusColors}`}
-                              >
-                                {statusLabel}
-                              </div>
-                            </div>
-
-                            <div className="flex items-baseline gap-1.5 mb-6">
-                              <span className="text-4xl font-black">
-                                {param.value !== null ? param.value : "—"}
-                              </span>
-                              {param.unit && (
-                                <span className="text-sm font-medium text-muted-foreground">
-                                  {param.unit}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Bloque visual de rango de referencia y progreso */}
-                            <div className="space-y-2 mb-2 mt-auto">
-                              <div className="relative h-2 w-full rounded-full overflow-hidden flex">
-                                <div className="h-full bg-red-400/80 w-1/4" />
-                                <div className="h-full bg-green-400/80 w-2/4" />
-                                <div className="h-full bg-red-400/80 w-1/4" />
-                                {param.value !== null && (
-                                  <div
-                                    className="absolute top-0 bottom-0 w-1.5 bg-foreground rounded-full transform -translate-x-1/2 z-10 shadow-sm"
-                                    style={{ left: `${percent}%` }}
-                                  />
-                                )}
-                              </div>
-                              {param.reference_range && (
-                                <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-1.5 pt-1">
-                                  <div className="w-3 h-1.5 bg-muted rounded-sm" />{" "}
-                                  Rango de Referencia:{" "}
-                                  {param.reference_range[0]} -{" "}
-                                  {param.reference_range[1]} {param.unit}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Renderizamos la descripción explicativa del parámetro si existe en la API,
-                                o bien usamos nuestro diccionario premium (getParameterDescription) como fallback. */}
-                            {(param.description ||
-                              getParameterDescription(name)) && (
-                              <p className="text-sm text-muted-foreground leading-relaxed mt-4 border-t border-border/50 pt-4">
-                                {param.description ||
-                                  getParameterDescription(name)}
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })}
+                    {/* Cards de secciones */}
+                    <div className="space-y-3">
+                      {data.analysis_sections!.map((section, i) => (
+                        <SectionCard
+                          key={i}
+                          section={section}
+                          isFree={isFree}
+                        />
+                      ))}
                     </div>
                   </div>
                 )}
 
-                {/* Secciones de análisis detallado */}
-                {hasSections && (
-                  <>
-                    <Separator />
-                    <div className="space-y-4">
-                      {/* Título del bloque */}
-                      <div className="text-center space-y-1">
-                        <h3 className="text-base font-bold">
-                          Análisis Detallado
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          Interpretación impulsada por IA de tus resultados
-                        </p>
-                        {/* Banner upgrade para plan free */}
-                        {isFree && (
-                          <div
-                            className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 
-                          text-xs text-amber-600 dark:text-amber-400"
-                          >
-                            <Crown className="h-3 w-3" />
-                            <span>
-                              Actualiza a Premium para ver el análisis completo
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Cards de secciones */}
-                      <div className="space-y-3">
-                        {data.analysis_sections!.map((section, i) => (
-                          <SectionCard
-                            key={i}
-                            section={section}
-                            isFree={isFree}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-
                 {/* Interpretación (texto plano — solo visible si no hay secciones) */}
                 {!hasSections && data.analysis && data.analysis.length > 0 && (
-                  <>
-                    <Separator />
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm font-semibold">
-                        <FileText className="h-4 w-4 text-primary" />
-                        Interpretación
-                      </div>
-                      <ul className="space-y-2">
-                        {data.analysis.map((item, i) => (
-                          <li
-                            key={i}
-                            className="text-sm text-muted-foreground leading-relaxed pl-4 border-l-2 border-primary/30"
-                          >
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      <FileText className="h-4 w-4 text-primary" />
+                      Interpretación
                     </div>
-                  </>
+                    <ul className="space-y-2">
+                      {data.analysis.map((item, i) => (
+                        <li
+                          key={i}
+                          className="text-sm text-muted-foreground leading-relaxed pl-4 border-l-2 border-primary/30"
+                        >
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
 
                 {/* Recomendaciones (solo si no hay secciones — fallback legacy) */}
                 {!hasSections &&
                   data.recommendations &&
                   data.recommendations.length > 0 && (
-                    <>
-                      <Separator />
-                      <div className="space-y-3 relative">
-                        <div className="flex items-center gap-2 text-sm font-semibold">
-                          <Compass className="h-4 w-4 text-yellow-500" />
-                          Recomendaciones
-                        </div>
-
-                        {isFree ? (
-                          <div className="relative rounded-xl border border-amber-500/20 bg-amber-500/5 p-6 text-center overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent pointer-events-none" />
-                            <Crown className="w-8 h-8 text-amber-500 mx-auto mb-3 opacity-80" />
-                            <h4 className="font-bold text-amber-600 dark:text-amber-500 mb-1">
-                              Recomendaciones Avanzadas
-                            </h4>
-                            <p className="text-sm text-muted-foreground mb-4">
-                              Sube a Premium para obtener un plan de acción
-                              personalizado.
-                            </p>
-                            <Button
-                              asChild
-                              size="sm"
-                              className="bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-md shadow-amber-500/20 rounded-lg"
-                            >
-                              <a href="/dashboard/subscription">Mejorar Plan</a>
-                            </Button>
-                          </div>
-                        ) : (
-                          <ul className="space-y-2">
-                            {data.recommendations.map((rec, i) => (
-                              <li
-                                key={i}
-                                className="text-sm text-muted-foreground leading-relaxed pl-4 border-l-2 border-yellow-500/30"
-                              >
-                                {rec}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                    <div className="space-y-3 relative">
+                      <div className="flex items-center gap-2 text-sm font-semibold">
+                        <Compass className="h-4 w-4 text-yellow-500" />
+                        Recomendaciones
                       </div>
-                    </>
+
+                      {isFree ? (
+                        <div className="relative rounded-xl border border-amber-500/20 bg-amber-500/5 p-6 text-center overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent pointer-events-none" />
+                          <Crown className="w-8 h-8 text-amber-500 mx-auto mb-3 opacity-80" />
+                          <h4 className="font-bold text-amber-600 dark:text-amber-500 mb-1">
+                            Recomendaciones Avanzadas
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Sube a Premium para obtener un plan de acción
+                            personalizado.
+                          </p>
+                          <Button
+                            asChild
+                            size="sm"
+                            className="bg-amber-500 hover:bg-amber-600 text-white border-0 shadow-md shadow-amber-500/20 rounded-lg"
+                          >
+                            <a href="/dashboard/subscription">Mejorar Plan</a>
+                          </Button>
+                        </div>
+                      ) : (
+                        <ul className="space-y-2">
+                          {data.recommendations.map((rec, i) => (
+                            <li
+                              key={i}
+                              className="text-sm text-muted-foreground leading-relaxed pl-4 border-l-2 border-yellow-500/30"
+                            >
+                              {rec}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   )}
+
+                {/* Parámetros */}
+                {data.parameters && Object.keys(data.parameters).length > 0 && (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm font-semibold">
+                        <Activity className="h-4 w-4 text-primary" />
+                        Parámetros analizados
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {Object.entries(data.parameters).map(([name, param]) => {
+                          // Lógica para calcular la posición de la barra de progreso
+                          let percent = 50;
+                          const min = param.reference_range?.[0] || 0;
+                          const max = param.reference_range?.[1] || 100;
+                          const val = param.value || 0;
+
+                          if (max > min) {
+                            percent = ((val - min) / (max - min)) * 100;
+                            if (percent < 0) percent = 5;
+                            if (percent > 100) percent = 95;
+                          }
+
+                          const statusColors =
+                            param.status === "muy_alto"
+                              ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                              : param.status === "alto" || param.status === "bajo"
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                                : "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400";
+
+                          const statusLabel =
+                            param.status === "muy_alto"
+                              ? "Crítico"
+                              : param.status === "alto"
+                                ? "Alto"
+                                : param.status === "bajo"
+                                  ? "Bajo"
+                                  : "Normal";
+
+                          return (
+                            <div
+                              key={name}
+                              className="rounded-2xl border bg-card/50 p-4 hover:bg-card transition-all duration-300 shadow-sm flex flex-col"
+                            >
+                              <div className="flex items-start justify-between mb-3">
+                                <h4 className="font-bold text-sm text-foreground truncate max-w-[70%]">
+                                  {name}
+                                </h4>
+                                <div
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColors}`}
+                                >
+                                  {statusLabel}
+                                </div>
+                              </div>
+
+                              <div className="flex items-baseline gap-1.5 mb-4">
+                                <span className="text-3xl font-black">
+                                  {param.value !== null ? param.value : "—"}
+                                </span>
+                                {param.unit && (
+                                  <span className="text-xs font-medium text-muted-foreground">
+                                    {param.unit}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Bloque visual de rango de referencia y progreso */}
+                              <div className="space-y-1.5 mb-1 mt-auto">
+                                <div className="relative h-1.5 w-full rounded-full overflow-hidden flex">
+                                  <div className="h-full bg-red-400/80 w-1/4" />
+                                  <div className="h-full bg-green-400/80 w-2/4" />
+                                  <div className="h-full bg-red-400/80 w-1/4" />
+                                  {param.value !== null && (
+                                    <div
+                                      className="absolute top-0 bottom-0 w-1.5 bg-foreground rounded-full transform -translate-x-1/2 z-10 shadow-sm"
+                                      style={{ left: `${percent}%` }}
+                                    />
+                                  )}
+                                </div>
+                                {param.reference_range && (
+                                  <div className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 pt-1">
+                                    <div className="w-2.5 h-1.5 bg-muted rounded-sm" />{" "}
+                                    Rango: {param.reference_range[0]} -{" "}
+                                    {param.reference_range[1]} {param.unit}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Renderizamos la descripción explicativa del parámetro si existe en la API,
+                                  o bien usamos nuestro diccionario premium (getParameterDescription) como fallback. */}
+                              {(param.description ||
+                                getParameterDescription(name)) && (
+                                <p className="text-xs text-muted-foreground leading-relaxed mt-3 border-t border-border/50 pt-3">
+                                  {param.description ||
+                                    getParameterDescription(name)}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {/* Botón de descarga */}
                 <div className="pt-2">
