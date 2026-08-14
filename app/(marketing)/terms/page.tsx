@@ -56,7 +56,18 @@ export default function TermsPage() {
           </div>
 
           {/* Content */}
-          <div className="bg-card border border-border/50 rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-black/5 prose prose-slate dark:prose-invert max-w-none">
+          <div
+            className="bg-card border border-border/50 rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-black/5 max-w-none
+            [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:text-foreground [&>h2]:mt-12 [&>h2]:mb-6 [&>h2]:flex [&>h2]:items-center [&>h2]:gap-3
+            [&>p]:text-muted-foreground [&>p]:leading-relaxed [&>p]:mb-6 [&>p]:text-[1.05rem]
+            [&>ul]:list-none [&>ul]:space-y-4 [&>ul]:mb-8 [&>ul]:mt-2
+            [&>ul>li]:relative [&>ul>li]:pl-7 [&>ul>li]:text-muted-foreground [&>ul>li]:leading-relaxed
+            [&>ul>li::before]:content-[''] [&>ul>li::before]:absolute [&>ul>li::before]:left-0 [&>ul>li::before]:top-[0.6rem] [&>ul>li::before]:w-2 
+            [&>ul>li::before]:h-2 [&>ul>li::before]:bg-primary [&>ul>li::before]:rounded-full [&>ul>li::before]:shadow-[0_0_8px_rgba(var(--primary),0.5)]
+            [&>ul>li>strong]:text-foreground [&>ul>li>strong]:font-semibold
+            [&>p>strong]:text-foreground [&>p>strong]:font-semibold
+          "
+          >
             <h2>1. Aceptación de los Términos</h2>
             <p>
               Al acceder y utilizar <strong>IAnalytic Blood</strong>, aceptas

@@ -12,6 +12,9 @@ const nextConfig = {
   images: {
     unoptimized: false,
     formats: ["image/avif", "image/webp"],
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Se usa remotePatterns (más seguro que 'domains') para restringir al path exacto de la API
     remotePatterns: [
       {

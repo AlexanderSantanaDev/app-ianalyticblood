@@ -201,7 +201,13 @@ export default function RegisterPage() {
                   <Label htmlFor="password">Contraseña</Label>
                   <div className="relative">
                     <Lock
-                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 transition-colors ${password.length > 0 ? (isPasswordValid ? "text-green-500" : "text-red-500") : "text-muted-foreground"}`}
+                      className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 transition-colors ${
+                        password.length > 0
+                          ? isPasswordValid
+                            ? "text-green-500"
+                            : "text-red-500"
+                          : "text-muted-foreground"
+                      }`}
                     />
                     <Input
                       id="password"
@@ -236,77 +242,63 @@ export default function RegisterPage() {
                     )}
                   </div>
                   {/* Lista de validación dinámica */}
-                  <div className="space-y-1 mt-2 p-3 bg-muted/50 rounded-lg border border-border/50">
-                    <p className="text-xs font-medium text-foreground mb-2">
-                      Requisitos de contraseña:
-                    </p>
-                    <ul className="text-xs space-y-1">
-                      <li
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          password.length > 0
-                            ? isLengthValid
-                              ? "text-green-500"
-                              : "text-red-500"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {password.length > 0 && isLengthValid ? (
-                          <Check className="h-3 w-3" />
-                        ) : (
-                          <X className="h-3 w-3" />
-                        )}
-                        Mínimo 8 caracteres
-                      </li>
-                      <li
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          password.length > 0
-                            ? hasUpperCase
-                              ? "text-green-500"
-                              : "text-red-500"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {password.length > 0 && hasUpperCase ? (
-                          <Check className="h-3 w-3" />
-                        ) : (
-                          <X className="h-3 w-3" />
-                        )}
-                        Al menos una mayúscula
-                      </li>
-                      <li
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          password.length > 0
-                            ? hasLowerCase
-                              ? "text-green-500"
-                              : "text-red-500"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {password.length > 0 && hasLowerCase ? (
-                          <Check className="h-3 w-3" />
-                        ) : (
-                          <X className="h-3 w-3" />
-                        )}
-                        Al menos una minúscula
-                      </li>
-                      <li
-                        className={`flex items-center gap-1.5 transition-colors ${
-                          password.length > 0
-                            ? hasNumber
-                              ? "text-green-500"
-                              : "text-red-500"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {password.length > 0 && hasNumber ? (
-                          <Check className="h-3 w-3" />
-                        ) : (
-                          <X className="h-3 w-3" />
-                        )}
-                        Al menos un número
-                      </li>
-                    </ul>
-                  </div>
+                  {password.length > 0 && (
+                    <div className="space-y-1 mt-2 p-3 bg-muted/50 rounded-lg border border-border/50">
+                      <p className="text-xs font-medium text-foreground mb-2">
+                        Requisitos de contraseña:
+                      </p>
+                      <ul className="text-xs space-y-1">
+                        <li
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            isLengthValid ? "text-green-500" : "text-red-500"
+                          }`}
+                        >
+                          {isLengthValid ? (
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <X className="h-3 w-3" />
+                          )}
+                          Mínimo 8 caracteres
+                        </li>
+                        <li
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            hasUpperCase ? "text-green-500" : "text-red-500"
+                          }`}
+                        >
+                          {hasUpperCase ? (
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <X className="h-3 w-3" />
+                          )}
+                          Al menos una mayúscula
+                        </li>
+                        <li
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            hasLowerCase ? "text-green-500" : "text-red-500"
+                          }`}
+                        >
+                          {hasLowerCase ? (
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <X className="h-3 w-3" />
+                          )}
+                          Al menos una minúscula
+                        </li>
+                        <li
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            hasNumber ? "text-green-500" : "text-red-500"
+                          }`}
+                        >
+                          {hasNumber ? (
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <X className="h-3 w-3" />
+                          )}
+                          Al menos un número
+                        </li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 {/* Nuevo bloque para confirmar la contraseña */}

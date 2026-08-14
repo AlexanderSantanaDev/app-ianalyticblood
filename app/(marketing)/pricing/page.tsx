@@ -123,7 +123,7 @@ export default function PricingPage() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <PricingCard
             title="Básico"
             price={billingPeriod === "monthly" ? "€0" : "€0"}
@@ -160,6 +160,8 @@ export default function PricingPage() {
             delay={0.2}
           />
 
+          {/* Plan Empresas oculto temporalmente. */}
+          {/*
           <PricingCard
             title="Empresas"
             price="Personalizado"
@@ -177,6 +179,7 @@ export default function PricingPage() {
             buttonVariant="outline"
             delay={0.3}
           />
+          */}
         </div>
 
         <div className="mt-20">
