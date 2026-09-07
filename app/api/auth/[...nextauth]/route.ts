@@ -1,8 +1,4 @@
-import NextAuth, {
-  type NextAuthOptions,
-  type DefaultSession,
-  type User,
-} from "next-auth";
+import NextAuth, { type NextAuthOptions, type DefaultSession, type User } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { publicApiFetch } from "@/lib/api/client";
@@ -62,10 +58,6 @@ const authOptions: NextAuthOptions = {
       authorization: {
         params: {
           scope: "openid email profile",
-          redirect_uri:
-            process.env.NODE_ENV === "production"
-              ? "https://app-ianalyticblood.vercel.app/api/auth/callback/google"
-              : "http://localhost:3000/api/auth/callback/google",
         },
       },
     }),
@@ -82,23 +74,19 @@ const authOptions: NextAuthOptions = {
         const password = credentials?.password;
         if (!email || !password) return null;
 
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-          {
-            method: "POST",
-            body: new URLSearchParams({
-              username: email,
-              password: password,
-            }),
-          },
-        );
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          method: "POST",
+          body: new URLSearchParams({
+            username: email,
+            password: password,
+          }),
+        });
 
         if (!res.ok) return null;
 
         const data = await res.json();
         // Extraemos el alias de forma segura y capitalizamos
-        const rawName =
-          data.name || data.full_name || email.split("@")[0] || "Usuario";
+        const rawName = data.name || data.full_name || email.split("@")[0] || "Usuario";
         const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
         return {
@@ -133,13 +121,7 @@ const authOptions: NextAuthOptions = {
 
   /* Callbacks */
   callbacks: {
-    async signIn({
-      user,
-      account,
-    }: {
-      user: any;
-      account: any;
-    }): Promise<boolean | string> {
+    async signIn({ user, account }: { user: any; account: any }): Promise<boolean | string> {
       if (account?.provider === "google") {
         try {
           const envUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -195,22 +177,14 @@ const authOptions: NextAuthOptions = {
             return true;
           }
 
-          console.error(
-            "[AUTH DEBUG] ❌ No se recibió access_token del backend",
-          );
+          console.error("[AUTH DEBUG] ❌ No se recibió access_token del backend");
           return false;
         } catch (error: any) {
-          console.error(
-            "[AUTH DEBUG] ❌ Error crítico en el backend:",
-            error.message,
-          );
+          console.error("[AUTH DEBUG] ❌ Error crítico en el backend:", error.message);
 
           // Log PROFUNDO de la causa del fallo (Causa raíz: ECONNREFUSED, etc.)
           if (error.cause) {
-            console.error(
-              "[AUTH DEBUG] 👉 Causa Técnica Detallada:",
-              error.cause,
-            );
+            console.error("[AUTH DEBUG] 👉 Causa Técnica Detallada:", error.cause);
           }
 
           // Debug si el api no esta corriendo..
@@ -271,9 +245,7 @@ const authOptions: NextAuthOptions = {
 
       // Solo intentar fetch de avatar una vez — si ya se intentó, no repetir
       if (!token.picture && token.googleAccessToken && !token._avatarFetched) {
-        const fetchedPicture = await fetchGoogleAvatar(
-          token.googleAccessToken as string,
-        );
+        const fetchedPicture = await fetchGoogleAvatar(token.googleAccessToken as string);
         if (fetchedPicture) {
           token.picture = fetchedPicture;
         }
